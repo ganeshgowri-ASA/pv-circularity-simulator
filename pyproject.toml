@@ -1,0 +1,25 @@
+[project]
+name = "pv-circularity-simulator"
+version = "0.1.0"
+description = "End-to-End PV Lifecycle Simulation Platform"
+authors = [{name = "Your Name"}]
+requires-python = ">=3.9"
+dependencies = [
+    "streamlit>=1.28.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "matplotlib>=3.7.0",
+    "plotly>=5.14.0",
+    "scipy>=1.10.0",
+    "dataclasses-json>=0.6.0",
+    "typing-extensions>=4.7.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_backend"
+
+[tool.setuptools]
+packages = ["src"]
