@@ -1,0 +1,4 @@
+Name,Manufacturer,Cell Type,Layout Type,Total Cells,Pmax (W),Voc (V),Isc (A),Vmpp (V),Impp (A),Efficiency (%),Length (mm),Width (mm),Weight (kg),Area (m²),NOCT (°C),Temp Coeff Pmax (%/°C),Bifacial,Bifacial Factor
+Manufacturer A 450W,Manufacturer A,mono_perc,half_cut,240,648.0,81.60,10.30,67.84,9.55,10.54,3192,1926,70.7,6.149,45.0,-0.350,No,N/A
+Manufacturer B 500W,Manufacturer B,mono_topcon,half_cut,240,684.0,84.00,10.50,70.18,9.75,11.12,3192,1926,70.7,6.149,45.0,-0.300,No,N/A
+Manufacturer C 550W,Manufacturer C,mono_hjt,bifacial,120,715.0,88.80,10.20,74.86,9.55,23.05,1610,1926,35.7,3.102,45.0,-0.260,No,N/A
