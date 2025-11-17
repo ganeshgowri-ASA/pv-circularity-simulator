@@ -8,6 +8,7 @@ and environmental credits.
 
 from .economics import (
     RecyclingEconomics,
+    MaterialComposition,
     MaterialExtractionCosts,
     RecoveryRates,
     RecyclingRevenue,
@@ -18,6 +19,7 @@ from .economics import (
 
 __all__ = [
     "RecyclingEconomics",
+    "MaterialComposition",
     "MaterialExtractionCosts",
     "RecoveryRates",
     "RecyclingRevenue",

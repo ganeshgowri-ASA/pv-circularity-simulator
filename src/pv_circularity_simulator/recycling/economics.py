@@ -14,7 +14,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Union
 
 import numpy as np
-from pydantic import BaseModel, Field, field_validator, computed_field
+from pydantic import BaseModel, Field, field_validator, computed_field, ConfigDict
 
 
 class PVMaterialType(str, Enum):
@@ -77,8 +77,7 @@ class MaterialComposition(BaseModel):
             raise ValueError("Value must be positive")
         return v
 
-    class Config:
-        frozen = True
+    model_config = ConfigDict(frozen=True)
 
 
 class MaterialExtractionCosts(BaseModel):
@@ -150,8 +149,7 @@ class MaterialExtractionCosts(BaseModel):
         total_cost = (self.total_fixed_cost + variable_costs) * self.overhead_multiplier
         return total_cost
 
-    class Config:
-        frozen = False
+    model_config = ConfigDict(frozen=False)
 
 
 class RecoveryRates(BaseModel):
@@ -209,8 +207,7 @@ class RecoveryRates(BaseModel):
         multipliers = {"A": 1.0, "B": 0.8, "C": 0.6}
         return multipliers.get(self.quality_grade, 0.8)
 
-    class Config:
-        frozen = False
+    model_config = ConfigDict(frozen=False)
 
 
 class RecyclingRevenue(BaseModel):
@@ -290,8 +287,7 @@ class RecyclingRevenue(BaseModel):
             revenue_breakdown[material.material_type] = revenue
         return revenue_breakdown
 
-    class Config:
-        frozen = False
+    model_config = ConfigDict(frozen=False)
 
 
 class EnvironmentalCredits(BaseModel):
@@ -363,8 +359,7 @@ class EnvironmentalCredits(BaseModel):
             "total_environmental_value_usd": self.total_environmental_value,
         }
 
-    class Config:
-        frozen = False
+    model_config = ConfigDict(frozen=False)
 
 
 class RecyclingEconomics:
