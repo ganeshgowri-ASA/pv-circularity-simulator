@@ -1,0 +1,64 @@
+# Default Hybrid Energy System Configuration
+# This file provides a baseline configuration for a typical hybrid energy system
+
+system_name: "Default Hybrid System"
+system_description: "Default configuration with PV array and battery storage"
+
+components:
+  - component_id: "pv_001"
+    component_type: "pv_array"
+    name: "PV Array 1"
+    capacity: 10.0
+    capacity_unit: "kW"
+    efficiency: 0.85
+    enabled: true
+    parameters:
+      area_m2: 50.0
+      tilt_angle: 30.0
+      azimuth_angle: 180.0
+
+  - component_id: "battery_001"
+    component_type: "battery"
+    name: "Battery Storage 1"
+    capacity: 20.0
+    capacity_unit: "kWh"
+    efficiency: 0.90
+    enabled: true
+    parameters:
+      initial_soc: 0.5
+      min_soc: 0.2
+      max_soc: 0.9
+      charge_rate_max_kw: 5.0
+      discharge_rate_max_kw: 5.0
+
+operation_strategy:
+  strategy_name: "Basic Rule-Based"
+  strategy_type: "rule_based"
+  priority_order:
+    - "pv_001"
+    - "battery_001"
+  control_parameters:
+    battery_charge_threshold: 0.8
+    battery_discharge_threshold: 0.3
+  constraints:
+    max_grid_import_kw: 100.0
+    max_grid_export_kw: 50.0
+
+simulation:
+  time_step_minutes: 5
+  simulation_duration_hours: 24
+  start_time: null
+  weather_data_source: "default"
+  load_profile_source: "default"
+
+monitoring:
+  refresh_rate_seconds: 10
+  log_level: "INFO"
+  metrics_retention_hours: 168
+  alert_thresholds:
+    low_battery_soc: 0.2
+    high_temperature: 45.0
+
+metadata:
+  created_by: "ConfigManager"
+  version: "1.0"
