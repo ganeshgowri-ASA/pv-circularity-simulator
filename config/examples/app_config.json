@@ -1,0 +1,72 @@
+{
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "username": "pv_user",
+    "password": "pv_password",
+    "database": "pv_circularity",
+    "pool_size": 10,
+    "max_overflow": 20,
+    "echo_sql": false
+  },
+  "api": {
+    "host": "0.0.0.0",
+    "port": 8080,
+    "debug": true,
+    "workers": 4,
+    "timeout": 30,
+    "cors_enabled": true,
+    "cors_origins": [
+      "http://localhost:3000",
+      "http://localhost:8080"
+    ],
+    "rate_limit": {
+      "enabled": true,
+      "requests_per_minute": 100
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "file": "/var/log/pv-circularity/app.log",
+    "max_file_size": 10485760,
+    "backup_count": 5,
+    "console_output": true
+  },
+  "simulation": {
+    "cell_design": {
+      "default_efficiency": 0.20,
+      "temperature_coefficient": -0.004,
+      "degradation_rate": 0.005
+    },
+    "module_engineering": {
+      "cells_per_module": 72,
+      "default_layout": "grid",
+      "bypass_diodes": 3
+    },
+    "system_planning": {
+      "default_system_size": 5000,
+      "inverter_efficiency": 0.98,
+      "wiring_loss": 0.02
+    }
+  },
+  "environments": {
+    "development": {
+      "api": {
+        "debug": true
+      },
+      "logging": {
+        "level": "DEBUG"
+      }
+    },
+    "production": {
+      "api": {
+        "debug": false,
+        "workers": 16
+      },
+      "logging": {
+        "level": "WARNING"
+      }
+    }
+  }
+}
