@@ -1,0 +1,17 @@
+# Core dependencies for Authentication & Access Control System
+PyJWT==2.8.0
+bcrypt==4.1.2
+python-dotenv==1.0.0
+
+# Database (optional - can be swapped with other ORMs)
+sqlalchemy==2.0.25
+
+# Testing
+pytest==7.4.4
+pytest-cov==4.1.0
+
+# Type checking
+mypy==1.8.0
+
+# Utilities
+python-dateutil==2.8.2
