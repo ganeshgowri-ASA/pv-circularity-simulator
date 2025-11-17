@@ -1,0 +1,35 @@
+# Core Dependencies
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+python-dateutil>=2.8.2
+
+# Streamlit and UI
+streamlit>=1.29.0
+plotly>=5.18.0
+pandas>=2.1.0
+numpy>=1.24.0
+
+# PDF Generation
+reportlab>=4.0.0
+pypdf2>=3.0.0
+matplotlib>=3.8.0
+
+# CAD Export
+ezdxf>=1.1.0
+
+# Code Compliance Databases
+openpyxl>=3.1.0
+xlsxwriter>=3.1.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+
+# Type Checking
+mypy>=1.7.0
+types-python-dateutil>=2.8.0
+
+# Code Quality
+black>=23.12.0
+ruff>=0.1.8
