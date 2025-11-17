@@ -1,0 +1,47 @@
+# Streamlit Configuration for PV Circularity Simulator
+
+[theme]
+# Primary theme color
+primaryColor = "#FF6B35"
+# Background color
+backgroundColor = "#FFFFFF"
+# Secondary background color
+secondaryBackgroundColor = "#F0F2F6"
+# Text color
+textColor = "#262730"
+# Font family
+font = "sans serif"
+
+[server]
+# Port to run the app on
+port = 8501
+# Enable CORS
+enableCORS = false
+# Enable XSRF protection
+enableXsrfProtection = true
+# Max upload size in MB
+maxUploadSize = 200
+# Enable websocket compression
+enableWebsocketCompression = true
+
+[browser]
+# Gather usage stats
+gatherUsageStats = false
+# Server address
+serverAddress = "localhost"
+
+[runner]
+# Run on save
+magicEnabled = true
+# Fast rerun on script changes
+fastReruns = true
+
+[client]
+# Show error details
+showErrorDetails = true
+# Toolbar mode
+toolbarMode = "auto"
+
+[logger]
+# Logging level
+level = "info"
