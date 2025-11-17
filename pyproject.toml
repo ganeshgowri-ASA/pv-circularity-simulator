@@ -1,0 +1,116 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pv-circularity-simulator"
+version = "0.1.0"
+description = "End-to-end PV lifecycle simulation platform with advanced time-series forecasting"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "PV Circularity Team"}
+]
+keywords = [
+    "photovoltaic",
+    "pv",
+    "solar-energy",
+    "forecasting",
+    "time-series",
+    "machine-learning",
+    "circular-economy",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering",
+]
+
+dependencies = [
+    "numpy>=1.22.0",
+    "pandas>=1.4.0",
+    "scipy>=1.8.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dateutil>=2.8.0",
+    "pytz>=2022.1",
+]
+
+[project.optional-dependencies]
+forecasting = [
+    "statsmodels>=0.14.0",
+    "scikit-learn>=1.2.0",
+    "xgboost>=1.7.0",
+    "lightgbm>=4.0.0",
+    "prophet>=1.1.0",
+    "optuna>=3.0.0",
+]
+
+deep-learning = [
+    "tensorflow>=2.13.0",
+    "keras>=2.13.0",
+]
+
+visualization = [
+    "matplotlib>=3.5.0",
+    "plotly>=5.14.0",
+    "seaborn>=0.12.0",
+    "streamlit>=1.28.0",
+]
+
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "isort>=5.12.0",
+    "jupyterlab>=3.6.0",
+]
+
+all = [
+    "pv-circularity-simulator[forecasting,deep-learning,visualization,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
+Documentation = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator/docs"
+Repository = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pv_simulator*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=src/pv_simulator --cov-report=term-missing --cov-report=html"
