@@ -1,0 +1,105 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pv-circularity-simulator"
+version = "0.1.0"
+description = "PV Circularity Simulator with AI-powered defect detection and intelligent alerting"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "PV Circularity Team"}
+]
+keywords = ["photovoltaic", "solar", "defect-detection", "circularity", "ai", "monitoring"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering",
+]
+
+dependencies = [
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pyyaml>=6.0",
+    "requests>=2.28.0",
+    "opencv-python>=4.8.0",
+    "numpy>=1.24.0",
+    "pillow>=10.0.0",
+    "scikit-image>=0.21.0",
+    "scipy>=1.10.0",
+    "aiohttp>=3.8.0",
+    "httpx>=0.24.0",
+    "python-multipart>=0.0.6",
+]
+
+[project.optional-dependencies]
+roboflow = [
+    "roboflow>=1.1.0",
+]
+notifications = [
+    "twilio>=8.0.0",
+    "sendgrid>=6.10.0",
+    "slack-sdk>=3.21.0",
+]
+database = [
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.11.0",
+]
+api = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.7.0",
+    "isort>=5.12.0",
+    "mypy>=1.4.0",
+    "ruff>=0.0.280",
+]
+all = [
+    "pv-circularity-simulator[roboflow,notifications,database,api]",
+]
+
+[project.urls]
+Homepage = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
+Repository = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
+Issues = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov=src/pv_simulator --cov-report=html --cov-report=term-missing"
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
