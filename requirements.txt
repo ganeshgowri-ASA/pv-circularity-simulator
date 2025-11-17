@@ -1,0 +1,22 @@
+# Core dependencies
+streamlit>=1.31.0
+pydantic>=2.6.0
+pandas>=2.2.0
+numpy>=1.26.0
+
+# PV modeling and thermal calculations
+pvlib>=0.10.3
+
+# Visualization
+plotly>=5.18.0
+matplotlib>=3.8.0
+
+# Scientific computing
+scipy>=1.12.0
+
+# Type checking and validation
+typing-extensions>=4.9.0
+
+# Testing
+pytest>=8.0.0
+pytest-cov>=4.1.0
