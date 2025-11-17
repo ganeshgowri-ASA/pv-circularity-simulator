@@ -1,0 +1,132 @@
+# Monitoring System Configuration
+
+# Real-time monitoring settings
+monitoring:
+  enabled: true
+  update_interval_seconds: 5
+  buffer_size: 1000
+
+  # Data streaming
+  streaming:
+    enabled: true
+    websocket_port: 8765
+    max_connections: 100
+
+# Performance metrics calculation
+performance:
+  # Thresholds
+  thresholds:
+    performance_ratio_min: 0.75
+    capacity_factor_min: 0.15
+    availability_min: 0.95
+
+  # Reference conditions
+  reference:
+    irradiance: 1000  # W/m²
+    temperature: 25   # °C
+    temperature_coefficient: -0.004  # per °C
+
+  # Calculation intervals
+  calculation_intervals:
+    instantaneous: 5     # seconds
+    hourly: 3600        # seconds
+    daily: 86400        # seconds
+
+# Alert engine configuration
+alerts:
+  enabled: true
+  check_interval_seconds: 30
+
+  # Alert thresholds
+  thresholds:
+    underperformance_percent: 15.0
+    offline_timeout_seconds: 300
+    high_temperature_celsius: 85
+    low_efficiency: 0.85
+
+    # Grid parameters
+    voltage_min: 180  # V
+    voltage_max: 260  # V
+    frequency_min: 49  # Hz
+    frequency_max: 51  # Hz
+
+  # Notification settings
+  notifications:
+    email:
+      enabled: false
+      smtp_server: "smtp.example.com"
+      smtp_port: 587
+      recipients:
+        - "admin@example.com"
+
+    webhook:
+      enabled: false
+      url: "https://example.com/webhook/alerts"
+
+    console:
+      enabled: true
+
+# Data aggregation
+aggregation:
+  # Multi-site aggregation
+  multi_site:
+    enabled: true
+    method: "sum"  # sum, mean, max, min
+
+  # Timestamp alignment
+  alignment:
+    enabled: true
+    interval_seconds: 60
+    method: "mean"  # mean, sum, max, min, last
+
+  # Data normalization
+  normalization:
+    enabled: true
+    normalize_units: true
+    fill_missing: true
+
+# Data retention
+retention:
+  raw_data_days: 365
+  aggregated_data_days: 1825  # 5 years
+  alert_history_days: 180
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "json"  # json, console
+  file: "logs/monitoring.log"
+  max_size_mb: 10
+  backup_count: 5
+
+# Database
+database:
+  # TimescaleDB for time-series data
+  timescale:
+    enabled: true
+    host: "localhost"
+    port: 5432
+    database: "pv_monitoring"
+    user: "pv_user"
+    pool_size: 20
+
+  # InfluxDB alternative
+  influxdb:
+    enabled: false
+    url: "http://localhost:8086"
+    org: "pv_circularity"
+    bucket: "monitoring_data"
+
+# API Server
+api:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  cors_origins:
+    - "*"
+
+# Prometheus metrics
+prometheus:
+  enabled: true
+  port: 9090
