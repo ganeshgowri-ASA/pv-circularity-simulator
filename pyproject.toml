@@ -1,17 +1,18 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=65.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pv-circularity-simulator"
 version = "0.1.0"
-description = "End-to-end PV lifecycle simulation platform with advanced visualization capabilities"
-authors = [
-    {name = "ganeshgowri-ASA"}
-]
-license = {text = "MIT"}
+description = "PV Circularity Simulator with AI-powered defect detection and intelligent alerting"
 readme = "README.md"
 requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "PV Circularity Team"}
+]
+keywords = ["photovoltaic", "solar", "defect-detection", "circularity", "ai", "monitoring"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -20,38 +21,58 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Scientific/Engineering",
 ]
 
 dependencies = [
-    "plotly>=5.18.0",
-    "altair>=5.2.0",
-    "pandas>=2.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pyyaml>=6.0",
+    "requests>=2.28.0",
+    "opencv-python>=4.8.0",
     "numpy>=1.24.0",
-    "kaleido>=0.2.1",  # For static image export
-    "vega-datasets>=0.9.0",  # For Altair examples
-    "pillow>=10.0.0",  # Image processing
+    "pillow>=10.0.0",
+    "scikit-image>=0.21.0",
+    "scipy>=1.10.0",
+    "aiohttp>=3.8.0",
+    "httpx>=0.24.0",
+    "python-multipart>=0.0.6",
 ]
 
 [project.optional-dependencies]
+roboflow = [
+    "roboflow>=1.1.0",
+]
+notifications = [
+    "twilio>=8.0.0",
+    "sendgrid>=6.10.0",
+    "slack-sdk>=3.21.0",
+]
+database = [
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.11.0",
+]
+api = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
-    "pytest-mock>=3.12.0",
-    "ruff>=0.1.0",
-    "mypy>=1.7.0",
-    "black>=23.11.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.7.0",
+    "isort>=5.12.0",
+    "mypy>=1.4.0",
+    "ruff>=0.0.280",
 ]
-docs = [
-    "sphinx>=7.2.0",
-    "sphinx-rtd-theme>=2.0.0",
-    "sphinx-autodoc-typehints>=1.25.0",
+all = [
+    "pv-circularity-simulator[roboflow,notifications,database,api]",
 ]
 
 [project.urls]
 Homepage = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
 Repository = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
+Issues = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -61,27 +82,24 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --cov=src/pv_circularity --cov-report=html --cov-report=term-missing"
+addopts = "--cov=src/pv_simulator --cov-report=html --cov-report=term-missing"
 
-[tool.ruff]
+[tool.black]
 line-length = 100
-target-version = "py39"
-select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "PT"]
-ignore = ["E501"]  # Line too long (handled by formatter)
+target-version = ['py39']
+include = '\.pyi?$'
 
-[tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]  # Unused imports in __init__.py
+[tool.isort]
+profile = "black"
+line_length = 100
 
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-no_implicit_optional = true
 
-[tool.black]
+[tool.ruff]
 line-length = 100
-target-version = ['py39', 'py310', 'py311', 'py312']
-include = '\.pyi?$'
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]

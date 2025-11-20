@@ -1,63 +1,72 @@
 # PV Circularity Simulator
 
-[![Python Version](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, circular economy modeling, **AI-powered defect detection**, and **intelligent alerting system**.
 
-End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
+## 🚀 Features
 
-### 📊 Comprehensive Data Visualization Library
+### 🔬 AI-Powered Defect Detection (BATCH6-B08-S01)
 
-A production-ready visualization library specifically designed for photovoltaic system analysis:
+Production-ready defect detection system using Roboflow AI and computer vision:
 
-- **Chart Templates**: Pre-configured charts optimized for PV data
-  - Time series analysis
-  - Bar charts and comparisons
-  - Scatter plots with trendlines
-  - Heatmaps for multi-dimensional data
-  - Pie/donut charts for distributions
-  - Multi-axis charts for correlated metrics
-  - Dashboard grids for comprehensive monitoring
+- **RoboflowIntegrator**: AI-powered defect detection
+  - `model_deployment()`: Deploy and manage Roboflow models
+  - `image_preprocessing()`: Advanced image preprocessing pipeline
+  - `batch_inference()`: High-throughput batch processing
+  - `real_time_detection()`: Low-latency real-time detection
 
-- **Interactive Plots**: Advanced interactivity features
-  - Interactive time series with range selectors
-  - Cross-filtering dashboards
-  - Drill-down capabilities
-  - Animated visualizations
-  - Linked brushing for multi-view analysis
-  - Real-time plot configurations
+- **DefectClassifier**: Specialized defect classification
+  - `crack_detection()`: Micro-crack and cell breakage detection
+  - `hotspot_identification()`: Thermal hotspot analysis
+  - `delamination_detection()`: Layer separation detection
+  - `soiling_analysis()`: Dirt and debris detection
+  - `pid_detection()`: Potential-Induced Degradation (PID) analysis
 
-- **Export Functionality**: Multi-format export support
-  - Static images (PNG, JPEG, SVG, PDF)
-  - Interactive HTML
-  - JSON data export
-  - Multi-figure batch export
-  - Image grid creation
-  - Data + visualization bundles
+- **ImageProcessing**: Multi-modal image analysis
+  - `el_image_analysis()`: Electroluminescence imaging
+  - `thermal_image_processing()`: Thermal/infrared analysis
+  - `rgb_analysis()`: Visual inspection and soiling detection
 
-- **Custom Themes**: Professional theming system
-  - 6 pre-defined themes (Solar, Circularity, Performance, Technical, Dark, Default)
-  - Custom theme creation
-  - Plotly and Altair integration
-  - Color palette management
-  - Consistent styling across visualizations
+- **DefectReporting**: Comprehensive reporting system
+  - `severity_classification()`: AI-powered severity assessment
+  - `location_mapping()`: GPS and grid-based location tracking
+  - `repair_recommendations()`: Automated repair planning with cost estimates
 
-- **PV-Specific Components**: Specialized visualizations
-  - I-V and P-V curve plotting
-  - Efficiency heatmaps
-  - Degradation trend analysis
-  - Material flow Sankey diagrams
-  - Energy balance visualizations
+**Technologies**: Roboflow API, OpenCV, scikit-image, Pydantic, asyncio
 
-## Installation
+### 🔔 Alerts & Notifications System (BATCH5-B07-S04)
 
-### Prerequisites
+Production-ready intelligent alerting with multi-channel notifications:
 
-- Python 3.9 or higher
-- pip or poetry for package management
+- **AlertManager**: Intelligent alert orchestration
+  - `rule_engine()`: Custom rule-based alert triggering
+  - `threshold_monitoring()`: Real-time threshold monitoring
+  - `anomaly_detection()`: Statistical anomaly detection (Z-score, IQR)
+  - `escalation_workflows()`: Multi-level escalation automation
 
-### Basic Installation
+- **NotificationChannels**: Multi-channel delivery
+  - `email_alerts()`: SMTP and SendGrid integration
+  - `sms_notifications()`: Twilio SMS delivery
+  - `slack_webhooks()`: Slack workspace integration
+  - `mobile_push()`: Push notification support (placeholder)
+
+- **AlertHistory**: Comprehensive tracking
+  - `alert_log()`: Persistent alert logging (SQLite)
+  - `acknowledgment_tracking()`: User acknowledgment tracking
+  - `resolution_tracking()`: Issue resolution workflow
+
+**Technologies**: Twilio, SendGrid, Slack SDK, SQLite, asyncio
+
+## 📦 Installation
+
+### Requirements
+
+- Python 3.9+
+- pip or poetry
+
+### Quick Start
 
 ```bash
 # Clone the repository
@@ -65,247 +74,368 @@ git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
 cd pv-circularity-simulator
 
 # Install dependencies
-pip install -e .
+pip install -r requirements.txt
+
+# Or install with optional features
+pip install -e ".[all]"
+
+# Copy environment configuration
+cp .env.example .env
+
+# Edit .env with your API keys
+nano .env
 ```
 
-### Development Installation
+### Optional Dependencies
 
 ```bash
-# Install with development dependencies
-pip install -e ".[dev]"
+# Defect detection only
+pip install -e ".[roboflow]"
 
-# Or with all extras
-pip install -e ".[dev,docs]"
+# Notifications only
+pip install -e ".[notifications]"
+
+# Database support
+pip install -e ".[database]"
+
+# Development tools
+pip install -r requirements-dev.txt
 ```
 
-## Quick Start
+## 🔧 Configuration
 
-### Basic Usage
-
-```python
-from pv_circularity.visualization import VisualizationLib
-import pandas as pd
-import numpy as np
-
-# Initialize the visualization library
-viz = VisualizationLib(default_theme='solar')
-
-# Create sample data
-df = pd.DataFrame({
-    'date': pd.date_range('2024-01-01', periods=100),
-    'power': np.random.rand(100) * 1000
-})
-
-# Create a time series chart
-fig = viz.templates.time_series(
-    df, 'date', 'power',
-    title='PV Power Output'
-)
-
-# Export the chart
-viz.export(fig, 'output.png', width=1600, height=900)
-```
-
-### Using Chart Templates
-
-```python
-from pv_circularity.visualization import chart_templates
-
-templates = chart_templates()
-
-# Bar chart
-fig1 = templates.bar_chart(df, 'category', 'value')
-
-# Scatter plot with trendline
-fig2 = templates.scatter_plot(df, 'x', 'y', trendline=True)
-
-# Heatmap
-fig3 = templates.heatmap(matrix_data, title='Efficiency Map')
-```
-
-### Interactive Visualizations
-
-```python
-from pv_circularity.visualization import interactive_plots
-
-interactive = interactive_plots()
-
-# Interactive time series with range controls
-fig = interactive.create_interactive_timeseries(
-    df, 'date', 'power',
-    enable_rangeslider=True,
-    enable_rangeselector=True
-)
-
-# Animated scatter plot
-fig_animated = interactive.create_animated_scatter(
-    df, 'x', 'y', animation_frame='year'
-)
-```
-
-### Custom Themes
-
-```python
-from pv_circularity.visualization import custom_themes
-
-themes = custom_themes()
-
-# List available themes
-print(themes.list_themes())
-# ['default', 'solar', 'circularity', 'performance', 'technical', 'dark']
-
-# Set active theme
-themes.set_theme('solar')
-
-# Create custom theme
-themes.create_custom_theme(
-    name='corporate',
-    primary='#003366',
-    secondary='#66B2FF',
-    accent='#FFD700'
-)
-```
-
-### PV-Specific Components
-
-```python
-from pv_circularity.visualization.components import (
-    IVCurveVisualizer,
-    EfficiencyHeatmap,
-    DegradationAnalyzer,
-    SankeyFlowDiagram
-)
-
-# I-V curve visualization
-iv_viz = IVCurveVisualizer()
-fig = iv_viz.plot_iv_curve(voltage, current, voc=40, isc=8.5)
-
-# Degradation analysis
-deg_analyzer = DegradationAnalyzer()
-fig = deg_analyzer.plot_degradation_trend(
-    years, performance_ratio,
-    calculate_rate=True,
-    add_forecast=True
-)
-
-# Material flow diagram
-sankey = SankeyFlowDiagram()
-fig = sankey.create_material_flow(sources, targets, values)
-```
-
-## Examples
-
-Comprehensive examples are available in the `examples/` directory:
-
-- **basic_usage.py**: Fundamental visualization patterns
-- **advanced_usage.py**: Advanced features and specialized components
-
-Run examples:
+Configuration is managed through environment variables and `.env` file:
 
 ```bash
-python examples/basic_usage.py
-python examples/advanced_usage.py
+# Roboflow AI Configuration
+ROBOFLOW_API_KEY=your_api_key_here
+ROBOFLOW_WORKSPACE=your_workspace
+ROBOFLOW_PROJECT=pv-defect-detection
+ROBOFLOW_MODEL_VERSION=1
+
+# Email Alerts (SMTP)
+SMTP_ENABLED=true
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+SMTP_FROM_EMAIL=alerts@pv-simulator.com
+
+# Twilio SMS
+TWILIO_ENABLED=false
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_FROM_NUMBER=+1234567890
+
+# Slack Webhooks
+SLACK_ENABLED=false
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+
+# Alert Configuration
+ALERT_ENABLED=true
+ALERT_MIN_SEVERITY=WARNING
+MONITORING_ENABLED=true
 ```
 
-## Testing
+## 💻 Usage Examples
 
-Run the test suite:
+### Defect Detection
+
+```python
+from pv_simulator.monitoring import (
+    RoboflowIntegrator,
+    DefectClassifier,
+    ImageProcessing,
+    DefectReporting
+)
+
+# Initialize components
+roboflow = RoboflowIntegrator()
+classifier = DefectClassifier(roboflow)
+processor = ImageProcessing()
+reporter = DefectReporting()
+
+# Analyze EL image for defects
+el_results = processor.el_image_analysis("panel_el.jpg", segment_cells=True)
+print(f"Quality score: {el_results['metadata'].quality_score:.2f}")
+print(f"Found {len(el_results['cells'])} cells")
+
+# Detect cracks using AI
+cracks = classifier.crack_detection("panel.jpg", use_ai=True)
+for crack in cracks:
+    print(f"Crack detected: severity={crack.severity.value}, "
+          f"confidence={crack.confidence:.2f}")
+
+# Detect hotspots in thermal image
+hotspots = classifier.hotspot_identification("thermal.jpg", threshold_celsius=85)
+print(f"Found {len(hotspots)} hotspots")
+
+# Generate comprehensive defect report
+if cracks:
+    report = reporter.generate_report(
+        cracks[0],
+        panel_id="PNL-001",
+        array_position=(5, 10),
+        gps_coords=(37.7749, -122.4194),
+        context={"panel_age_years": 10, "high_humidity": True}
+    )
+    print(f"Report ID: {report.report_id}")
+    print(f"Repair priority: {report.recommendation.priority.value}")
+    print(f"Estimated cost: ${report.recommendation.estimated_cost:.2f}")
+    print(f"Estimated time: {report.recommendation.estimated_time:.1f} hours")
+```
+
+### Thermal Analysis
+
+```python
+from pv_simulator.monitoring import ImageProcessing
+
+processor = ImageProcessing()
+
+# Process thermal image
+thermal_result = processor.thermal_image_processing(
+    "thermal_panel.jpg",
+    temp_min=0,
+    temp_max=120
+)
+
+print(f"Temperature range: {thermal_result.min_temp:.1f}°C - {thermal_result.max_temp:.1f}°C")
+print(f"Average temperature: {thermal_result.mean_temp:.1f}°C")
+print(f"Hotspots detected: {thermal_result.hotspot_count}")
+```
+
+### Alert Management
+
+```python
+from pv_simulator.alerts import (
+    AlertManager,
+    AlertRule,
+    NotificationChannels,
+    AlertHistory
+)
+from pv_simulator.config import AlertSeverity
+
+# Initialize alert system
+manager = AlertManager()
+notifier = NotificationChannels()
+history = AlertHistory()
+
+# Register alert handler
+def handle_alert(alert):
+    """Custom alert handler."""
+    print(f"Alert: {alert.title} - {alert.severity.value}")
+
+    # Log to history
+    history.alert_log(alert)
+
+    # Send notifications
+    if alert.severity in [AlertSeverity.CRITICAL, AlertSeverity.EMERGENCY]:
+        notifier.send_multi_channel(
+            alert.title,
+            alert.message,
+            channels=["email", "sms", "slack"],
+            severity=alert.severity.value,
+            metadata=alert.context
+        )
+
+manager.register_handler(handle_alert)
+
+# Create threshold rule
+manager.threshold_monitoring(
+    "panel_efficiency",
+    "<",
+    0.15,
+    severity=AlertSeverity.HIGH,
+    window_size=3
+)
+
+# Create custom rule
+rule = AlertRule(
+    name="Critical Temperature",
+    description="Panel temperature exceeds safe limits",
+    condition=lambda ctx: ctx.get("temperature", 0) > 90,
+    severity=AlertSeverity.CRITICAL
+)
+manager.rule_engine(rule)
+
+# Enable anomaly detection
+manager.anomaly_detection(
+    "power_output",
+    method="zscore",
+    sensitivity=0.95
+)
+
+# Check metrics
+metrics = {
+    "panel_efficiency": 0.14,
+    "temperature": 92,
+    "power_output": 245
+}
+alerts = manager.check_thresholds(metrics)
+alerts += manager.check_anomalies(metrics)
+alerts += manager.evaluate_rules(metrics)
+
+print(f"Triggered {len(alerts)} alerts")
+```
+
+### Escalation Workflows
+
+```python
+from pv_simulator.alerts import AlertManager, EscalationLevel
+from pv_simulator.config import AlertSeverity
+
+manager = AlertManager()
+
+# Configure multi-level escalation
+manager.escalation_workflows([
+    EscalationLevel(
+        level=1,
+        delay_seconds=300,  # 5 minutes
+        severity_threshold=AlertSeverity.WARNING,
+        notification_channels=["email"]
+    ),
+    EscalationLevel(
+        level=2,
+        delay_seconds=600,  # 10 minutes
+        severity_threshold=AlertSeverity.HIGH,
+        notification_channels=["email", "sms"]
+    ),
+    EscalationLevel(
+        level=3,
+        delay_seconds=900,  # 15 minutes
+        severity_threshold=AlertSeverity.CRITICAL,
+        notification_channels=["email", "sms", "slack"]
+    )
+])
+
+# Trigger critical alert
+alert = manager.trigger_alert(
+    "Panel Failure Detected",
+    "Critical crack detected in panel PNL-123",
+    AlertSeverity.CRITICAL,
+    source="defect_detector",
+    context={"panel_id": "PNL-123", "defect_type": "crack"}
+)
+# Escalation will automatically occur if not acknowledged
+```
+
+### Alert History and Analytics
+
+```python
+from pv_simulator.alerts import AlertHistory
+from datetime import datetime, timedelta
+
+history = AlertHistory()
+
+# Acknowledge alert
+history.acknowledgment_tracking(
+    "alert-123",
+    acknowledged_by="operator@example.com",
+    notes="Investigating panel"
+)
+
+# Resolve alert
+history.resolution_tracking(
+    "alert-123",
+    resolved_by="technician@example.com",
+    resolution_method="Panel replaced",
+    resolution_notes="Replaced panel PNL-123 with new unit"
+)
+
+# Get statistics
+stats = history.get_statistics(
+    start_time=datetime.utcnow() - timedelta(days=30)
+)
+
+print(f"Total alerts (30 days): {stats.total_alerts}")
+print(f"Critical alerts: {stats.alerts_by_severity.get('CRITICAL', 0)}")
+print(f"Resolved: {stats.resolved_count}")
+print(f"Average time to acknowledge: {stats.average_time_to_acknowledge:.1f}s")
+print(f"Average time to resolve: {stats.average_time_to_resolve:.1f}s")
+
+# Get unresolved critical alerts
+critical_alerts = history.get_alerts(
+    severity=AlertSeverity.CRITICAL,
+    resolved=False,
+    limit=50
+)
+print(f"Unresolved critical alerts: {len(critical_alerts)}")
+```
+
+## 🧪 Testing
 
 ```bash
 # Run all tests
 pytest
 
 # Run with coverage
-pytest --cov=src/pv_circularity --cov-report=html
+pytest --cov=src/pv_simulator --cov-report=html
 
 # Run specific test file
-pytest tests/test_visualization/test_core.py
+pytest tests/unit/test_alert_manager.py
+
+# Run with verbose output
+pytest -v
 ```
 
-## Documentation
-
-### API Reference
-
-The visualization library provides four main interfaces:
-
-1. **VisualizationLib**: Main integrated interface
-2. **chart_templates()**: Pre-configured chart templates
-3. **interactive_plots()**: Interactive visualization components
-4. **export_functionality()**: Multi-format export capabilities
-5. **custom_themes()**: Theme management and customization
-
-### Available Themes
-
-- **solar**: Optimized for solar energy data (orange/blue palette)
-- **circularity**: For lifecycle and circular economy (green/blue palette)
-- **performance**: For monitoring and analytics (purple/teal palette)
-- **technical**: For engineering analysis (dark gray/cyan palette)
-- **dark**: For dark mode interfaces (cyan/pink palette)
-- **default**: Clean and professional (matplotlib-inspired palette)
-
-### Export Formats
-
-- **PNG**: High-quality raster images
-- **JPEG**: Compressed raster images
-- **SVG**: Scalable vector graphics
-- **PDF**: Print-ready documents
-- **HTML**: Interactive web visualizations
-- **JSON**: Chart data and configuration
-
-## Project Structure
+## 📊 Architecture
 
 ```
 pv-circularity-simulator/
-├── src/
-│   └── pv_circularity/
-│       ├── __init__.py
-│       └── visualization/          # Visualization library
-│           ├── __init__.py
-│           ├── core.py             # Main VisualizationLib class
-│           ├── templates.py        # Chart templates
-│           ├── interactive.py      # Interactive plots
-│           ├── exports.py          # Export functionality
-│           ├── themes.py           # Theme management
-│           └── components/         # PV-specific components
-│               ├── __init__.py
-│               └── pv_specific.py
-├── tests/
-│   └── test_visualization/
-│       ├── test_core.py
-│       ├── test_themes.py
-│       └── test_templates.py
-├── examples/
-│   ├── basic_usage.py
-│   └── advanced_usage.py
-├── pyproject.toml
-├── LICENSE
-└── README.md
+├── src/pv_simulator/
+│   ├── config/              # Configuration management
+│   │   └── settings.py      # Pydantic settings
+│   ├── monitoring/          # Defect detection
+│   │   └── detectors/
+│   │       ├── roboflow_integrator.py    # AI integration
+│   │       ├── defect_classifier.py      # Defect classification
+│   │       ├── image_processing.py       # Image analysis
+│   │       └── defect_reporting.py       # Reporting system
+│   └── alerts/              # Alert & notification system
+│       ├── manager.py       # Alert orchestration
+│       ├── history.py       # Tracking & analytics
+│       └── handlers/
+│           └── notification_channels.py  # Multi-channel delivery
+├── tests/                   # Test suite
+│   ├── unit/               # Unit tests
+│   └── integration/        # Integration tests
+└── docs/                   # Documentation
+
 ```
 
-## Dependencies
+## 🔑 Key Technologies
 
-Core dependencies:
-- plotly >= 5.18.0
-- altair >= 5.2.0
-- pandas >= 2.0.0
-- numpy >= 1.24.0
-- kaleido >= 0.2.1
-- pillow >= 10.0.0
+- **AI/ML**: Roboflow API, OpenCV, scikit-image
+- **Configuration**: Pydantic v2, pydantic-settings
+- **Notifications**: Twilio (SMS), SendGrid (Email), Slack SDK
+- **Database**: SQLite (expandable to PostgreSQL)
+- **Async**: asyncio, aiohttp
+- **Testing**: pytest, pytest-cov, pytest-asyncio
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-- Built with Plotly and Altair visualization libraries
-- Designed for photovoltaic system lifecycle analysis
-- Optimized for circular economy modeling
+- Roboflow for AI-powered defect detection
+- OpenCV community for computer vision tools
+- Twilio, SendGrid, and Slack for notification services
 
-## Contact
+## 📧 Contact
 
-For questions or feedback, please open an issue on GitHub.
+For questions or support, please open an issue on GitHub.
+
+---
+
+**Status**: Production-ready ✅
+**Version**: 0.1.0
+**Last Updated**: 2025-11-17
