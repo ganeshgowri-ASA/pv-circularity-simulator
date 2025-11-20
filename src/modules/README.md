@@ -1,317 +1,329 @@
-# BOM Generator & Cost Calculator
+# Module Configuration Builder
 
-Production-ready Bill of Materials (BOM) generator and cost calculator for photovoltaic module manufacturing.
+Comprehensive PV module design, configuration, and analysis tools.
 
 ## Features
 
-### Core Functionality
-- **BOM Generation**: Automatically generate comprehensive BOMs from module design specifications
-- **Cost Calculation**: Calculate material costs with waste factors and volume-based pricing tiers
-- **Multi-Currency Support**: Handle multiple currencies with automatic conversion
-- **Supplier Comparison**: Compare pricing across multiple suppliers
-- **Cost Optimization**: Identify cost-saving opportunities through alternative materials
-- **Budget Analysis**: Track budget vs actual costs with variance reporting
-- **Export Capabilities**: Export BOMs to CSV, Excel, and JSON formats
+### 1. Module Layout Configurations
 
-### Cost Components
-- Material costs per unit with quantity-based pricing tiers
-- Waste factors (configurable per material, default 5-10%)
-- Manufacturing overhead (configurable, default 15%)
-- Transportation costs per unit
-- Currency conversion support
+Support for all modern module architectures:
 
-### BOM Structure
+- **Standard**: Traditional full-cell modules (60, 72, 120, 132, 144 cells)
+- **Half-Cut**: Reduced resistive losses with 2 sub-modules
+- **Quarter-Cut**: 4 sub-modules for even better performance
+- **Shingled**: Overlapping cells, no gaps, maximum efficiency
+- **IBC (Interdigitated Back Contact)**: No visible busbars
+- **Bifacial**: Glass-glass construction with rear power generation
 
-The generator creates comprehensive BOMs including:
+### 2. Cell Technologies
 
-#### Cell Components
-- Silicon wafer
-- Emitter layer (phosphorus)
-- BSF (Back Surface Field) layer (aluminum)
-- Anti-reflective coating (silicon nitride)
-- Front metallization (silver)
-- Back metallization (aluminum)
+Built-in support for:
 
-#### Module Components
-- Front glass (tempered, 3.2mm)
-- Encapsulant (EVA/POE, top and bottom layers)
-- Backsheet (weatherproof)
-- Frame (anodized aluminum)
-- Junction box (with bypass diodes)
+- Mono PERC
+- Mono TOPCon
+- Mono HJT (Heterojunction)
+- Mono IBC
+- Multi-Si
+- Perovskite
+- Tandem cells
 
-#### Interconnect Materials
-- Tabbing ribbon (tinned copper)
-- Bus ribbon
-- Solder (SnPb or lead-free)
-- Soldering flux
+### 3. Module Specifications Calculator
 
-#### Adhesives and Sealants
-- Edge sealant (silicone)
-- Junction box adhesive
+Calculates complete electrical and thermal specifications:
 
-## Installation
+- **Power**: Pmax, Voc, Isc, Vmpp, Impp at STC
+- **Temperature Coefficients**: Pmax, Voc, Isc, Vmpp, Impp
+- **Thermal**: NOCT calculation
+- **Efficiency**: Module efficiency with CTM losses
+- **Fill Factor**: Automatic calculation
+- **CTM Losses**: Cell-to-Module loss breakdown
+  - Resistance losses
+  - Reflection losses
+  - Mismatch losses
+  - Inactive area losses
 
-```bash
-pip install -e .
-```
+### 4. PVsyst PAN File Generator
+
+Generate industry-standard PVsyst PAN files with:
+
+- Complete electrical parameters
+- Mechanical specifications
+- Temperature behavior
+- Low irradiance performance
+- IAM (Incidence Angle Modifier) curves
+- Bifacial parameters (when applicable)
+
+### 5. Design Validation
+
+Comprehensive validation against industry standards:
+
+- Electrical parameter ranges
+- Thermal characteristics
+- Mechanical specifications
+- Layout configuration checks
+- Safety requirements
+- Performance metrics
+
+### 6. Layout Optimization
+
+Intelligent optimization for different objectives:
+
+- **Efficiency**: Maximize module efficiency
+- **Cost**: Minimize cost per watt
+- **Performance**: Balanced optimization
+
+Considers:
+- Target power output
+- Voltage and current constraints
+- Physical size limitations
+- Cost factors
+
+### 7. Export Capabilities
+
+Export to multiple formats:
+
+- **JSON**: Complete configuration and specifications
+- **CSV**: Batch comparison of multiple modules
+- **PAN**: PVsyst simulation files
 
 ## Quick Start
 
+### Basic Module Creation
+
 ```python
-from src.modules.bom_generator import BOMGenerator
-from src.modules.models import Material, ModuleDesign, ComponentCategory, Currency
-from decimal import Decimal
-
-# 1. Create materials database
-materials = [
-    Material(
-        id="MAT-WAFER-001",
-        name="Silicon Wafer",
-        category=ComponentCategory.CELL,
-        supplier="SolarTech Inc.",
-        unit="pieces",
-        base_price=Decimal("5.50"),
-        currency=Currency.USD,
-        waste_factor=0.05,
-    ),
-    # ... add more materials
-]
-
-# 2. Initialize generator
-generator = BOMGenerator(
-    materials=materials,
-    manufacturing_overhead_rate=0.15
+from src.modules import (
+    CellType,
+    LayoutType,
+    CellDesign,
+    ModuleConfigBuilder
 )
 
-# 3. Define module design
-module_design = ModuleDesign(
-    module_id="MOD-400W",
-    module_type="mono-Si",
-    power_rating=400.0,
-    efficiency=20.5,
-    dimensions={"length": 1640, "width": 990, "thickness": 35},
-    num_cells=60,
-    cell_size=156.75,
+# Create a cell design
+cell = CellDesign(
+    cell_type=CellType.MONO_PERC,
+    efficiency=0.225,
+    area=0.0244,  # 156mm x 156mm M6 cell
+    voltage_oc=0.68,
+    current_sc=10.3,
+    voltage_mpp=0.58,
+    current_mpp=9.8,
+    temp_coeff_voc=-0.28,
+    temp_coeff_isc=0.05,
+    temp_coeff_pmax=-0.35,
+    series_resistance=0.005,
+    shunt_resistance=500,
+    ideality_factor=1.2,
+    busbar_count=9
 )
 
-# 4. Generate BOM
-bom = generator.generate_bom(module_design)
+# Create module builder
+builder = ModuleConfigBuilder()
 
-# 5. Calculate costs
-result = generator.calculate_material_costs(bom)
-total_cost = generator.calculate_module_cost(result)
+# Define layout
+layout = {
+    'layout_type': LayoutType.HALF_CUT,
+    'cells_series': 120,
+    'cells_parallel': 2,
+    'submodules': 2,
+    'bypass_diodes': 3
+}
 
-print(f"Total module cost: ${total_cost:,.2f}")
+# Create module configuration
+module = builder.create_module_config(
+    cell_design=cell,
+    layout=layout,
+    name="My 450W Module",
+    manufacturer="My Solar Company"
+)
 
-# 6. Export BOM
-generator.export_bom(result['bom_with_costs'], format="excel")
+# Calculate specifications
+specs = builder.calculate_module_specs(module)
+print(f"Module Power: {specs.pmax:.1f} W")
+print(f"Efficiency: {specs.efficiency*100:.2f}%")
 ```
 
-## Advanced Usage
-
-### Volume-Based Pricing Tiers
+### Using Standard Module Templates
 
 ```python
-from src.modules.models import MaterialWithTiers, PricingTier
+from src.modules import create_standard_module, CellType, LayoutType
 
-material = MaterialWithTiers(
-    id="MAT-GLASS-001",
-    name="Front Glass",
-    category=ComponentCategory.MODULE,
-    supplier="GlassCo",
-    unit="m2",
-    base_price=Decimal("18.00"),
-    pricing_tiers=[
-        PricingTier(
-            min_quantity=Decimal("0"),
-            max_quantity=Decimal("100"),
-            unit_price=Decimal("18.00"),
-            discount_percentage=0
-        ),
-        PricingTier(
-            min_quantity=Decimal("100"),
-            max_quantity=Decimal("500"),
-            unit_price=Decimal("16.20"),
-            discount_percentage=10
-        ),
-        PricingTier(
-            min_quantity=Decimal("500"),
-            max_quantity=None,  # Unlimited
-            unit_price=Decimal("14.40"),
-            discount_percentage=20
-        ),
-    ]
+# Quick creation of standard modules
+module = create_standard_module(
+    power_class=450,  # Target power in watts
+    cell_type=CellType.MONO_PERC,
+    layout_type=LayoutType.HALF_CUT,
+    manufacturer="Solar Inc."
 )
 ```
 
-### Multi-Currency Support
+### Generate PVsyst PAN File
 
 ```python
-from src.modules.models import CurrencyExchangeRate
+# Generate PAN file
+pan_content = builder.generate_pvsyst_pan_file(module)
 
-# Add exchange rates
-generator.add_exchange_rate(
-    CurrencyExchangeRate(
-        from_currency=Currency.USD,
-        to_currency=Currency.EUR,
-        rate=Decimal("0.92")
-    )
-)
+# Save to file
+with open('my_module.PAN', 'w') as f:
+    f.write(pan_content)
+```
 
-# Convert amounts
-eur_amount = generator.convert_currency(
-    Decimal("100.00"),
-    Currency.USD,
-    Currency.EUR
+### Validate Design
+
+```python
+# Validate module design
+report = builder.validate_module_design(module)
+
+if report.is_valid:
+    print("Design is valid!")
+else:
+    print(f"Design has {report.error_count} errors")
+    for issue in report.issues:
+        print(f"  {issue.level}: {issue.message}")
+```
+
+### Optimize Layout
+
+```python
+# Optimize layout for specific constraints
+constraints = {
+    'target_power': 550,
+    'max_voltage': 50,
+    'max_current': 15,
+    'optimize_for': 'efficiency',  # or 'cost', 'performance'
+    'allow_half_cut': True,
+    'allow_shingled': True
+}
+
+optimal = builder.optimize_cell_layout(cell, constraints)
+print(f"Optimal: {optimal.layout.layout_type.value}")
+print(f"Cells: {optimal.layout.total_cells}")
+print(f"Efficiency gain: {optimal.efficiency_gain:.2f}%")
+```
+
+### Export to JSON/CSV
+
+```python
+# Export single module to JSON
+json_str = builder.export_to_json(module, include_specs=True)
+
+# Export multiple modules to CSV for comparison
+modules = [module1, module2, module3]
+csv_str = builder.export_to_csv(modules, filepath="comparison.csv")
+```
+
+## Advanced Features
+
+### Multi-Busbar (MBB) Support
+
+```python
+cell = CellDesign(
+    # ... other parameters ...
+    busbar_count=9  # or 12, 16 for advanced MBB
 )
 ```
 
-### Supplier Comparison
+### Bifacial Modules
 
 ```python
-# Compare suppliers for a material
-comparison = generator.compare_suppliers("Silicon Wafer")
+cell = CellDesign(
+    # ... other parameters ...
+    is_bifacial=True,
+    bifacial_factor=0.75  # 75% rear/front ratio
+)
 
-print(f"Recommended supplier: {comparison.recommended_supplier}")
-print(f"Potential savings: ${comparison.potential_savings}")
-for supplier, price in comparison.suppliers.items():
-    print(f"  {supplier}: ${price}")
+module = builder.create_module_config(
+    cell_design=cell,
+    layout=layout,
+    glass_thickness_rear=2.0  # Required for bifacial
+)
 ```
 
-### BOM Optimization
+### CTM Loss Analysis
 
 ```python
-# Optimize BOM to reduce costs
-optimized_bom = generator.optimize_bom_cost(bom)
-
-# Compare original vs optimized
-original_cost = generator.calculate_module_cost(
-    generator.calculate_material_costs(bom)
-)
-optimized_cost = generator.calculate_module_cost(
-    generator.calculate_material_costs(optimized_bom)
-)
-
-savings = original_cost - optimized_cost
-print(f"Cost savings: ${savings:,.2f}")
+specs = builder.calculate_module_specs(module)
+print(f"Resistance loss: {specs.ctm_loss_resistance:.1f}%")
+print(f"Reflection loss: {specs.ctm_loss_reflection:.1f}%")
+print(f"Mismatch loss: {specs.ctm_loss_mismatch:.1f}%")
+print(f"Inactive area loss: {specs.ctm_loss_inactive:.1f}%")
+print(f"Total CTM loss: {specs.ctm_total_loss:.1f}%")
 ```
-
-### Budget Analysis
-
-```python
-# Analyze budget variance
-analysis = generator.analyze_budget(
-    budgeted_cost=150.00,
-    actual_cost=total_cost
-)
-
-print(f"Variance: ${analysis.variance} ({analysis.variance_percentage:.1f}%)")
-print(f"Over budget: {analysis.over_budget}")
-```
-
-## API Reference
-
-### BOMGenerator Class
-
-#### Methods
-
-- **`__init__(materials, manufacturing_overhead_rate=0.15, default_currency=Currency.USD)`**
-  - Initialize the BOM generator with materials database
-
-- **`generate_bom(module_design: ModuleDesign) -> pd.DataFrame`**
-  - Generate BOM from module design specification
-  - Returns DataFrame with material_id, component_name, category, quantity, unit
-
-- **`calculate_material_costs(bom: pd.DataFrame, materials_db: List[Material]) -> Dict`**
-  - Calculate material costs with waste factors and pricing tiers
-  - Returns dict with bom_with_costs, cost_breakdown, missing_materials
-
-- **`calculate_module_cost(bom_with_costs: Dict) -> float`**
-  - Calculate total module cost
-  - Returns total cost as float
-
-- **`export_bom(bom: pd.DataFrame, format: str, output_path: str) -> str`**
-  - Export BOM to CSV, Excel, or JSON
-  - Returns path to exported file
-
-- **`optimize_bom_cost(bom: pd.DataFrame) -> pd.DataFrame`**
-  - Optimize BOM by selecting best suppliers and materials
-  - Returns optimized BOM DataFrame
-
-- **`compare_suppliers(material_name: str) -> SupplierComparison`**
-  - Compare suppliers for a specific material
-  - Returns SupplierComparison object
-
-- **`analyze_budget(budgeted_cost: float, actual_cost: float) -> BudgetAnalysis`**
-  - Analyze budget vs actual costs
-  - Returns BudgetAnalysis object
-
-- **`get_cost_breakdown_by_category(bom_with_costs: pd.DataFrame) -> Dict[str, float]`**
-  - Get cost breakdown by component category
-  - Returns dict mapping category to total cost
 
 ## Data Models
 
-### Material
-- id: Unique material identifier
-- name: Material name
-- category: Component category (CELL, MODULE, INTERCONNECT, ADHESIVE, PACKAGING)
-- supplier: Supplier name
-- unit: Unit of measurement
-- base_price: Base price per unit (Decimal)
-- currency: Currency code
-- waste_factor: Material waste factor (0-1)
-- transportation_cost_per_unit: Transportation cost per unit
+### CellDesign
 
-### ModuleDesign
-- module_id: Module identifier
-- module_type: Module type (mono-Si, poly-Si, etc.)
-- power_rating: Power rating in Watts
-- efficiency: Module efficiency percentage
-- dimensions: Dict with length, width, thickness in mm
-- num_cells: Number of cells in module
-- cell_size: Cell size in mm
-- frame_type, glass_type, backsheet_type, etc.
+Complete cell-level specifications including electrical parameters, temperature coefficients, and physical properties.
 
-### CostBreakdown
-- cell_costs, module_costs, interconnect_costs, adhesive_costs, packaging_costs
-- material_subtotal: Subtotal of all materials
-- waste_costs: Costs from waste
-- transportation_costs: Transportation costs
-- manufacturing_overhead: Manufacturing overhead
-- total_cost: Grand total cost
-- currency: Currency code
+### ModuleLayout
 
-## Error Handling
+Layout configuration specifying:
+- Layout type (standard, half-cut, etc.)
+- Series/parallel cell arrangement
+- Submodules and bypass diodes
+- Cell gaps and overlaps
+- Connection type
 
-The module provides specific exceptions for different error cases:
+### ModuleConfig
 
-- **`MaterialNotFoundError`**: Raised when required material is not in database
-- **`InvalidModuleDesignError`**: Raised when module design is invalid
-- **`ExportError`**: Raised when BOM export fails
-- **`BOMGeneratorError`**: Base exception for all BOM generator errors
+Complete module definition including:
+- Cell design
+- Layout configuration
+- Mechanical specifications
+- Operating conditions
+- Certifications
 
-## Testing
+### ModuleSpecs
 
-Run the comprehensive test suite:
-
-```bash
-# Run all tests
-pytest tests/test_bom_generator.py -v
-
-# Run with coverage
-pytest tests/test_bom_generator.py --cov=src/modules --cov-report=html
-
-# Run specific test class
-pytest tests/test_bom_generator.py::TestBOMGeneration -v
-```
-
-Test coverage: **94%**
+Calculated specifications including:
+- Electrical parameters
+- Temperature coefficients
+- CTM losses
+- Performance characteristics
 
 ## Examples
 
-See `examples/bom_generator_example.py` for a complete working example.
+See `examples/module_builder_demo.py` for comprehensive demonstrations of all features.
+
+Run the demo:
+
+```bash
+python3 examples/module_builder_demo.py
+```
+
+## CTM (Cell-to-Module) Loss Model
+
+The builder includes a comprehensive CTM loss model that accounts for:
+
+1. **Resistance Losses** (0.8-2.5%)
+   - Reduced in half-cut configurations
+   - Minimal in shingled modules
+   - Lower with multi-busbar designs
+
+2. **Reflection Losses** (1.5-3.0%)
+   - AR coating effects
+   - Glass properties
+
+3. **Mismatch Losses** (0.3-0.8%)
+   - Cell-to-cell variations
+   - Parallel string effects
+
+4. **Inactive Area Losses** (0.5-1.2%)
+   - Cell gaps
+   - Frame area
+   - Minimal in shingled designs
+
+## PVsyst Integration
+
+Generated PAN files are compatible with PVsyst 7.x and include:
+
+- All electrical parameters at STC
+- Temperature coefficients
+- NOCT thermal behavior
+- IAM profile for angle-dependent performance
+- Low irradiance characteristics
+- Bifacial parameters (when applicable)
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT License - see LICENSE file for details.
