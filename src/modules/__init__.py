@@ -1,41 +1,5 @@
-"""
-PV Modules Package
+"""Core modules for PV lifecycle simulation."""
 
-Module-level modeling and simulation components.
-"""
+from src.modules.bom_generator import BOMGenerator
 
-from .bifacial_model import (
-    BifacialModuleModel,
-    BifacialModuleParams,
-    BifacialSystemConfig,
-    MountingStructure,
-    GroundSurface,
-    TMY,
-    AlbedoType,
-    MountingType,
-    ViewFactorModel,
-    ViewFactorCalculator,
-    ALBEDO_VALUES,
-    get_albedo_seasonal_variation,
-    calculate_gcr,
-    validate_bifacial_system,
-    create_example_system,
-)
-
-__all__ = [
-    "BifacialModuleModel",
-    "BifacialModuleParams",
-    "BifacialSystemConfig",
-    "MountingStructure",
-    "GroundSurface",
-    "TMY",
-    "AlbedoType",
-    "MountingType",
-    "ViewFactorModel",
-    "ViewFactorCalculator",
-    "ALBEDO_VALUES",
-    "get_albedo_seasonal_variation",
-    "calculate_gcr",
-    "validate_bifacial_system",
-    "create_example_system",
-]
+__all__ = ["BOMGenerator"]
