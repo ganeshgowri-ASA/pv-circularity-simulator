@@ -1,1 +1,3 @@
-"""Tests for PV Circularity Simulator."""
+"""
+Test suite for PV system optimization engine.
+"""

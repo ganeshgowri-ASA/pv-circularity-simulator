@@ -1,15 +1,23 @@
-"""Data models for PV components."""
+"""
+Data models for PV system optimization.
+"""
 
-from .cell import CellDesign, CellTemplate
-from .module import ModuleDesign, ModuleLayout, ModuleConfiguration
-from .material import Material, MaterialDatabase
+from .optimization_models import (
+    PVSystemParameters,
+    OptimizationConstraints,
+    OptimizationObjectives,
+    OptimizationResult,
+    ParetoSolution,
+    DesignPoint,
+    SensitivityResult,
+)
 
 __all__ = [
-    "CellDesign",
-    "CellTemplate",
-    "ModuleDesign",
-    "ModuleLayout",
-    "ModuleConfiguration",
-    "Material",
-    "MaterialDatabase",
+    "PVSystemParameters",
+    "OptimizationConstraints",
+    "OptimizationObjectives",
+    "OptimizationResult",
+    "ParetoSolution",
+    "DesignPoint",
+    "SensitivityResult",
 ]
