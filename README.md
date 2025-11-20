@@ -1,72 +1,34 @@
 # PV Circularity Simulator
 
-End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, circular economy modeling, **AI-powered defect detection**, and **intelligent alerting system**.
+**End-to-end PV lifecycle simulation platform** covering the complete solar panel journey: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R: Reduce, Reuse, Recycle).
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## Features
 
-## 🚀 Features
+- **CTM Loss Analysis**: Cell-to-Module conversion efficiency analysis
+- **SCAPS Integration**: Solar Cell Capacitance Simulator integration
+- **Reliability Testing**: Comprehensive reliability and durability testing
+- **Energy Forecasting**: Advanced energy production forecasting
+- **Circular Economy Modeling**: Complete lifecycle circular economy analysis
+- **🆕 B08 Diagnostics & Maintenance**: Advanced defect detection, fault reporting, and maintenance management
 
-### 🔬 AI-Powered Defect Detection (BATCH6-B08-S01)
+## B08: Diagnostics & Maintenance Management
 
-Production-ready defect detection system using Roboflow AI and computer vision:
+The B08 module provides production-ready diagnostics and maintenance management for PV installations:
 
-- **RoboflowIntegrator**: AI-powered defect detection
-  - `model_deployment()`: Deploy and manage Roboflow models
-  - `image_preprocessing()`: Advanced image preprocessing pipeline
-  - `batch_inference()`: High-throughput batch processing
-  - `real_time_detection()`: Low-latency real-time detection
+### B08-S04: Fault Reports & Maintenance Recommendations
 
-- **DefectClassifier**: Specialized defect classification
-  - `crack_detection()`: Micro-crack and cell breakage detection
-  - `hotspot_identification()`: Thermal hotspot analysis
-  - `delamination_detection()`: Layer separation detection
-  - `soiling_analysis()`: Dirt and debris detection
-  - `pid_detection()`: Potential-Induced Degradation (PID) analysis
+- **FaultReportGenerator**: Automated fault report generation with defect categorization, severity assessment, and repair cost estimation
+- **MaintenanceScheduler**: Preventive maintenance planning, corrective action tracking, and spare parts management
+- **WorkOrderManagement**: Complete work order lifecycle with technician assignment, task tracking, and completion verification
 
-- **ImageProcessing**: Multi-modal image analysis
-  - `el_image_analysis()`: Electroluminescence imaging
-  - `thermal_image_processing()`: Thermal/infrared analysis
-  - `rgb_analysis()`: Visual inspection and soiling detection
+### B08-S05: Diagnostics UI & Defect Management Dashboard
 
-- **DefectReporting**: Comprehensive reporting system
-  - `severity_classification()`: AI-powered severity assessment
-  - `location_mapping()`: GPS and grid-based location tracking
-  - `repair_recommendations()`: Automated repair planning with cost estimates
+- **DefectDatabase**: Comprehensive defect data management with historical tracking, pattern recognition (ML-based), and fleet-wide analysis
+- **DiagnosticsUI**: Interactive Streamlit dashboards with defect galleries, severity heatmaps, repair tracking, and cost analysis
 
-**Technologies**: Roboflow API, OpenCV, scikit-image, Pydantic, asyncio
+## Quick Start
 
-### 🔔 Alerts & Notifications System (BATCH5-B07-S04)
-
-Production-ready intelligent alerting with multi-channel notifications:
-
-- **AlertManager**: Intelligent alert orchestration
-  - `rule_engine()`: Custom rule-based alert triggering
-  - `threshold_monitoring()`: Real-time threshold monitoring
-  - `anomaly_detection()`: Statistical anomaly detection (Z-score, IQR)
-  - `escalation_workflows()`: Multi-level escalation automation
-
-- **NotificationChannels**: Multi-channel delivery
-  - `email_alerts()`: SMTP and SendGrid integration
-  - `sms_notifications()`: Twilio SMS delivery
-  - `slack_webhooks()`: Slack workspace integration
-  - `mobile_push()`: Push notification support (placeholder)
-
-- **AlertHistory**: Comprehensive tracking
-  - `alert_log()`: Persistent alert logging (SQLite)
-  - `acknowledgment_tracking()`: User acknowledgment tracking
-  - `resolution_tracking()`: Issue resolution workflow
-
-**Technologies**: Twilio, SendGrid, Slack SDK, SQLite, asyncio
-
-## 📦 Installation
-
-### Requirements
-
-- Python 3.9+
-- pip or poetry
-
-### Quick Start
+### Installation
 
 ```bash
 # Clone the repository
@@ -76,366 +38,163 @@ cd pv-circularity-simulator
 # Install dependencies
 pip install -r requirements.txt
 
-# Or install with optional features
-pip install -e ".[all]"
-
-# Copy environment configuration
-cp .env.example .env
-
-# Edit .env with your API keys
-nano .env
+# Or install with development dependencies
+pip install -e ".[dev]"
 ```
 
-### Optional Dependencies
+### Running the Demo
 
 ```bash
-# Defect detection only
-pip install -e ".[roboflow]"
-
-# Notifications only
-pip install -e ".[notifications]"
-
-# Database support
-pip install -e ".[database]"
-
-# Development tools
-pip install -r requirements-dev.txt
+# Run the B08 diagnostics and maintenance demo
+python docs/examples/b08_demo.py
 ```
 
-## 🔧 Configuration
-
-Configuration is managed through environment variables and `.env` file:
-
-```bash
-# Roboflow AI Configuration
-ROBOFLOW_API_KEY=your_api_key_here
-ROBOFLOW_WORKSPACE=your_workspace
-ROBOFLOW_PROJECT=pv-defect-detection
-ROBOFLOW_MODEL_VERSION=1
-
-# Email Alerts (SMTP)
-SMTP_ENABLED=true
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
-SMTP_FROM_EMAIL=alerts@pv-simulator.com
-
-# Twilio SMS
-TWILIO_ENABLED=false
-TWILIO_ACCOUNT_SID=your_account_sid
-TWILIO_AUTH_TOKEN=your_auth_token
-TWILIO_FROM_NUMBER=+1234567890
-
-# Slack Webhooks
-SLACK_ENABLED=false
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
-
-# Alert Configuration
-ALERT_ENABLED=true
-ALERT_MIN_SEVERITY=WARNING
-MONITORING_ENABLED=true
-```
-
-## 💻 Usage Examples
-
-### Defect Detection
-
-```python
-from pv_simulator.monitoring import (
-    RoboflowIntegrator,
-    DefectClassifier,
-    ImageProcessing,
-    DefectReporting
-)
-
-# Initialize components
-roboflow = RoboflowIntegrator()
-classifier = DefectClassifier(roboflow)
-processor = ImageProcessing()
-reporter = DefectReporting()
-
-# Analyze EL image for defects
-el_results = processor.el_image_analysis("panel_el.jpg", segment_cells=True)
-print(f"Quality score: {el_results['metadata'].quality_score:.2f}")
-print(f"Found {len(el_results['cells'])} cells")
-
-# Detect cracks using AI
-cracks = classifier.crack_detection("panel.jpg", use_ai=True)
-for crack in cracks:
-    print(f"Crack detected: severity={crack.severity.value}, "
-          f"confidence={crack.confidence:.2f}")
-
-# Detect hotspots in thermal image
-hotspots = classifier.hotspot_identification("thermal.jpg", threshold_celsius=85)
-print(f"Found {len(hotspots)} hotspots")
-
-# Generate comprehensive defect report
-if cracks:
-    report = reporter.generate_report(
-        cracks[0],
-        panel_id="PNL-001",
-        array_position=(5, 10),
-        gps_coords=(37.7749, -122.4194),
-        context={"panel_age_years": 10, "high_humidity": True}
-    )
-    print(f"Report ID: {report.report_id}")
-    print(f"Repair priority: {report.recommendation.priority.value}")
-    print(f"Estimated cost: ${report.recommendation.estimated_cost:.2f}")
-    print(f"Estimated time: {report.recommendation.estimated_time:.1f} hours")
-```
-
-### Thermal Analysis
-
-```python
-from pv_simulator.monitoring import ImageProcessing
-
-processor = ImageProcessing()
-
-# Process thermal image
-thermal_result = processor.thermal_image_processing(
-    "thermal_panel.jpg",
-    temp_min=0,
-    temp_max=120
-)
-
-print(f"Temperature range: {thermal_result.min_temp:.1f}°C - {thermal_result.max_temp:.1f}°C")
-print(f"Average temperature: {thermal_result.mean_temp:.1f}°C")
-print(f"Hotspots detected: {thermal_result.hotspot_count}")
-```
-
-### Alert Management
-
-```python
-from pv_simulator.alerts import (
-    AlertManager,
-    AlertRule,
-    NotificationChannels,
-    AlertHistory
-)
-from pv_simulator.config import AlertSeverity
-
-# Initialize alert system
-manager = AlertManager()
-notifier = NotificationChannels()
-history = AlertHistory()
-
-# Register alert handler
-def handle_alert(alert):
-    """Custom alert handler."""
-    print(f"Alert: {alert.title} - {alert.severity.value}")
-
-    # Log to history
-    history.alert_log(alert)
-
-    # Send notifications
-    if alert.severity in [AlertSeverity.CRITICAL, AlertSeverity.EMERGENCY]:
-        notifier.send_multi_channel(
-            alert.title,
-            alert.message,
-            channels=["email", "sms", "slack"],
-            severity=alert.severity.value,
-            metadata=alert.context
-        )
-
-manager.register_handler(handle_alert)
-
-# Create threshold rule
-manager.threshold_monitoring(
-    "panel_efficiency",
-    "<",
-    0.15,
-    severity=AlertSeverity.HIGH,
-    window_size=3
-)
-
-# Create custom rule
-rule = AlertRule(
-    name="Critical Temperature",
-    description="Panel temperature exceeds safe limits",
-    condition=lambda ctx: ctx.get("temperature", 0) > 90,
-    severity=AlertSeverity.CRITICAL
-)
-manager.rule_engine(rule)
-
-# Enable anomaly detection
-manager.anomaly_detection(
-    "power_output",
-    method="zscore",
-    sensitivity=0.95
-)
-
-# Check metrics
-metrics = {
-    "panel_efficiency": 0.14,
-    "temperature": 92,
-    "power_output": 245
-}
-alerts = manager.check_thresholds(metrics)
-alerts += manager.check_anomalies(metrics)
-alerts += manager.evaluate_rules(metrics)
-
-print(f"Triggered {len(alerts)} alerts")
-```
-
-### Escalation Workflows
-
-```python
-from pv_simulator.alerts import AlertManager, EscalationLevel
-from pv_simulator.config import AlertSeverity
-
-manager = AlertManager()
-
-# Configure multi-level escalation
-manager.escalation_workflows([
-    EscalationLevel(
-        level=1,
-        delay_seconds=300,  # 5 minutes
-        severity_threshold=AlertSeverity.WARNING,
-        notification_channels=["email"]
-    ),
-    EscalationLevel(
-        level=2,
-        delay_seconds=600,  # 10 minutes
-        severity_threshold=AlertSeverity.HIGH,
-        notification_channels=["email", "sms"]
-    ),
-    EscalationLevel(
-        level=3,
-        delay_seconds=900,  # 15 minutes
-        severity_threshold=AlertSeverity.CRITICAL,
-        notification_channels=["email", "sms", "slack"]
-    )
-])
-
-# Trigger critical alert
-alert = manager.trigger_alert(
-    "Panel Failure Detected",
-    "Critical crack detected in panel PNL-123",
-    AlertSeverity.CRITICAL,
-    source="defect_detector",
-    context={"panel_id": "PNL-123", "defect_type": "crack"}
-)
-# Escalation will automatically occur if not acknowledged
-```
-
-### Alert History and Analytics
-
-```python
-from pv_simulator.alerts import AlertHistory
-from datetime import datetime, timedelta
-
-history = AlertHistory()
-
-# Acknowledge alert
-history.acknowledgment_tracking(
-    "alert-123",
-    acknowledged_by="operator@example.com",
-    notes="Investigating panel"
-)
-
-# Resolve alert
-history.resolution_tracking(
-    "alert-123",
-    resolved_by="technician@example.com",
-    resolution_method="Panel replaced",
-    resolution_notes="Replaced panel PNL-123 with new unit"
-)
-
-# Get statistics
-stats = history.get_statistics(
-    start_time=datetime.utcnow() - timedelta(days=30)
-)
-
-print(f"Total alerts (30 days): {stats.total_alerts}")
-print(f"Critical alerts: {stats.alerts_by_severity.get('CRITICAL', 0)}")
-print(f"Resolved: {stats.resolved_count}")
-print(f"Average time to acknowledge: {stats.average_time_to_acknowledge:.1f}s")
-print(f"Average time to resolve: {stats.average_time_to_resolve:.1f}s")
-
-# Get unresolved critical alerts
-critical_alerts = history.get_alerts(
-    severity=AlertSeverity.CRITICAL,
-    resolved=False,
-    limit=50
-)
-print(f"Unresolved critical alerts: {len(critical_alerts)}")
-```
-
-## 🧪 Testing
+### Running Tests
 
 ```bash
 # Run all tests
 pytest
 
-# Run with coverage
-pytest --cov=src/pv_simulator --cov-report=html
+# Run with coverage report
+pytest --cov=src/pv_circularity --cov-report=html
 
-# Run specific test file
-pytest tests/unit/test_alert_manager.py
-
-# Run with verbose output
-pytest -v
+# Run specific module tests
+pytest tests/unit/test_b08/
 ```
 
-## 📊 Architecture
+## Project Structure
 
 ```
 pv-circularity-simulator/
-├── src/pv_simulator/
-│   ├── config/              # Configuration management
-│   │   └── settings.py      # Pydantic settings
-│   ├── monitoring/          # Defect detection
-│   │   └── detectors/
-│   │       ├── roboflow_integrator.py    # AI integration
-│   │       ├── defect_classifier.py      # Defect classification
-│   │       ├── image_processing.py       # Image analysis
-│   │       └── defect_reporting.py       # Reporting system
-│   └── alerts/              # Alert & notification system
-│       ├── manager.py       # Alert orchestration
-│       ├── history.py       # Tracking & analytics
-│       └── handlers/
-│           └── notification_channels.py  # Multi-channel delivery
-├── tests/                   # Test suite
-│   ├── unit/               # Unit tests
-│   └── integration/        # Integration tests
-└── docs/                   # Documentation
-
+├── src/pv_circularity/
+│   ├── models/                    # Pydantic data models
+│   ├── b08_diagnostics/           # B08 diagnostics module
+│   │   ├── b08_s04/              # Fault reports & maintenance
+│   │   └── b08_s05/              # Diagnostics UI & database
+│   ├── core/                      # Core utilities
+│   └── utils/                     # Helper utilities
+├── tests/                         # Comprehensive test suite
+├── docs/                          # Documentation
+│   ├── examples/                  # Example scripts
+│   └── B08_DIAGNOSTICS_MAINTENANCE.md
+├── config/                        # Configuration files
+├── pyproject.toml                 # Project metadata
+└── requirements.txt               # Dependencies
 ```
 
-## 🔑 Key Technologies
+## Usage Examples
 
-- **AI/ML**: Roboflow API, OpenCV, scikit-image
-- **Configuration**: Pydantic v2, pydantic-settings
-- **Notifications**: Twilio (SMS), SendGrid (Email), Slack SDK
-- **Database**: SQLite (expandable to PostgreSQL)
-- **Async**: asyncio, aiohttp
-- **Testing**: pytest, pytest-cov, pytest-asyncio
+### Fault Report Generation
 
-## 🤝 Contributing
+```python
+from pv_circularity.b08_diagnostics.b08_s04 import FaultReportGenerator
+from pv_circularity.models import Defect, DefectType, DefectSeverity
+
+# Initialize generator
+generator = FaultReportGenerator()
+
+# Generate automated fault report
+report = generator.automated_report_generation(
+    site_id="SITE-001",
+    defects=detected_defects
+)
+
+print(f"Total defects: {report.total_defects}")
+print(f"Critical defects: {report.critical_defects}")
+print(f"Estimated repair cost: ${report.estimated_total_cost:,.2f}")
+```
+
+### Maintenance Scheduling
+
+```python
+from pv_circularity.b08_diagnostics.b08_s04 import MaintenanceScheduler
+
+# Initialize scheduler
+scheduler = MaintenanceScheduler()
+
+# Generate maintenance plan for the year
+schedules = scheduler.preventive_maintenance_planning(
+    site_id="SITE-001",
+    planning_horizon_days=365,
+    panel_count=500
+)
+
+print(f"Generated {len(schedules)} maintenance schedules")
+```
+
+### Defect Analytics
+
+```python
+from pv_circularity.b08_diagnostics.b08_s05 import DefectDatabase
+
+# Initialize database
+db = DefectDatabase()
+
+# Add and analyze defects
+for defect in defects:
+    db.add_defect(defect)
+
+# Pattern recognition
+patterns = db.pattern_recognition()
+
+# Fleet analysis
+analysis = db.fleet_wide_analysis(
+    fleet_id="FLEET-001",
+    site_ids=["SITE-001", "SITE-002"]
+)
+
+print(f"Fleet health score: {analysis.fleet_health_score:.1f}/100")
+```
+
+## Documentation
+
+- **[B08 Diagnostics & Maintenance Guide](./docs/B08_DIAGNOSTICS_MAINTENANCE.md)**: Comprehensive guide for the B08 module
+- **[API Documentation](./docs/api/)**: Detailed API reference
+- **[Examples](./docs/examples/)**: Example scripts and demos
+
+## Technology Stack
+
+- **Python 3.10+**
+- **Pydantic 2.5+**: Data validation and serialization
+- **Streamlit 1.29+**: Interactive dashboards
+- **Plotly 5.18+**: Interactive visualizations
+- **Pandas & NumPy**: Data analysis
+- **scikit-learn**: Machine learning for pattern recognition
+- **pytest**: Testing framework
+
+## Contributing
+
+We welcome contributions! Please follow these steps:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Make your changes
+4. Add tests for new features
+5. Ensure all tests pass (`pytest`)
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
 
-## 📝 License
+## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Support
 
-- Roboflow for AI-powered defect detection
-- OpenCV community for computer vision tools
-- Twilio, SendGrid, and Slack for notification services
+For issues, questions, or feature requests:
+- **GitHub Issues**: [Create an issue](https://github.com/ganeshgowri-ASA/pv-circularity-simulator/issues)
+- **Documentation**: [Read the docs](./docs/)
 
-## 📧 Contact
+## Roadmap
 
-For questions or support, please open an issue on GitHub.
+- [x] B08-S04: Fault Reports & Maintenance Recommendations
+- [x] B08-S05: Diagnostics UI & Defect Management Dashboard
+- [ ] Integration with external IoT sensors
+- [ ] Advanced ML models for defect prediction
+- [ ] Mobile application for field technicians
+- [ ] Cloud-based fleet management
+- [ ] API endpoints for third-party integrations
 
----
+## Acknowledgments
 
-**Status**: Production-ready ✅
-**Version**: 0.1.0
-**Last Updated**: 2025-11-17
+Built with ❤️ for the solar energy industry to improve PV system reliability and efficiency through advanced diagnostics and maintenance management.
