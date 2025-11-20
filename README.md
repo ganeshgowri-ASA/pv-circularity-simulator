@@ -1,110 +1,156 @@
-# PV Circularity Simulator - Production Release 🎉
+# PV Circularity Simulator
 
-End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
+Comprehensive PV system lifecycle and circularity simulator with hybrid energy systems, financial analysis, and integration capabilities.
 
-## 🚀 Full Integration Complete - 71 Sessions ✅
+## 🚀 Features
 
-**Complete production-ready application with all 15 functional branches integrated!**
+### B12 - Hybrid Energy Systems (5 Modules)
+- **B12-S01**: Battery Integration & Energy Storage
+  - Battery sizing, charge/discharge modeling
+  - Arbitrage optimization
+  - Degradation analysis
 
-### Quick Start
+- **B12-S02**: Wind-Solar Hybrid Systems
+  - Wind resource analysis
+  - Hybrid capacity optimization
+  - Temporal complementarity analysis
+
+- **B12-S03**: Hydrogen Integration & P2X
+  - Electrolyzer sizing
+  - H2 storage modeling
+  - Fuel cell integration
+
+- **B12-S04**: Grid Interaction & Smart Grid
+  - Grid services (frequency regulation, voltage support)
+  - Demand response
+  - Power quality analysis
+
+- **B12-S05**: Hybrid Systems UI
+  - System topology visualization
+  - Optimization dashboard
+  - Dispatch strategies
+
+### B13 - Financial Analysis (5 Modules)
+- **B13-S01**: LCOE Calculations
+  - Levelized cost of energy
+  - Sensitivity analysis
+  - Scenario comparison
+
+- **B13-S02**: NPV Analysis
+  - Cash flow projections
+  - Net present value
+  - Payback period analysis
+
+- **B13-S03**: IRR Modeling
+  - Internal rate of return
+  - Modified IRR (MIRR)
+  - Hurdle rate comparison
+
+- **B13-S04**: Bankability Assessment
+  - Risk assessment
+  - Debt service coverage ratio (DSCR)
+  - Credit rating
+
+- **B13-S05**: Financial Dashboard
+  - Financial summary metrics
+  - Cash flow waterfall charts
+  - Sensitivity tornado charts
+
+### B14 - Core Infrastructure (3 Modules)
+- **B14-S02**: Data Models & Utilities
+  - Comprehensive Pydantic models
+  - Validators and utilities
+
+- **B14-S03**: Integration Layer
+  - Cross-module data flow
+  - API endpoints
+  - Data synchronization
+
+- **B14-S04**: Utilities & Helpers
+  - Unit conversions
+  - Financial utilities
+  - Statistical functions
+  - Data export helpers
+
+### B15 - UI & Visualization (2 Modules)
+- **B15-S03**: Navigation & Routing
+  - Multi-page routing
+  - Menu structure
+  - Breadcrumb navigation
+
+- **B15-S04**: Data Visualization Library
+  - Chart templates (line, bar, scatter, pie, heatmap, Sankey)
+  - Interactive plots
+  - Export capabilities
+
+## 📦 Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
+# Clone repository
+git clone <repository-url>
 cd pv-circularity-simulator
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the INTEGRATED app (recommended)
-streamlit run app_integrated.py
+# Install package
+pip install -e .
+```
 
-# Or run the original MVP
+## 🎯 Usage
+
+### Run Streamlit App
+
+```bash
 streamlit run app.py
 ```
 
-The app will open at: `http://localhost:8501`
-
-## 📊 Complete Feature Set (15 Branches)
-
-### Group 1: Design Suite (B01-B03)
-- ✅ **Materials Database**: 50+ PV materials, property search, comparison analysis
-- ✅ **Cell Design (SCAPS-1D)**: IV curves, efficiency optimization, parametric analysis
-- ✅ **Module Design & CTM**: k1-k24 Fraunhofer ISE framework, BOM generation, thermal modeling
-
-### Group 2: Analysis Suite (B04-B06)
-- ✅ **IEC Testing**: IEC 61215/61730/62804/61853 compliance, test tracking
-- ✅ **System Design**: String configuration, inverter selection, DC/AC optimization
-- ✅ **Weather & EYA**: TMY integration, P50/P90 analysis, energy yield forecasting
-
-### Group 3: Monitoring Suite (B07-B09)
-- ✅ **Performance Monitoring**: Real-time SCADA, string-level analysis, alarms
-- ✅ **Fault Diagnostics**: IR thermography, IV curve analysis, AI defect detection
-- ✅ **Energy Forecasting**: ML ensemble (Prophet + LSTM), uncertainty quantification
-
-### Group 4: Circularity Suite (B10-B12)
-- ✅ **Revamp Planning**: Retrofit options, ROI analysis, upgrade pathways
-- ✅ **Circularity (3R)**: Material recovery, lifecycle assessment, recycling processes
-- ✅ **Hybrid Systems**: PV + Battery integration, energy flow optimization
-
-### Group 5: Application Suite (B13-B15)
-- ✅ **Financial Analysis**: NPV, IRR, LCOE, sensitivity analysis, bankability
-- ✅ **Infrastructure**: Grid connection, load analysis, equipment specifications
-- ✅ **App Configuration**: User settings, display options, export formats
-
-### Technical Stack
-- **Frontend**: Streamlit 1.28+
-- **Data**: Pandas, NumPy
-- **Visualization**: Plotly
-- **Backend**: Python 3.9+
-- **Validation**: Pydantic 2.0+
-
-### 71 Claude Code IDE Sessions Integrated
-- B01: Materials Engineering (5 sessions)
-- B02: Cell Design (5 sessions)
-- B03: Module Design & CTM (6 sessions)
-- B04: IEC Testing (4 sessions)
-- B05: System Design (6 sessions)
-- B06: EYA & Weather (5 sessions)
-- B07: Performance Monitoring (4 sessions)
-- B08: Fault Diagnostics (5 sessions)
-- B09: Energy Forecasting (5 sessions)
-- B10: Revamp & Repower (4 sessions)
-- B11: Circularity 3R (6 sessions)
-- B12: Hybrid Energy (5 sessions)
-- B13: Financial Analysis (5 sessions)
-- B14: Core Infrastructure (4 sessions)
-- B15: Main Application (4 sessions)
-
-## 🏗️ Application Architecture
+## 🏗️ Project Structure
 
 ```
 pv-circularity-simulator/
-├── app.py                    # Original MVP application
-├── app_integrated.py         # 🆕 COMPLETE INTEGRATED APP (71 sessions)
-├── requirements.txt          # Python dependencies
-├── modules/                  # Modular suite architecture
-│   ├── design_suite.py      # B01-B03: Materials, Cell, Module
-│   ├── analysis_suite.py    # B04-B06: IEC, System, Weather
-│   ├── monitoring_suite.py  # B07-B09: Performance, Fault, Forecast
-│   ├── circularity_suite.py # B10-B12: Revamp, 3R, Hybrid
-│   └── application_suite.py # B13-B15: Financial, Infrastructure, Config
-└── utils/
-    ├── constants.py         # All standards, configs, presets
-    └── validators.py        # Pydantic models for data validation
+├── src/
+│   └── modules/
+│       ├── hybrid_energy/
+│       │   ├── battery_integration.py
+│       │   ├── wind_hybrid.py
+│       │   ├── hydrogen_system.py
+│       │   ├── grid_connector.py
+│       │   └── hybrid_ui.py
+│       ├── financial/
+│       │   ├── lcoe_calculator.py
+│       │   ├── npv_analyzer.py
+│       │   ├── irr_calculator.py
+│       │   ├── bankability_analyzer.py
+│       │   └── financial_ui.py
+│       ├── core/
+│       │   ├── data_models.py
+│       │   ├── utilities.py
+│       │   └── integration_layer.py
+│       └── ui/
+│           ├── navigation.py
+│           └── visualization.py
+├── app.py
+├── requirements.txt
+├── setup.py
+└── README.md
 ```
 
-### Code Statistics
-- **Total Lines of Code**: 5,000+ lines
-- **Python Modules**: 8 files
-- **Functions**: 100+ production-ready functions
-- **Type Hints**: 100% coverage
-- **Docstrings**: Complete documentation
-- **Validation**: Pydantic models for all data structures
+## 🔧 Technology Stack
 
-### Deployment Options
-- **Local**: `streamlit run app.py`
-- **Streamlit Cloud**: Deploy for free on [Streamlit Cloud](https://streamlit.io/cloud)
-- **Docker**: Production deployment with containerization
-- **Cloud Platforms**: AWS, Google Cloud, Azure
+- **Python 3.9+**
+- **Pydantic 2.0+**: Data validation and modeling
+- **NumPy & Pandas**: Numerical computing and data analysis
+- **Streamlit**: Interactive web applications
+- **Plotly**: Interactive visualizations
+- **SciPy**: Scientific computing
 
+## 📊 Module Coverage
+
+| Category | Modules | Status |
+|----------|---------|--------|
+| Hybrid Energy | 5 | ✅ Complete |
+| Financial | 5 | ✅ Complete |
+| Core Infrastructure | 3 | ✅ Complete |
+| UI & Visualization | 2 | ✅ Complete |
+| **Total** | **15** | **✅ 100%** |
