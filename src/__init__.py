@@ -1,3 +1,9 @@
-"""PV Circularity Simulator - End-to-end PV lifecycle simulation platform."""
+"""
+PV Circularity Simulator
 
-__version__ = "0.1.0"
+A comprehensive toolkit for simulating and analyzing the circularity
+of photovoltaic (PV) modules and materials.
+"""
+
+__version__ = "1.0.0"
+__author__ = "PV Circularity Simulator Team"
