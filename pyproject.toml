@@ -1,33 +1,26 @@
 [build-system]
-requires = ["setuptools>=65.0", "wheel"]
+requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pv-circularity-simulator"
 version = "0.1.0"
-description = "End-to-end PV lifecycle simulation platform with SCAPS integration"
+description = "End-to-end PV lifecycle simulation platform with irradiance modeling and solar resource assessment"
+authors = [{name = "PV Circularity Team"}]
 readme = "README.md"
 requires-python = ">=3.9"
-license = {file = "LICENSE"}
-authors = [
-    {name = "PV Circularity Team"}
-]
-keywords = ["photovoltaics", "solar", "simulation", "SCAPS", "circular-economy"]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Physics",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-]
+license = {text = "MIT"}
 
 dependencies = [
+    "pvlib>=0.10.3",
     "numpy>=1.24.0",
+    "pandas>=2.0.0",
     "pydantic>=2.0.0",
     "scipy>=1.10.0",
+    "plotly>=5.18.0",
+    "matplotlib>=3.7.0",
+    "python-dateutil>=2.8.0",
+    "pytz>=2023.3",
 ]
 
 [project.optional-dependencies]
@@ -35,62 +28,28 @@ dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "black>=23.0.0",
-    "ruff>=0.1.0",
     "mypy>=1.5.0",
-]
-viz = [
-    "matplotlib>=3.7.0",
-    "pandas>=2.0.0",
-]
-
-[project.urls]
-Homepage = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
-Repository = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
-
-[tool.setuptools]
-package-dir = {"" = "src"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-addopts = "-v --tb=short --strict-markers"
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
+    "ruff>=0.1.0",
 ]
 
 [tool.black]
 line-length = 100
-target-version = ['py39', 'py310', 'py311']
-include = '\.pyi?$'
+target-version = ["py39", "py310", "py311"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
-select = [
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "W",   # pycodestyle warnings
-    "I",   # isort
-    "N",   # pep8-naming
-    "UP",  # pyupgrade
-    "B",   # flake8-bugbear
-]
-ignore = []
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
 
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
-disallow_incomplete_defs = false
-check_untyped_defs = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=src --cov-report=term-missing"

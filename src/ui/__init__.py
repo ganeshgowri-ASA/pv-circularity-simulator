@@ -1,5 +1,5 @@
-"""
-User interface components for PV system optimization.
-"""
+"""UI components for solar resource visualization."""
 
-__all__ = []
+from .visualizations import SolarResourceVisualizer
+
+__all__ = ["SolarResourceVisualizer"]
