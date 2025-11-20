@@ -1,67 +1,85 @@
 # PV Circularity Simulator
 
-End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
+End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → **Performance monitoring** → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
+
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🚀 Features
 
-### BATCH4-B05: PVsyst Integration & System Design Engine
+### Real-time Performance Monitoring System (BATCH5-B07-S01)
 
-Comprehensive PV system design with PVsyst-level accuracy for utility-scale, commercial, and residential applications.
+#### RealTimeMonitor
+- **Live Data Streaming**: Real-time data collection and streaming with WebSocket support
+- **SCADA Integration**: Seamless integration with industrial SCADA systems
+- **Inverter Data Parsing**: Comprehensive inverter data parsing and interpretation
+- **Multi-level Monitoring**:
+  - **String-level monitoring**: Track individual PV strings for anomaly detection
+  - **Module-level monitoring**: Detailed module-level performance tracking
 
-#### Core Components
+#### PerformanceMetrics
+- **Instantaneous Performance Ratio (PR)**: Real-time PR calculation with temperature correction
+- **Capacity Factor (CF)**: System utilization metrics
+- **Specific Yield**: Energy production per installed capacity (kWh/kWp)
+- **Availability Tracking**: System uptime and availability monitoring
+- **Grid Export Monitoring**: Track energy export and self-consumption
 
-1. **PVsystIntegration** - Parse and integrate PVsyst files
-   - Parse .PAN (module), .OND (inverter), .MET (weather) files
-   - Generate PVsyst-compatible project files
-   - Import/export PVsyst simulation results
+#### AlertEngine
+- **Underperformance Detection**: Automatic detection of below-threshold performance
+- **Equipment Fault Alerts**: Real-time equipment failure detection
+- **Grid Outage Detection**: Monitor grid parameters and detect outages
+- **Communication Loss Detection**: Alert on device communication failures
+- **Customizable Thresholds**: Configure alert thresholds per site/device
 
-2. **SystemDesignEngine** - Complete system design orchestration
-   - Configure array layouts, strings, inverters, and transformers
-   - Optimize system layout for maximum energy yield
-   - Calculate comprehensive system losses
-   - Design DC/AC collection systems
+### Data Logger Integration & SCADA Systems (BATCH5-B07-S02)
 
-3. **StringSizingCalculator** - NEC 690 & IEC 60364 compliant string sizing
-   - Calculate max/min string lengths based on temperature
-   - Validate string configurations
-   - Optimize MPPT utilization
-   - NEC-compliant fuse sizing
+#### DataLoggerIntegrator
+Unified data collection from multiple industrial protocols:
+- **modbus_tcp()**: Modbus TCP/RTU protocol support
+- **sunspec_protocol()**: SunSpec-compliant inverter communication
+- **proprietary_protocols()**: Support for major manufacturers:
+  - SMA (Speedwire/Webconnect)
+  - Fronius (Solar API)
+  - Huawei (Modbus-based)
+  - Sungrow (Modbus-based)
+- **csv_file_import()**: Import historical data from CSV files
 
-4. **InverterSelector** - Database-driven inverter selection
-   - Search 10+ major manufacturers (SMA, Fronius, Huawei, etc.)
-   - DC/AC ratio optimization
-   - Clipping loss analysis
-   - Central vs. string inverter comparison
+#### SCADAConnector
+Industrial automation protocol support:
+- **opc_ua()**: OPC Unified Architecture client
+- **bacnet()**: BACnet/IP for building automation
+- **iec61850()**: IEC 61850 for power utility automation
+- **MQTT**: Pub/sub messaging for IoT devices
 
-5. **ArrayLayoutDesigner** - Multi-mounting type layouts
-   - Ground-mounted (fixed-tilt, single-axis, dual-axis trackers)
-   - Rooftop (flat, sloped) with fire setbacks
-   - Carport & canopy structures
-   - Floating solar systems
-   - Agrivoltaic systems
-   - BIPV facades
+#### DataAggregator
+Advanced data processing capabilities:
+- **multi_site_aggregation()**: Aggregate data across multiple sites
+- **data_normalization()**: Standardize units and formats
+- **timestamp_alignment()**: Align data to regular time intervals
+- **Statistical aggregation**: Support for sum, mean, max, min operations
 
-6. **SystemLossModel** - Comprehensive loss modeling
-   - Soiling (geographic database)
-   - Shading (near/far, backtracking)
-   - DC/AC wiring (resistance calculations)
-   - Inverter efficiency curves
-   - Transformer losses
-   - Clipping analysis
-   - Availability & curtailment
+## 🛠️ Technology Stack
 
-7. **SystemDesignUI** - Interactive Streamlit interface
-   - Project configuration
-   - Module & inverter selection
-   - System sizing & layout
-   - Loss waterfall visualization
-   - Performance metrics
-   - PVsyst export
+- **Async Framework**: asyncio, aiohttp for high-performance async operations
+- **Industrial Protocols**: pymodbus, asyncua, paho-mqtt for SCADA communication
+- **Data Validation**: Pydantic v2 for robust data models and validation
+- **Time-Series Database**: TimescaleDB/InfluxDB support for efficient data storage
+- **Data Processing**: pandas, numpy, polars for high-speed data manipulation
+- **Logging**: structlog for structured, context-aware logging
+- **API**: FastAPI for RESTful API and WebSocket support
+- **Monitoring**: Prometheus metrics integration
 
 ## 📦 Installation
 
+### Requirements
+- Python 3.10 or higher
+- PostgreSQL with TimescaleDB extension (optional)
+- InfluxDB 2.x (optional)
+
+### Basic Installation
+
 ```bash
-# Clone repository
+# Clone the repository
 git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
 cd pv-circularity-simulator
 
@@ -72,331 +90,245 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
+# Or install with development dependencies
+pip install -r requirements-dev.txt
+
 # Install package in development mode
 pip install -e .
 ```
 
+### Configuration
+
+1. Copy the environment template:
+```bash
+cp .env.example .env
+```
+
+2. Edit `.env` with your configuration:
+```bash
+# Database settings
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=pv_circularity
+DB_USER=pv_user
+DB_PASSWORD=your_password
+
+# MQTT broker
+MQTT_BROKER_HOST=localhost
+MQTT_BROKER_PORT=1883
+
+# Monitoring settings
+MONITORING_INTERVAL_SECONDS=5
+PERFORMANCE_RATIO_THRESHOLD=0.75
+```
+
+3. Configure your devices in `config/scada_devices.yaml`
+
 ## 🎯 Quick Start
 
-### Python API
+### Basic Usage
 
 ```python
-from pv_simulator.system_design import (
-    SystemDesignEngine,
-    ModuleParameters,
-    InverterParameters,
-    SystemType,
-    MountingType,
+import asyncio
+from pv_circularity.monitoring import (
+    RealTimeMonitor,
+    PerformanceMetrics,
+    AlertEngine,
+    DataLoggerIntegrator,
 )
+from pv_circularity.models.scada import SCADADevice, ModbusConfig
 
-# Create system design engine
-engine = SystemDesignEngine(
-    project_name="Solar Farm 1",
-    system_type=SystemType.UTILITY,
-    location="Phoenix, AZ",
-    latitude=33.45,
-    longitude=-112.07,
-    elevation=340.0,
-)
+# Define devices
+devices = [
+    SCADADevice(
+        device_id="INV001",
+        name="Main Inverter",
+        device_type="inverter",
+        protocol_type="modbus_tcp",
+        modbus_config=ModbusConfig(
+            host="192.168.1.100",
+            port=502,
+            slave_id=1,
+        ),
+    )
+]
 
-# Define module
-module = ModuleParameters(
-    manufacturer="Trina Solar",
-    model="TSM-DEG21C.20",
-    pmax=670.0,
-    voc=45.9,
-    isc=18.52,
-    vmp=38.4,
-    imp=17.45,
-    temp_coeff_pmax=-0.34,
-    temp_coeff_voc=-0.25,
-    temp_coeff_isc=0.05,
-    length=2.384,
-    width=1.303,
-    thickness=0.035,
-    weight=34.6,
-    cells_in_series=132,
-    efficiency=21.5,
-)
+async def main():
+    # Initialize real-time monitor
+    monitor = RealTimeMonitor(devices, update_interval=5)
+    await monitor.start_monitoring()
 
-# Define inverter (or load from database)
-inverter = InverterParameters(
-    manufacturer="SMA",
-    model="SC-2750-EV",
-    inverter_type="central",
-    pac_max=2750000,  # 2.75 MW
-    vac_nom=480,
-    pdc_max=2860000,
-    vdc_max=1500,
-    num_mppt=6,
-    mppt_vmin=580,
-    mppt_vmax=1300,
-    max_efficiency=98.8,
-)
+    # Start performance metrics calculation
+    metrics = PerformanceMetrics()
+    pr = await metrics.instantaneous_pr(
+        actual_power=85.5,
+        rated_power=100.0,
+        irradiance=850,
+    )
 
-# Design complete system
-system_config = engine.design_system_configuration(
-    module=module,
-    inverter=inverter,
-    target_dc_capacity_kw=100000,  # 100 MW
-    mounting_type=MountingType.GROUND_SINGLE_AXIS,
-    site_temp_min=-10.0,
-    site_temp_max=70.0,
-    target_dc_ac_ratio=1.25,
-)
+    # Enable alerts
+    alerts = AlertEngine(underperformance_threshold=15.0)
+    await alerts.start()
 
-# View results
-print(f"DC Capacity: {system_config.dc_capacity:.1f} kW")
-print(f"AC Capacity: {system_config.ac_capacity:.1f} kW")
-print(f"Modules: {system_config.num_modules:,}")
-print(f"Inverters: {system_config.num_inverters}")
-print(f"DC/AC Ratio: {system_config.dc_ac_ratio:.2f}")
-print(f"Total Losses: {system_config.losses.total_losses():.1f}%")
+    # Stream live data
+    async for data_batch in monitor.live_data_stream():
+        print(f"Received {len(data_batch)} data points")
+
+asyncio.run(main())
 ```
 
-### Streamlit UI
-
-```bash
-# Launch interactive UI
-streamlit run pv_simulator/ui/system_design_ui.py
-```
-
-### String Sizing Calculator
+### Example: Multi-Protocol Data Collection
 
 ```python
-from pv_simulator.system_design import StringSizingCalculator
+from pv_circularity.monitoring import DataLoggerIntegrator
 
-calculator = StringSizingCalculator(
-    module=module,
-    inverter=inverter,
-    site_temp_min=-10.0,
-    site_temp_max=70.0,
-)
+# Initialize with multiple protocol types
+integrator = DataLoggerIntegrator(devices)
+await integrator.initialize()
 
-# Get optimal string configuration
-string_config = calculator.design_optimal_string()
+# Collect data from all devices
+data = await integrator.collect_all_data()
 
-print(f"Modules per string: {string_config.modules_per_string}")
-print(f"Strings per MPPT: {string_config.strings_per_mppt}")
-print(f"String Voc (STC): {string_config.voc_stc:.1f}V")
-print(f"String Vmp (STC): {string_config.vmp_stc:.1f}V")
-
-# Validate custom configuration
-is_valid, msg = calculator.validate_string_configuration(
-    modules_per_string=20,
-    strings_per_mppt=2,
-)
-print(f"Valid: {is_valid}, {msg}")
+for device_id, data_points in data.items():
+    print(f"{device_id}: {len(data_points)} data points")
 ```
 
-### PVsyst File Parsing
+### Example: CSV Import
 
 ```python
-from pv_simulator.system_design import PVsystIntegration
+from pv_circularity.monitoring.data_logger import CSVFileImporter
 
-pvsyst = PVsystIntegration()
-
-# Parse PVsyst .PAN file
-module = pvsyst.parse_pvsyst_pan_file("path/to/module.PAN")
-
-# Parse PVsyst .OND file
-inverter = pvsyst.parse_pvsyst_ond_file("path/to/inverter.OND")
-
-# Parse meteorological data
-weather = pvsyst.parse_pvsyst_meteo_file("path/to/weather.MET")
-
-# Generate PVsyst project
-prj_file = pvsyst.generate_pvsyst_project(
-    project_name="MyProject",
-    module=module,
-    inverter=inverter,
-    output_path="./output",
-    num_modules=1000,
-    num_inverters=10,
+importer = CSVFileImporter(
+    file_path="data/inverter_data.csv",
+    device_id="INV001",
+    timestamp_column="timestamp",
+    value_columns={
+        "ac_power": "AC Power (kW)",
+        "dc_voltage": "DC Voltage (V)",
+    },
 )
+
+data_points = await importer.import_data()
 ```
 
-### Inverter Selection
+## 📚 Documentation
 
+### Key Components
+
+#### 1. RealTimeMonitor
 ```python
-from pv_simulator.system_design import InverterSelector
-
-selector = InverterSelector(
-    module=module,
-    system_type=SystemType.UTILITY,
-    database_path="pv_simulator/data/inverter_database.json",
+monitor = RealTimeMonitor(
+    devices=device_list,
+    update_interval=5,  # seconds
+    buffer_size=1000
 )
+await monitor.start_monitoring()
+```
 
-# Search for suitable inverters
-candidates = selector.search_inverter_database(
-    dc_power_kw=100000,
-    inverter_type="central",
-    manufacturer="SMA",
-)
+#### 2. PerformanceMetrics
+```python
+metrics = PerformanceMetrics()
 
-print(f"Found {len(candidates)} suitable inverters")
+# Calculate various metrics
+pr = await metrics.instantaneous_pr(actual_power, rated_power, irradiance)
+cf = await metrics.capacity_factor(actual_energy, rated_power, period_hours)
+sy = await metrics.specific_yield(actual_energy, rated_power)
+avail = await metrics.availability_tracking(total_time, downtime)
+```
 
-# Optimize DC/AC ratio
-import numpy as np
-dc_profile = np.random.rand(8760) * 100000  # Hourly DC power profile
-optimal_ratio, analysis = selector.optimize_dc_ac_ratio(
-    dc_power_profile=dc_profile,
-    target_clipping_percent=2.0,
-)
+#### 3. AlertEngine
+```python
+engine = AlertEngine(underperformance_threshold=15.0)
 
-print(f"Optimal DC/AC ratio: {optimal_ratio:.2f}")
-print(f"Clipping losses: {analysis['clipping_loss_percent']:.2f}%")
+# Subscribe to alerts
+def on_alert(alert):
+    print(f"Alert: {alert.message}")
+
+engine.subscribe_alerts(on_alert)
+await engine.start()
+```
+
+#### 4. DataAggregator
+```python
+aggregator = DataAggregator()
+
+# Multi-site aggregation
+aggregated = await aggregator.multi_site_aggregation(site_data, method="sum")
+
+# Timestamp alignment
+aligned = await aggregator.timestamp_alignment(data_points, interval_seconds=60)
+
+# Data normalization
+normalized = await aggregator.data_normalization(data_points)
 ```
 
 ## 🧪 Testing
 
 ```bash
 # Run all tests
-pytest pv_simulator/tests/
+pytest
 
 # Run with coverage
-pytest --cov=pv_simulator pv_simulator/tests/
+pytest --cov=pv_circularity --cov-report=html
 
-# Run specific test file
-pytest pv_simulator/tests/test_string_sizing_calculator.py
+# Run specific test modules
+pytest tests/unit/test_monitoring/
 ```
 
-## 📊 System Loss Model
-
-The simulator includes comprehensive loss modeling:
-
-- **Soiling**: Geographic database (desert: 4.5%, temperate: 2.0%, etc.)
-- **Shading**: Near/far shading with backtracking support
-- **DC Wiring**: Resistance-based calculations (copper/aluminum)
-- **AC Wiring**: Three-phase collection system losses
-- **Inverter**: Load-dependent efficiency curves
-- **Transformer**: No-load and load losses
-- **Clipping**: DC-side and AC-side clipping analysis
-- **Availability**: Grid curtailment and maintenance downtime
-- **LID**: Light-induced degradation
-- **Mismatch**: Module-level and string-level mismatch
-
-## 🏗️ Architecture
+## 🏗️ Project Structure
 
 ```
-pv_simulator/
-├── system_design/
-│   ├── models.py                      # Pydantic data models
-│   ├── system_design_engine.py        # Main orchestrator
-│   ├── string_sizing_calculator.py    # NEC/IEC compliant string sizing
-│   ├── inverter_selector.py           # Inverter database & selection
-│   ├── array_layout_designer.py       # Multi-mounting layouts
-│   ├── system_loss_model.py           # Comprehensive loss modeling
-│   └── pvsyst_integration.py          # PVsyst file parsing
-├── data/
-│   └── inverter_database.json         # 10+ inverter manufacturers
-├── ui/
-│   └── system_design_ui.py            # Streamlit interface
-└── tests/
-    ├── test_string_sizing_calculator.py
-    └── test_system_design_engine.py
+pv-circularity-simulator/
+├── src/pv_circularity/
+│   ├── core/                    # Core utilities
+│   │   ├── config.py           # Configuration management
+│   │   ├── exceptions.py       # Custom exceptions
+│   │   ├── logging_config.py   # Logging setup
+│   │   └── utils.py            # Common utilities
+│   ├── models/                  # Pydantic data models
+│   │   ├── monitoring.py       # Monitoring data models
+│   │   └── scada.py            # SCADA device models
+│   ├── monitoring/              # Monitoring system
+│   │   ├── data_logger/        # Data logging
+│   │   │   ├── integrator.py  # Main integrator
+│   │   │   └── csv_importer.py # CSV import
+│   │   ├── scada/              # SCADA integration
+│   │   │   ├── protocols/      # Protocol clients
+│   │   │   ├── connector.py    # SCADA connector
+│   │   │   └── aggregator.py   # Data aggregator
+│   │   └── real_time/          # Real-time monitoring
+│   │       ├── monitor.py      # Real-time monitor
+│   │       ├── performance.py  # Performance metrics
+│   │       └── alerts.py       # Alert engine
+├── config/                      # Configuration files
+│   ├── monitoring.yaml
+│   └── scada_devices.yaml
+├── tests/                       # Test suite
+├── scripts/                     # Utility scripts
+└── docs/                        # Documentation
+
 ```
-
-## 📋 Requirements
-
-- Python 3.9+
-- NumPy, Pandas, SciPy
-- Pydantic v2+
-- PVLib
-- Streamlit
-- Plotly
-- See `requirements.txt` for complete list
-
-## 🔧 Configuration
-
-### Inverter Database
-
-The inverter database (`pv_simulator/data/inverter_database.json`) includes:
-
-- **Central Inverters**: SMA SC-2750-EV, Power Electronics FS3450, ABB PVS980
-- **String Inverters**: SMA Sunny Tripower, Fronius Symo, Huawei SUN2000, Sungrow SG250HX
-- **Microinverters**: Enphase IQ8PLUS
-- **Power Optimizers**: SolarEdge SE100K
-
-Add custom inverters by editing the JSON file following the schema.
-
-## 📖 Documentation
-
-### Key Classes
-
-- **SystemDesignEngine**: Main system design orchestrator
-- **StringSizingCalculator**: NEC 690 & IEC 60364 compliant string sizing
-- **InverterSelector**: Database search & DC/AC optimization
-- **ArrayLayoutDesigner**: Multi-mounting type layouts
-- **SystemLossModel**: Comprehensive loss calculations
-- **PVsystIntegration**: PVsyst file parsing & generation
-
-### Data Models (Pydantic)
-
-- **ModuleParameters**: Module electrical & physical specs
-- **InverterParameters**: Inverter specifications
-- **SystemConfiguration**: Complete system design
-- **StringConfiguration**: String sizing results
-- **ArrayLayout**: Array layout parameters
-- **SystemLosses**: Loss breakdown
-
-## 🌟 Features by System Type
-
-### Utility-Scale (MW+)
-- Central inverters (1-5 MW)
-- Single-axis tracker support
-- GCR optimization
-- Combiner box placement
-- MV collection systems
-
-### Commercial (100kW - 5MW)
-- String inverters
-- Rooftop & carport layouts
-- Fire setback compliance
-- 480V collection
-
-### Residential (<100kW)
-- String inverters / microinverters
-- Rooftop optimization
-- Module-level MPPT
-- 240V single-phase
 
 ## 🤝 Contributing
 
-Contributions welcome! Please:
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-MIT License - see LICENSE file for details
-
-## 👥 Authors
-
-PV Circularity Team
-
-## 🔗 Links
-
-- Repository: https://github.com/ganeshgowri-ASA/pv-circularity-simulator
-- Issues: https://github.com/ganeshgowri-ASA/pv-circularity-simulator/issues
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- PVsyst for industry-leading simulation methodology
-- NREL for PVLib and solar resource data
-- SMA, Fronius, Huawei, Enphase, and other manufacturers for inverter specifications
+- Built with modern async Python patterns for high performance
+- Implements industry-standard protocols for maximum compatibility
+- Designed for production-ready deployment in industrial environments
 
-## 📈 Roadmap
+## 📞 Support
 
-- [ ] Weather data integration (NSRDB, Meteonorm)
-- [ ] Bifacial module support
-- [ ] Advanced shading analysis (3D modeling)
-- [ ] Energy storage integration
-- [ ] Financial modeling (LCOE, NPV, IRR)
-- [ ] Degradation modeling
-- [ ] Real-time monitoring integration
-- [ ] API for external tools
+For issues, questions, or contributions, please open an issue on GitHub.

@@ -1,0 +1,143 @@
+# SCADA Device Configuration
+# This file defines the devices to monitor and their communication protocols
+
+devices:
+  # Modbus TCP Inverter
+  - device_id: "INV001"
+    name: "Main Inverter 1"
+    description: "SMA Sunny Tripower 60kW Inverter"
+    device_type: "inverter"
+    protocol_type: "modbus_tcp"
+    enabled: true
+    poll_interval_seconds: 5
+
+    modbus_config:
+      host: "192.168.1.100"
+      port: 502
+      slave_id: 1
+      timeout: 10
+      retries: 3
+      register_map:
+        ac_power:
+          address: 30775
+          count: 2
+          type: "input"
+          scale: 1.0
+          unit: "W"
+        dc_voltage:
+          address: 30771
+          count: 1
+          type: "input"
+          scale: 0.1
+          unit: "V"
+        dc_current:
+          address: 30769
+          count: 1
+          type: "input"
+          scale: 0.01
+          unit: "A"
+
+    site_id: "SITE001"
+    location: "Building A Rooftop"
+    coordinates:
+      latitude: 37.7749
+      longitude: -122.4194
+    manufacturer: "SMA"
+    model: "Sunny Tripower 60"
+    tags: ["inverter", "rooftop", "phase1"]
+
+  # SunSpec Compatible Inverter
+  - device_id: "INV002"
+    name: "Inverter 2 - SunSpec"
+    description: "SunSpec compatible inverter"
+    device_type: "inverter"
+    protocol_type: "sunspec"
+    enabled: true
+    poll_interval_seconds: 5
+
+    modbus_config:
+      host: "192.168.1.101"
+      port: 502
+      slave_id: 1
+      timeout: 10
+      retries: 3
+
+    site_id: "SITE001"
+    location: "Building B Rooftop"
+
+  # OPC UA Device
+  - device_id: "METER001"
+    name: "Main Meter"
+    description: "Building energy meter with OPC UA"
+    device_type: "meter"
+    protocol_type: "opcua"
+    enabled: true
+    poll_interval_seconds: 10
+
+    opcua_config:
+      endpoint: "opc.tcp://192.168.1.200:4840"
+      namespace: 2
+      timeout: 10
+      security_policy: "None"
+      node_ids:
+        active_power: "ns=2;i=1001"
+        reactive_power: "ns=2;i=1002"
+        voltage_l1: "ns=2;i=1010"
+        current_l1: "ns=2;i=1020"
+
+    site_id: "SITE001"
+
+  # MQTT Sensor
+  - device_id: "WEATHER001"
+    name: "Weather Station"
+    description: "Weather monitoring station"
+    device_type: "weather_station"
+    protocol_type: "mqtt"
+    enabled: true
+    poll_interval_seconds: 60
+
+    mqtt_config:
+      broker_host: "mqtt.example.com"
+      broker_port: 1883
+      client_id: "weather_station_001"
+      qos: 1
+      subscribe_topics:
+        - "site001/weather/#"
+      username: "weather_user"
+
+    site_id: "SITE001"
+    location: "Ground Level"
+
+  # Fronius Inverter (Proprietary API)
+  - device_id: "INV003"
+    name: "Fronius Inverter"
+    description: "Fronius Primo 8.2 kW"
+    device_type: "inverter"
+    protocol_type: "proprietary"
+    enabled: true
+    poll_interval_seconds: 5
+
+    proprietary_config:
+      protocol: "fronius"
+      host: "192.168.1.110"
+      port: 80
+      device_id: "1"
+      timeout: 10
+
+    site_id: "SITE002"
+    manufacturer: "Fronius"
+    model: "Primo 8.2"
+
+# Multi-site configuration example
+sites:
+  - site_id: "SITE001"
+    name: "Main Campus"
+    location: "San Francisco, CA"
+    rated_power: 250  # kWp
+    timezone: "America/Los_Angeles"
+
+  - site_id: "SITE002"
+    name: "Remote Site"
+    location: "Sacramento, CA"
+    rated_power: 50  # kWp
+    timezone: "America/Los_Angeles"
