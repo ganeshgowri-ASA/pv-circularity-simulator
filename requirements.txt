@@ -1,2 +1,67 @@
-numpy>=1.21.0
-pydantic>=2.0.0
+# PV Circularity Simulator - Requirements
+# Helioscope Integration & Advanced Shade Analysis (BATCH4-B05-S03)
+
+# Core dependencies
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+pydantic>=2.5.0
+
+# Solar calculations and irradiance
+# Note: pvlib-python provides solar position and irradiance models
+# but we implemented our own NREL SPA for full control
+pvlib-python>=0.10.0
+
+# 3D modeling and visualization
+pyvista>=0.42.0
+plotly>=5.18.0
+matplotlib>=3.7.0
+
+# Image processing (for horizon profile extraction)
+Pillow>=10.0.0
+
+# Streamlit UI
+streamlit>=1.29.0
+
+# Date/time handling
+tzdata>=2023.3
+python-dateutil>=2.8.2
+
+# File format support
+# For 3D model import
+trimesh>=4.0.0
+# Note: SketchUp support may require additional libraries
+
+# Optimization
+scikit-optimize>=0.9.0
+
+# Data validation
+email-validator>=2.1.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
+
+# Code quality
+black>=23.12.0
+flake8>=6.1.0
+mypy>=1.7.0
+pylint>=3.0.0
+
+# Documentation
+sphinx>=7.2.0
+sphinx-rtd-theme>=2.0.0
+
+# Optional: Advanced features
+# pysolar>=0.10  # Alternative solar position calculator
+# solarpy>=0.2   # Additional solar utilities
+# pytz>=2023.3   # Legacy timezone support (tzdata is preferred)
+
+# Development tools
+ipython>=8.18.0
+jupyter>=1.0.0
+notebook>=7.0.0
+
+# Logging and monitoring
+coloredlogs>=15.0.0

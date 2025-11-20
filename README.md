@@ -4,49 +4,68 @@ End-to-end PV lifecycle simulation platform: Cell design → Module engineering 
 
 ## Features
 
-### Griddler Pro Integration & Metallization Optimization
+### BATCH4-B05-S03: Helioscope Integration & Advanced Shade Analysis
 
-Advanced metallization pattern design and optimization for photovoltaic solar cells.
+Comprehensive 3D shade analysis and system design tools including terrain modeling, horizon profiling, near/far shading analysis, and advanced electrical modeling for accurate energy yield predictions.
 
-**Key Features:**
-- Multi-objective optimization (resistance, shading, cost, fill factor)
-- Support for advanced patterns (MBB, IBC, bifacial, shingled, SmartWire)
-- Comprehensive cost analysis (silver consumption, processing costs)
-- Series resistance calculation with detailed component breakdown
-- CAD export (JSON, SVG, DXF, GDSII)
-- Module-level impact analysis
+#### Core Components
 
-**Quick Start:**
-```python
-from src.modules.griddler_integration import GriddlerInterface, OptimizationObjective
-
-griddler = GriddlerInterface()
-optimized = griddler.optimize_metallization(
-    {'cell_width': 156.75, 'cell_length': 156.75, 'jsc': 0.042, 'voc': 0.68},
-    objective=OptimizationObjective.BALANCED
-)
-print(f"Efficiency: {optimized.combined_efficiency:.2%}")
-```
-
-See [docs/GRIDDLER_INTEGRATION.md](docs/GRIDDLER_INTEGRATION.md) for full documentation.
+1. **HelioscapeModel** - 3D site modeling and terrain analysis
+2. **ShadeAnalysisEngine** - Comprehensive near/far shade analysis
+3. **SunPositionCalculator** - NREL SPA solar position algorithm
+4. **IrradianceOnSurface** - POA irradiance with Perez transposition
+5. **ElectricalShadingModel** - Bypass diode and mismatch simulation
+6. **SystemLayoutOptimizer** - Multi-parameter layout optimization
+7. **HorizonProfiler** - Horizon profile management
+8. **ShadeAnalysisUI** - Interactive Streamlit interface
 
 ## Installation
 
 ```bash
 pip install -r requirements.txt
+pip install -e .
 ```
 
-## Examples
+## Quick Start
 
-Run the Griddler integration examples:
+```python
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from pv_circularity_simulator.batch4.b05_system_design.s03_helioscope_shade_analysis import (
+    Location, SiteModel, ArrayGeometry, ShadeAnalysisConfig, ShadeAnalysisEngine
+)
+
+# Define site and array
+location = Location(latitude=37.7749, longitude=-122.4194)
+site_model = SiteModel(location=location, albedo=0.2)
+array_geometry = ArrayGeometry(tilt=20.0, azimuth=180.0, gcr=0.4,
+                               module_width=1.0, module_height=2.0,
+                               modules_per_string=20, row_spacing=5.0)
+
+# Run shade analysis
+config = ShadeAnalysisConfig(
+    start_date=datetime(2024, 1, 1, tzinfo=ZoneInfo("UTC")),
+    end_date=datetime(2024, 12, 31, tzinfo=ZoneInfo("UTC"))
+)
+engine = ShadeAnalysisEngine(site_model, array_geometry, config)
+```
+
+### Streamlit UI
+
 ```bash
-python examples/griddler_example.py
+streamlit run src/pv_circularity_simulator/batch4/b05_system_design/s03_helioscope_shade_analysis/ui.py
 ```
 
 ## Documentation
 
-- [Griddler Integration Guide](docs/GRIDDLER_INTEGRATION.md)
+See full documentation in module docstrings. All classes and methods include comprehensive type hints and Pydantic validation.
+
+## Testing
+
+```bash
+pytest tests/
+```
 
 ## License
 
-See [LICENSE](LICENSE) for details.
+MIT License
