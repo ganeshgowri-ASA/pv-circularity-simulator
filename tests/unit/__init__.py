@@ -1,3 +1,1 @@
-"""
-Unit tests for individual modules.
-"""
+"""Unit tests for PV simulator."""

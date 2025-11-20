@@ -1,1 +1,1 @@
-"""Tests for integration layer."""
+"""Integration tests for PV simulator."""
