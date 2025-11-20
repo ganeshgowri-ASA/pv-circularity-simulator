@@ -1,0 +1,210 @@
+# PV Circularity Simulator - Application Configuration
+# This is an example configuration file demonstrating all available settings
+
+# Database Configuration
+database:
+  host: localhost
+  port: 5432
+  username: pv_user
+  password: pv_password
+  database: pv_circularity
+  pool_size: 10
+  max_overflow: 20
+  echo_sql: false
+
+# API Server Configuration
+api:
+  host: 0.0.0.0
+  port: 8080
+  debug: true
+  workers: 4
+  timeout: 30
+  cors_enabled: true
+  cors_origins:
+    - http://localhost:3000
+    - http://localhost:8080
+  rate_limit:
+    enabled: true
+    requests_per_minute: 100
+
+# Logging Configuration
+logging:
+  level: INFO
+  format: json
+  file: /var/log/pv-circularity/app.log
+  max_file_size: 10485760  # 10MB
+  backup_count: 5
+  console_output: true
+
+# Simulation Configuration
+simulation:
+  cell_design:
+    default_efficiency: 0.20
+    temperature_coefficient: -0.004
+    degradation_rate: 0.005  # per year
+
+  module_engineering:
+    cells_per_module: 72
+    default_layout: grid
+    bypass_diodes: 3
+
+  system_planning:
+    default_system_size: 5000  # watts
+    inverter_efficiency: 0.98
+    wiring_loss: 0.02
+
+  performance_monitoring:
+    data_collection_interval: 300  # seconds
+    anomaly_detection_enabled: true
+    alert_threshold: 0.15  # 15% deviation
+
+  circularity:
+    recycling_rate: 0.96
+    reuse_priority: true
+    material_recovery_targets:
+      silicon: 0.95
+      silver: 0.98
+      glass: 0.90
+      aluminum: 0.95
+
+# SCAPS Integration
+scaps:
+  enabled: true
+  executable_path: /usr/local/bin/scaps
+  default_simulation_parameters:
+    temperature: 300  # Kelvin
+    illumination: 1000  # W/m²
+    voltage_steps: 100
+
+# CTM (Cell-to-Module) Analysis
+ctm:
+  enabled: true
+  loss_factors:
+    optical_loss: 0.03
+    resistive_loss: 0.02
+    ctm_gain: 0.98
+
+# Reliability Testing
+reliability:
+  test_protocols:
+    - IEC 61215
+    - IEC 61730
+  accelerated_testing:
+    temperature_cycling: true
+    humidity_freeze: true
+    damp_heat: true
+  failure_analysis_enabled: true
+
+# Energy Forecasting
+forecasting:
+  weather_data_source: openweathermap
+  api_key: ${WEATHER_API_KEY}  # Environment variable
+  forecast_horizon: 168  # hours (7 days)
+  update_interval: 3600  # seconds (1 hour)
+  models:
+    - physical
+    - statistical
+    - ml_enhanced
+
+# Circular Economy
+circular_economy:
+  lifecycle_assessment:
+    enabled: true
+    scope: cradle_to_grave
+    impact_categories:
+      - global_warming_potential
+      - energy_payback_time
+      - carbon_footprint
+
+  end_of_life:
+    strategies:
+      - reduce
+      - reuse
+      - recycle
+    prioritization: cascade
+
+  material_tracking:
+    enabled: true
+    track_rare_materials: true
+    supply_chain_transparency: high
+
+# Cache Configuration
+cache:
+  enabled: true
+  backend: redis
+  host: localhost
+  port: 6379
+  ttl: 3600  # seconds
+  max_entries: 10000
+
+# Security Configuration
+security:
+  authentication:
+    enabled: true
+    method: jwt
+    secret_key: ${JWT_SECRET_KEY}  # Environment variable
+    token_expiry: 86400  # seconds (24 hours)
+
+  encryption:
+    enabled: true
+    algorithm: AES256
+
+  api_keys:
+    enabled: true
+    header_name: X-API-Key
+
+# Feature Flags
+features:
+  experimental_models: false
+  advanced_analytics: true
+  batch_processing: true
+  distributed_computing: false
+  ml_predictions: true
+
+# Environment-Specific Configurations
+environments:
+  development:
+    database:
+      host: localhost
+      echo_sql: true
+    api:
+      debug: true
+      cors_origins:
+        - "*"
+    logging:
+      level: DEBUG
+      console_output: true
+    features:
+      experimental_models: true
+
+  staging:
+    database:
+      host: staging-db.example.com
+      pool_size: 20
+    api:
+      debug: false
+      workers: 8
+    logging:
+      level: INFO
+    features:
+      experimental_models: true
+      advanced_analytics: true
+
+  production:
+    database:
+      host: prod-db.example.com
+      pool_size: 50
+      max_overflow: 100
+    api:
+      debug: false
+      workers: 16
+      timeout: 60
+    logging:
+      level: WARNING
+      console_output: false
+    cache:
+      max_entries: 100000
+    features:
+      experimental_models: false
+      batch_processing: true
+      distributed_computing: true

@@ -1,14 +1,14 @@
 """
-PV Circularity Simulator - An end-to-end PV lifecycle simulation platform.
+PV Circularity Simulator - End-to-end PV lifecycle simulation platform.
 
-This package provides tools for simulating photovoltaic systems with a focus on
-circularity, including material flow analysis, reuse/repair/recycling strategies,
-and sustainability impact assessment.
+This package provides comprehensive tools for simulating photovoltaic systems
+throughout their lifecycle, including cell design, module engineering, system
+planning, performance monitoring, and circular economy modeling.
 """
 
 __version__ = "0.1.0"
-__author__ = "PV Circularity Team"
+__author__ = "PV Circularity Simulator Team"
 
-from .dashboards.circularity_dashboard import CircularityDashboardUI
+from .config.configuration_manager import ConfigurationManager
 
-__all__ = ["CircularityDashboardUI"]
+__all__ = ["ConfigurationManager"]

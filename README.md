@@ -1,262 +1,187 @@
 # PV Circularity Simulator
 
-An end-to-end PV (photovoltaic) lifecycle simulation platform with comprehensive circularity assessment dashboard.
+End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
 
-**End-to-end PV lifecycle simulation**: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
+## Features
 
-## 🌟 Features
+- **Cell Design Simulation**: Model photovoltaic cell performance and characteristics
+- **Module Engineering**: Cell-to-module (CTM) analysis and loss calculations
+- **System Planning**: Design and optimize PV system configurations
+- **Performance Monitoring**: Real-time monitoring with anomaly detection
+- **Circular Economy**: 3R (Reduce, Reuse, Recycle) lifecycle modeling
+- **SCAPS Integration**: Advanced semiconductor device simulation
+- **Reliability Testing**: IEC standard compliance and accelerated testing
+- **Energy Forecasting**: AI-enhanced weather-based predictions
+- **Production-Ready Configuration Management**: Comprehensive configuration system
 
-### Circularity Assessment Dashboard
+## Installation
 
-The **CircularityDashboardUI** provides a production-ready Streamlit interface for analyzing PV circularity metrics:
-
-- **📊 Material Flow Visualizer**: Interactive Sankey diagrams showing material movement through manufacturing, operation, and end-of-life stages
-- **♻️ 3R Strategies Analysis**: Comprehensive tracking of Reuse, Repair, and Recycling metrics
-- **📈 Impact Scorecards**: Environmental and economic impact assessment with baseline vs circular comparisons
-- **📋 Policy Compliance Tracker**: Multi-jurisdiction regulatory compliance monitoring with real-time status updates
-
-## 🚀 Quick Start
-
-### Installation
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/pv-circularity-simulator.git
+# Clone the repository
+git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
 cd pv-circularity-simulator
-```
 
-2. Install dependencies:
-```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Install the package
+pip install -e .
 ```
 
-### Running the Dashboard
+## Configuration Management
 
-Launch the Streamlit dashboard:
-```bash
-streamlit run app.py
-```
+The simulator includes a comprehensive, production-ready configuration management system with:
 
-The dashboard will open in your default browser at `http://localhost:8501`
+- **Multiple Formats**: YAML and JSON support
+- **Environment Variables**: Override any configuration via environment variables
+- **Validation**: Schema-based validation with type checking and constraints
+- **Multi-Environment**: Separate configs for development, staging, and production
+- **Thread-Safe**: Safe for concurrent access
 
-### Using Sample Data
-
-The application includes a sample data generator for testing:
+### Quick Start
 
 ```python
-from examples.sample_data_generator import generate_sample_circularity_data
+from pv_circularity_simulator.config import ConfigurationManager
 
-# Generate sample data
-metrics = generate_sample_circularity_data()
+# Load configuration
+config = ConfigurationManager()
+config.load_configuration('config/app.yaml')
 
-# Use with dashboard
-from pv_circularity_simulator.dashboards import CircularityDashboardUI
-dashboard = CircularityDashboardUI(metrics=metrics)
+# Get values
+db_host = config.get('database.host')
+api_port = config.get('api.port', default=8080)
+
+# Set values
+config.set('api.workers', 8)
+
+# Save configuration
+config.save_configuration()
 ```
 
-## 📁 Project Structure
+### Environment Variables
+
+Override configuration using environment variables with the `APP_` prefix:
+
+```bash
+export APP_DATABASE_HOST=prod-db.example.com
+export APP_DATABASE_PORT=5432
+export APP_API_DEBUG=false
+```
+
+See [config/README.md](config/README.md) for comprehensive documentation.
+
+## Project Structure
 
 ```
 pv-circularity-simulator/
 ├── src/
 │   └── pv_circularity_simulator/
-│       ├── core/                      # Core data models
-│       │   ├── data_models.py        # Circularity metrics models
-│       │   └── __init__.py
-│       ├── dashboards/                # Dashboard UI components
-│       │   ├── circularity_dashboard.py
-│       │   ├── components/            # Reusable UI components
-│       │   └── __init__.py
-│       ├── data/                      # Data processing
-│       ├── utils/                     # Utilities
-│       └── config/                    # Configuration
-├── examples/
-│   └── sample_data_generator.py      # Sample data for testing
-├── tests/                             # Unit tests
-├── .streamlit/
-│   └── config.toml                   # Streamlit configuration
-├── app.py                            # Main application entry point
-├── requirements.txt                  # Python dependencies
-└── README.md
+│       ├── config/              # Configuration management system
+│       │   ├── configuration_manager.py
+│       │   ├── validators.py
+│       │   └── exceptions.py
+│       └── __init__.py
+├── config/
+│   ├── examples/                # Example configuration files
+│   │   ├── app_config.yaml
+│   │   ├── app_config.json
+│   │   └── config_schema.yaml
+│   └── README.md                # Configuration documentation
+├── tests/                       # Test suite
+│   └── test_configuration_manager.py
+├── examples/                    # Usage examples
+│   └── configuration_usage.py
+├── requirements.txt             # Python dependencies
+└── setup.py                     # Package setup
 ```
 
-## 📊 Dashboard Components
+## Usage Examples
 
-### 1. Material Flow Visualizer
-
-Visualizes material flows through the PV lifecycle:
-- Interactive Sankey diagrams
-- Material-specific filtering
-- Stage-by-stage efficiency analysis
-- Mass balance calculations
-- Loss identification
-
-### 2. Reuse, Repair, Recycling Tabs
-
-Comprehensive 3R strategy metrics:
-
-**Reuse:**
-- Collection and reuse rates
-- Quality grade distribution
-- Cost savings and CO₂ avoidance
-- Residual capacity analysis
-
-**Repair:**
-- Assessment and success rates
-- Common failure modes
-- Performance recovery metrics
-- Economic analysis
-
-**Recycling:**
-- Material recovery rates by type
-- Process efficiency metrics
-- Resource consumption tracking
-- Economic value analysis
-
-### 3. Impact Scorecards
-
-Environmental and economic impact assessment:
-- Baseline vs circular comparison
-- Multi-category tracking (carbon, water, waste, energy)
-- Target progress monitoring
-- Data quality indicators
-
-### 4. Policy Compliance Tracker
-
-Regulatory compliance monitoring:
-- Multi-jurisdiction tracking (EU, US, China, Japan)
-- Collection and recovery rate gauges
-- Deadline tracking and alerts
-- Penalty assessment
-
-## 🔧 API Usage
-
-### Creating a Dashboard
+### Basic Configuration
 
 ```python
-from pv_circularity_simulator.dashboards import CircularityDashboardUI
-from pv_circularity_simulator.core import CircularityMetrics
+from pv_circularity_simulator.config import settings_loader
 
-# Initialize with your metrics
-metrics = CircularityMetrics(
-    assessment_id="ASSESS-001",
-    circularity_index=75.5
+# Load with environment-specific settings
+config = settings_loader(
+    'config/app.yaml',
+    environment='production',
+    apply_env_overrides=True
 )
-
-# Create dashboard
-dashboard = CircularityDashboardUI(
-    metrics=metrics,
-    title="My Custom Dashboard",
-    cache_enabled=True
-)
-
-# Render (when using Streamlit)
-dashboard.render()
 ```
 
-### Working with Data Models
+### Validation
 
 ```python
-from pv_circularity_simulator.core.data_models import (
-    MaterialFlow,
-    ReuseMetrics,
-    RecyclingMetrics,
-    PolicyCompliance,
-    ImpactScorecard,
-    MaterialType,
-    ProcessStage
-)
+from pv_circularity_simulator.config import ConfigurationManager
 
-# Create material flow
-flow = MaterialFlow(
-    material_type=MaterialType.SILICON,
-    stage=ProcessStage.MANUFACTURING,
-    input_mass_kg=10000,
-    output_mass_kg=9500,
-    loss_mass_kg=500,
-    location="Germany"
-)
+schema = {
+    "database": {
+        "port": {"type": int, "min": 1, "max": 65535},
+    }
+}
 
-# Create reuse metrics
-reuse = ReuseMetrics(
-    total_modules_collected=1000,
-    modules_reused=750,
-    avg_residual_capacity_pct=85.0,
-    cost_savings_usd=125000
-)
+config = ConfigurationManager(schema=schema)
+config.load_configuration('config/app.yaml')
+config.validate()  # Raises error if invalid
 ```
 
-## 📦 Dependencies
+See [examples/configuration_usage.py](examples/configuration_usage.py) for more examples.
 
-- **Streamlit** (>=1.28.0): Dashboard framework
-- **Pandas** (>=2.0.0): Data manipulation
-- **Plotly** (>=5.17.0): Interactive visualizations
-- **NumPy** (>=1.24.0): Numerical computing
-- **Pydantic** (>=2.0.0): Data validation
+## Testing
 
-See `requirements.txt` for complete list.
+Run the test suite:
 
-## 🧪 Testing
-
-Run the sample data generator:
 ```bash
-python examples/sample_data_generator.py
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=pv_circularity_simulator --cov-report=html
 ```
 
-Run tests (when implemented):
+## Documentation
+
+- [Configuration Management Guide](config/README.md)
+- [API Reference](docs/api_reference.md) (coming soon)
+- [User Guide](docs/user_guide.md) (coming soon)
+
+## Development
+
+### Setting Up Development Environment
+
 ```bash
-pytest tests/
+# Install development dependencies
+pip install -e ".[dev]"
+
+# Copy environment template
+cp .env.example .env
+# Edit .env with your settings
 ```
 
-## 📚 Documentation
+### Code Quality
 
-Key classes and methods:
+```bash
+# Format code
+black src/ tests/
 
-### CircularityDashboardUI
+# Lint
+flake8 src/ tests/
 
-Main dashboard class with four core visualization methods:
+# Type checking
+mypy src/
+```
 
-- `material_flow_visualizer()`: Visualize material flows with Sankey diagrams
-- `reuse_repair_recycling_tabs()`: Display 3R strategy metrics in tabs
-- `impact_scorecards()`: Show environmental/economic impact assessments
-- `policy_compliance_tracker()`: Track regulatory compliance status
+## Contributing
 
-### Data Models
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-- `CircularityMetrics`: Comprehensive circularity assessment container
-- `MaterialFlow`: Material flow tracking through lifecycle stages
-- `ReuseMetrics`: Module reuse strategy metrics
-- `RepairMetrics`: Module repair operation metrics
-- `RecyclingMetrics`: Material recycling efficiency metrics
-- `PolicyCompliance`: Regulatory compliance tracking
-- `ImpactScorecard`: Impact assessment by category
+## License
 
-## 🤝 Contributing
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Contributions are welcome! Please follow these guidelines:
+## Acknowledgments
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes with full docstrings
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-See LICENSE file for details.
-
-## 🔗 Resources
-
-- [Streamlit Documentation](https://docs.streamlit.io)
-- [Plotly Documentation](https://plotly.com/python)
-- [PV Circularity Best Practices](https://github.com)
-
-## 📧 Contact
-
-For questions or support, please open an issue on GitHub.
-
----
-
-**Version:** 0.1.0
-**Status:** Production-ready
-**Last Updated:** 2025-01-17
+- Built for photovoltaic lifecycle simulation and circular economy analysis
+- Supports research in sustainable energy systems
+- Integrates industry-standard simulation tools (SCAPS)
