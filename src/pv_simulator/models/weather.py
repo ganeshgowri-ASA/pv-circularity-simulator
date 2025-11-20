@@ -1,409 +1,345 @@
 """
-Pydantic models for weather and TMY data.
+Weather data models for PV Circularity Simulator.
 
-This module defines all data models for weather data, TMY files,
-locations, and related metadata with full type hints and validation.
+This module provides Pydantic models for weather data validation,
+serialization, and type safety across different weather API providers.
 """
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
-
-
-class DataSource(str, Enum):
-    """Supported weather data sources."""
-
-    NSRDB = "NSRDB"  # National Solar Radiation Database
-    PVGIS = "PVGIS"  # Photovoltaic Geographical Information System
-    METEONORM = "Meteonorm"
-    EPW = "EPW"  # EnergyPlus Weather
-    LOCAL_STATION = "Local Station"
-    SATELLITE = "Satellite"
-    CUSTOM = "Custom"
+from pydantic import BaseModel, Field, field_validator
 
 
-class TemporalResolution(str, Enum):
-    """Temporal resolution of weather data."""
+class WeatherProvider(str, Enum):
+    """Enumeration of supported weather API providers."""
 
-    MINUTE_1 = "1min"
-    MINUTE_5 = "5min"
-    MINUTE_15 = "15min"
-    MINUTE_30 = "30min"
-    HOURLY = "hourly"
-    DAILY = "daily"
-    MONTHLY = "monthly"
-    ANNUAL = "annual"
+    OPENWEATHERMAP = "openweathermap"
+    VISUALCROSSING = "visualcrossing"
+    METEOMATICS = "meteomatics"
+    TOMORROW_IO = "tomorrow_io"
+    NREL_PSM = "nrel_psm"
 
 
-class TMYFormat(str, Enum):
-    """Supported TMY file formats."""
+class GeoLocation(BaseModel):
+    """Geographic location coordinates."""
 
-    TMY2 = "TMY2"  # TMY2 format
-    TMY3 = "TMY3"  # TMY3 format
-    EPW = "EPW"  # EnergyPlus Weather format
-    CSV = "CSV"  # Generic CSV format
-    JSON = "JSON"  # JSON format
-    NETCDF = "NetCDF"  # NetCDF format
+    latitude: float = Field(..., ge=-90, le=90, description="Latitude in decimal degrees")
+    longitude: float = Field(..., ge=-180, le=180, description="Longitude in decimal degrees")
+    elevation: Optional[float] = Field(
+        None, description="Elevation above sea level in meters"
+    )
+    city: Optional[str] = Field(None, description="City name")
+    country: Optional[str] = Field(None, description="Country name or code")
+    timezone: Optional[str] = Field(None, description="IANA timezone identifier")
 
+    @field_validator("latitude")
+    @classmethod
+    def validate_latitude(cls, v: float) -> float:
+        """Validate latitude is within valid range."""
+        if not -90 <= v <= 90:
+            raise ValueError("Latitude must be between -90 and 90 degrees")
+        return v
 
-class DataQuality(str, Enum):
-    """Data quality flags."""
+    @field_validator("longitude")
+    @classmethod
+    def validate_longitude(cls, v: float) -> float:
+        """Validate longitude is within valid range."""
+        if not -180 <= v <= 180:
+            raise ValueError("Longitude must be between -180 and 180 degrees")
+        return v
 
-    EXCELLENT = "excellent"  # < 1% missing data
-    GOOD = "good"  # 1-5% missing data
-    FAIR = "fair"  # 5-10% missing data
-    POOR = "poor"  # > 10% missing data
-    UNKNOWN = "unknown"
+    def __str__(self) -> str:
+        """Return string representation of location."""
+        if self.city and self.country:
+            return f"{self.city}, {self.country} ({self.latitude:.4f}, {self.longitude:.4f})"
+        return f"({self.latitude:.4f}, {self.longitude:.4f})"
 
 
 class WeatherDataPoint(BaseModel):
     """
-    Single weather data point with all meteorological variables.
+    Core weather data point with all relevant meteorological parameters.
 
-    Attributes:
-        timestamp: UTC timestamp of the measurement
-        temperature: Ambient temperature in Celsius
-        irradiance_ghi: Global Horizontal Irradiance in W/m²
-        irradiance_dni: Direct Normal Irradiance in W/m²
-        irradiance_dhi: Diffuse Horizontal Irradiance in W/m²
-        wind_speed: Wind speed in m/s
-        wind_direction: Wind direction in degrees (0-360)
-        relative_humidity: Relative humidity in %
-        pressure: Atmospheric pressure in Pa
-        albedo: Surface albedo (0-1)
-        precipitable_water: Precipitable water in cm
-        cloud_cover: Cloud cover fraction (0-1)
-        data_quality: Quality flag for this data point
+    This model represents a single weather observation at a specific time and location.
+    All fields use SI units for consistency.
     """
 
-    timestamp: datetime = Field(..., description="UTC timestamp")
-    temperature: float = Field(..., description="Ambient temperature (°C)", ge=-100, le=60)
-    irradiance_ghi: float = Field(
-        ..., description="Global Horizontal Irradiance (W/m²)", ge=0, le=1500
+    timestamp: datetime = Field(..., description="UTC timestamp of the observation")
+    location: GeoLocation = Field(..., description="Geographic location of observation")
+    provider: WeatherProvider = Field(..., description="Weather data provider")
+
+    # Temperature (Celsius)
+    temperature: Optional[float] = Field(
+        None, ge=-100, le=60, description="Air temperature in Celsius"
     )
-    irradiance_dni: float = Field(
-        ..., description="Direct Normal Irradiance (W/m²)", ge=0, le=1500
+    feels_like: Optional[float] = Field(
+        None, ge=-100, le=60, description="Apparent temperature in Celsius"
     )
-    irradiance_dhi: float = Field(
-        ..., description="Diffuse Horizontal Irradiance (W/m²)", ge=0, le=1000
+    dew_point: Optional[float] = Field(
+        None, ge=-100, le=50, description="Dew point temperature in Celsius"
     )
-    wind_speed: float = Field(..., description="Wind speed (m/s)", ge=0, le=100)
-    wind_direction: Optional[float] = Field(
-        None, description="Wind direction (degrees)", ge=0, le=360
+
+    # Humidity (%)
+    humidity: Optional[float] = Field(
+        None, ge=0, le=100, description="Relative humidity percentage"
     )
-    relative_humidity: Optional[float] = Field(
-        None, description="Relative humidity (%)", ge=0, le=100
-    )
+
+    # Pressure (hPa/mbar)
     pressure: Optional[float] = Field(
-        None, description="Atmospheric pressure (Pa)", ge=50000, le=110000
+        None, ge=800, le=1100, description="Atmospheric pressure in hPa"
     )
-    albedo: Optional[float] = Field(None, description="Surface albedo", ge=0, le=1)
-    precipitable_water: Optional[float] = Field(
-        None, description="Precipitable water (cm)", ge=0
+    pressure_sea_level: Optional[float] = Field(
+        None, ge=800, le=1100, description="Sea level pressure in hPa"
     )
-    cloud_cover: Optional[float] = Field(None, description="Cloud cover fraction", ge=0, le=1)
-    data_quality: DataQuality = Field(default=DataQuality.UNKNOWN, description="Data quality flag")
 
-    @field_validator("irradiance_ghi", "irradiance_dni", "irradiance_dhi")
+    # Wind (m/s and degrees)
+    wind_speed: Optional[float] = Field(None, ge=0, description="Wind speed in m/s")
+    wind_gust: Optional[float] = Field(None, ge=0, description="Wind gust speed in m/s")
+    wind_direction: Optional[float] = Field(
+        None, ge=0, le=360, description="Wind direction in degrees"
+    )
+
+    # Clouds and visibility
+    cloud_cover: Optional[float] = Field(
+        None, ge=0, le=100, description="Cloud cover percentage"
+    )
+    visibility: Optional[float] = Field(None, ge=0, description="Visibility in meters")
+
+    # Precipitation
+    precipitation: Optional[float] = Field(
+        None, ge=0, description="Precipitation amount in mm"
+    )
+    precipitation_probability: Optional[float] = Field(
+        None, ge=0, le=100, description="Precipitation probability percentage"
+    )
+    rain: Optional[float] = Field(None, ge=0, description="Rain amount in mm")
+    snow: Optional[float] = Field(None, ge=0, description="Snow amount in mm")
+
+    # Solar radiation (critical for PV simulation)
+    ghi: Optional[float] = Field(
+        None, ge=0, description="Global Horizontal Irradiance in W/m²"
+    )
+    dni: Optional[float] = Field(
+        None, ge=0, description="Direct Normal Irradiance in W/m²"
+    )
+    dhi: Optional[float] = Field(
+        None, ge=0, description="Diffuse Horizontal Irradiance in W/m²"
+    )
+    solar_elevation: Optional[float] = Field(
+        None, ge=-90, le=90, description="Solar elevation angle in degrees"
+    )
+    solar_azimuth: Optional[float] = Field(
+        None, ge=0, le=360, description="Solar azimuth angle in degrees"
+    )
+
+    # UV index
+    uv_index: Optional[float] = Field(None, ge=0, description="UV index")
+
+    # Weather condition
+    condition: Optional[str] = Field(None, description="Weather condition description")
+    condition_code: Optional[int] = Field(None, description="Weather condition code")
+
+    # Data quality indicators
+    quality_score: Optional[float] = Field(
+        None, ge=0, le=1, description="Data quality score (0-1)"
+    )
+    is_interpolated: bool = Field(
+        default=False, description="Whether data was interpolated"
+    )
+    is_forecast: bool = Field(default=False, description="Whether data is forecast")
+
+    class Config:
+        """Pydantic model configuration."""
+
+        json_encoders = {datetime: lambda v: v.isoformat()}
+
+    @field_validator("wind_direction")
     @classmethod
-    def validate_irradiance(cls, v: float) -> float:
-        """Validate irradiance values are non-negative."""
-        if v < 0:
-            raise ValueError("Irradiance values must be non-negative")
+    def validate_wind_direction(cls, v: Optional[float]) -> Optional[float]:
+        """Normalize wind direction to 0-360 range."""
+        if v is not None:
+            return v % 360
         return v
 
-    @model_validator(mode="after")
-    def validate_irradiance_consistency(self) -> "WeatherDataPoint":
-        """Validate that GHI >= DHI (physical consistency)."""
-        if self.irradiance_ghi < self.irradiance_dhi:
-            raise ValueError("GHI must be greater than or equal to DHI")
-        return self
+    def has_solar_data(self) -> bool:
+        """Check if this data point contains solar irradiance data."""
+        return any([self.ghi is not None, self.dni is not None, self.dhi is not None])
 
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "timestamp": "2023-07-15T12:00:00Z",
-                "temperature": 28.5,
-                "irradiance_ghi": 950.0,
-                "irradiance_dni": 850.0,
-                "irradiance_dhi": 150.0,
-                "wind_speed": 3.5,
-                "wind_direction": 180.0,
-                "relative_humidity": 45.0,
-                "pressure": 101325.0,
-                "albedo": 0.2,
-                "data_quality": "excellent",
-            }
-        }
-    }
+    def has_temperature_data(self) -> bool:
+        """Check if this data point contains temperature data."""
+        return self.temperature is not None
+
+    def has_wind_data(self) -> bool:
+        """Check if this data point contains wind data."""
+        return self.wind_speed is not None
 
 
-class GlobalLocation(BaseModel):
-    """
-    Global location with geographic metadata.
+class CurrentWeather(BaseModel):
+    """Current weather conditions at a location."""
 
-    Attributes:
-        name: Location name (city, station name, etc.)
-        country: Country name or code
-        latitude: Latitude in decimal degrees
-        longitude: Longitude in decimal degrees
-        elevation: Elevation above sea level in meters
-        timezone: IANA timezone identifier
-        climate_zone: Köppen climate classification
-        population: Population (optional)
-        metadata: Additional metadata
-    """
-
-    name: str = Field(..., description="Location name", min_length=1)
-    country: str = Field(..., description="Country name or ISO code", min_length=2)
-    latitude: float = Field(..., description="Latitude (degrees)", ge=-90, le=90)
-    longitude: float = Field(..., description="Longitude (degrees)", ge=-180, le=180)
-    elevation: float = Field(..., description="Elevation (meters)", ge=-500, le=9000)
-    timezone: str = Field(..., description="IANA timezone")
-    climate_zone: Optional[str] = Field(None, description="Köppen climate classification")
-    population: Optional[int] = Field(None, description="Population", ge=0)
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "name": "Denver",
-                "country": "USA",
-                "latitude": 39.7392,
-                "longitude": -104.9903,
-                "elevation": 1609.0,
-                "timezone": "America/Denver",
-                "climate_zone": "BSk",
-                "population": 715522,
-            }
-        }
-    }
-
-
-class TMYData(BaseModel):
-    """
-    Typical Meteorological Year (TMY) dataset.
-
-    TMY data represents a synthesized year of hourly weather data
-    compiled from multiple years of historical data to represent
-    typical climatic conditions at a location.
-
-    Attributes:
-        location: Location information
-        data_source: Source of the TMY data
-        format_type: TMY file format
-        temporal_resolution: Time resolution of data
-        start_year: First year in source data range
-        end_year: Last year in source data range
-        hourly_data: List of hourly weather data points
-        metadata: Additional metadata
-        data_quality: Overall data quality assessment
-        completeness_percentage: Percentage of complete data (0-100)
-    """
-
-    location: GlobalLocation = Field(..., description="Location information")
-    data_source: DataSource = Field(..., description="Data source")
-    format_type: TMYFormat = Field(default=TMYFormat.TMY3, description="File format")
-    temporal_resolution: TemporalResolution = Field(
-        default=TemporalResolution.HOURLY, description="Temporal resolution"
+    data: WeatherDataPoint = Field(..., description="Current weather data")
+    fetched_at: datetime = Field(
+        default_factory=datetime.utcnow, description="UTC timestamp when data was fetched"
     )
-    start_year: int = Field(..., description="Start year of source data", ge=1900, le=2100)
-    end_year: int = Field(..., description="End year of source data", ge=1900, le=2100)
-    hourly_data: List[WeatherDataPoint] = Field(
-        ..., description="Hourly weather data", min_length=1
-    )
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
-    data_quality: DataQuality = Field(
-        default=DataQuality.UNKNOWN, description="Overall data quality"
-    )
-    completeness_percentage: float = Field(
-        default=100.0, description="Data completeness (%)", ge=0, le=100
-    )
+    cache_key: Optional[str] = Field(None, description="Cache key for this data")
 
-    @field_validator("end_year")
-    @classmethod
-    def validate_year_range(cls, v: int, info: Any) -> int:
-        """Validate that end_year >= start_year."""
-        if "start_year" in info.data and v < info.data["start_year"]:
-            raise ValueError("end_year must be greater than or equal to start_year")
-        return v
-
-    @field_validator("hourly_data")
-    @classmethod
-    def validate_hourly_data_length(cls, v: List[WeatherDataPoint]) -> List[WeatherDataPoint]:
-        """Validate that hourly data has reasonable length."""
-        expected_lengths = [8760, 8784]  # Normal year, leap year
-        if len(v) not in expected_lengths and len(v) < 8760:
-            if len(v) < 100:  # Too short to be valid TMY
-                raise ValueError(f"TMY data too short: {len(v)} points (expected ~8760)")
-        return v
-
-    def get_annual_irradiation(self) -> float:
+    def is_stale(self, max_age_seconds: int = 600) -> bool:
         """
-        Calculate total annual irradiation in kWh/m².
+        Check if the current weather data is stale.
+
+        Args:
+            max_age_seconds: Maximum age in seconds (default: 10 minutes)
 
         Returns:
-            Total annual GHI in kWh/m²
+            True if data is older than max_age_seconds
         """
-        total_wh = sum(point.irradiance_ghi for point in self.hourly_data)
-        return total_wh / 1000.0  # Convert Wh to kWh
-
-    def get_average_temperature(self) -> float:
-        """
-        Calculate average annual temperature.
-
-        Returns:
-            Average temperature in °C
-        """
-        return sum(point.temperature for point in self.hourly_data) / len(self.hourly_data)
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "location": {
-                    "name": "Denver",
-                    "country": "USA",
-                    "latitude": 39.7392,
-                    "longitude": -104.9903,
-                    "elevation": 1609.0,
-                    "timezone": "America/Denver",
-                },
-                "data_source": "NSRDB",
-                "format_type": "TMY3",
-                "temporal_resolution": "hourly",
-                "start_year": 2007,
-                "end_year": 2021,
-                "data_quality": "excellent",
-                "completeness_percentage": 99.8,
-            }
-        }
-    }
+        age = (datetime.utcnow() - self.fetched_at).total_seconds()
+        return age > max_age_seconds
 
 
-class ExtremeWeatherEvent(BaseModel):
-    """
-    Extreme weather event record.
+class ForecastWeather(BaseModel):
+    """Weather forecast for a location."""
 
-    Attributes:
-        event_type: Type of extreme event
-        timestamp: When the event occurred
-        location: Location of the event
-        severity: Severity level (1-5)
-        value: Measured value of the extreme
-        unit: Unit of measurement
-        description: Event description
-        impact_score: Estimated impact score (0-10)
-    """
-
-    event_type: str = Field(
-        ..., description="Event type (e.g., 'heatwave', 'high_wind', 'low_irradiance')"
+    location: GeoLocation = Field(..., description="Forecast location")
+    provider: WeatherProvider = Field(..., description="Weather data provider")
+    forecast_data: list[WeatherDataPoint] = Field(
+        ..., description="List of forecasted weather data points"
     )
-    timestamp: datetime = Field(..., description="Event timestamp")
-    location: GlobalLocation = Field(..., description="Event location")
-    severity: int = Field(..., description="Severity level", ge=1, le=5)
-    value: float = Field(..., description="Measured value")
-    unit: str = Field(..., description="Unit of measurement")
-    description: str = Field(default="", description="Event description")
-    impact_score: Optional[float] = Field(None, description="Impact score", ge=0, le=10)
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "event_type": "heatwave",
-                "timestamp": "2023-07-15T14:00:00Z",
-                "severity": 4,
-                "value": 42.5,
-                "unit": "°C",
-                "description": "Extreme heat event with temperatures exceeding 40°C for 3 consecutive days",
-                "impact_score": 7.5,
-            }
-        }
-    }
-
-
-class HistoricalWeatherStats(BaseModel):
-    """
-    Multi-year historical weather statistics.
-
-    Attributes:
-        location: Location for these statistics
-        start_year: First year of analysis
-        end_year: Last year of analysis
-        num_years: Number of years analyzed
-        mean_annual_ghi: Mean annual GHI (kWh/m²/year)
-        std_annual_ghi: Standard deviation of annual GHI
-        mean_temperature: Mean temperature (°C)
-        std_temperature: Standard deviation of temperature
-        p90_annual_ghi: P90 annual GHI (90th percentile)
-        p50_annual_ghi: P50 annual GHI (50th percentile, median)
-        p10_annual_ghi: P10 annual GHI (10th percentile)
-        extreme_events: List of extreme weather events
-        seasonal_variability: Seasonal statistics
-        inter_annual_variability: Year-to-year variability metrics
-        climate_change_trend: Climate change trend analysis
-    """
-
-    location: GlobalLocation = Field(..., description="Location")
-    start_year: int = Field(..., description="Start year", ge=1900, le=2100)
-    end_year: int = Field(..., description="End year", ge=1900, le=2100)
-    num_years: int = Field(..., description="Number of years", ge=1)
-
-    # Irradiance statistics
-    mean_annual_ghi: float = Field(..., description="Mean annual GHI (kWh/m²/year)", ge=0)
-    std_annual_ghi: float = Field(..., description="Std dev of annual GHI (kWh/m²/year)", ge=0)
-    p90_annual_ghi: float = Field(..., description="P90 annual GHI (kWh/m²/year)", ge=0)
-    p50_annual_ghi: float = Field(..., description="P50 annual GHI (kWh/m²/year)", ge=0)
-    p10_annual_ghi: float = Field(..., description="P10 annual GHI (kWh/m²/year)", ge=0)
-
-    # Temperature statistics
-    mean_temperature: float = Field(..., description="Mean temperature (°C)")
-    std_temperature: float = Field(..., description="Std dev of temperature (°C)", ge=0)
-
-    # Additional analytics
-    extreme_events: List[ExtremeWeatherEvent] = Field(
-        default_factory=list, description="Extreme weather events"
+    fetched_at: datetime = Field(
+        default_factory=datetime.utcnow, description="UTC timestamp when forecast was fetched"
     )
-    seasonal_variability: Dict[str, Any] = Field(
-        default_factory=dict, description="Seasonal statistics"
-    )
-    inter_annual_variability: Dict[str, float] = Field(
-        default_factory=dict, description="Inter-annual variability metrics"
-    )
-    climate_change_trend: Optional[Dict[str, Any]] = Field(
-        None, description="Climate change trend analysis"
-    )
+    forecast_start: datetime = Field(..., description="Start of forecast period")
+    forecast_end: datetime = Field(..., description="End of forecast period")
 
-    @field_validator("end_year")
+    @field_validator("forecast_data")
     @classmethod
-    def validate_year_range(cls, v: int, info: Any) -> int:
-        """Validate that end_year >= start_year."""
-        if "start_year" in info.data and v < info.data["start_year"]:
-            raise ValueError("end_year must be >= start_year")
+    def validate_forecast_data(cls, v: list[WeatherDataPoint]) -> list[WeatherDataPoint]:
+        """Validate forecast data is not empty and sorted by timestamp."""
+        if not v:
+            raise ValueError("Forecast data cannot be empty")
+
+        # Check if sorted
+        timestamps = [dp.timestamp for dp in v]
+        if timestamps != sorted(timestamps):
+            raise ValueError("Forecast data must be sorted by timestamp")
+
         return v
 
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "location": {
-                    "name": "Denver",
-                    "country": "USA",
-                    "latitude": 39.7392,
-                    "longitude": -104.9903,
-                    "elevation": 1609.0,
-                    "timezone": "America/Denver",
-                },
-                "start_year": 2007,
-                "end_year": 2021,
-                "num_years": 15,
-                "mean_annual_ghi": 1850.0,
-                "std_annual_ghi": 85.0,
-                "p90_annual_ghi": 1720.0,
-                "p50_annual_ghi": 1850.0,
-                "p10_annual_ghi": 1980.0,
-                "mean_temperature": 10.5,
-                "std_temperature": 0.8,
-            }
-        }
-    }
+    def get_hourly_forecast(self) -> list[WeatherDataPoint]:
+        """Get hourly forecast data points."""
+        return self.forecast_data
+
+    def get_daily_summary(self) -> dict[str, WeatherDataPoint]:
+        """Get daily summary of forecast (simplified - returns first point per day)."""
+        daily = {}
+        for dp in self.forecast_data:
+            date_key = dp.timestamp.date().isoformat()
+            if date_key not in daily:
+                daily[date_key] = dp
+        return daily
+
+
+class HistoricalWeather(BaseModel):
+    """Historical weather data for a location."""
+
+    location: GeoLocation = Field(..., description="Location")
+    provider: WeatherProvider = Field(..., description="Weather data provider")
+    historical_data: list[WeatherDataPoint] = Field(
+        ..., description="List of historical weather data points"
+    )
+    fetched_at: datetime = Field(
+        default_factory=datetime.utcnow, description="UTC timestamp when data was fetched"
+    )
+    period_start: datetime = Field(..., description="Start of historical period")
+    period_end: datetime = Field(..., description="End of historical period")
+
+    @field_validator("historical_data")
+    @classmethod
+    def validate_historical_data(cls, v: list[WeatherDataPoint]) -> list[WeatherDataPoint]:
+        """Validate historical data is not empty and sorted by timestamp."""
+        if not v:
+            raise ValueError("Historical data cannot be empty")
+
+        # Check if sorted
+        timestamps = [dp.timestamp for dp in v]
+        if timestamps != sorted(timestamps):
+            raise ValueError("Historical data must be sorted by timestamp")
+
+        return v
+
+    def get_date_range(self) -> tuple[datetime, datetime]:
+        """Get the actual date range of the data."""
+        timestamps = [dp.timestamp for dp in self.historical_data]
+        return min(timestamps), max(timestamps)
+
+    def count_data_points(self) -> int:
+        """Get the number of data points."""
+        return len(self.historical_data)
+
+
+class DataQualityMetrics(BaseModel):
+    """Metrics for assessing weather data quality."""
+
+    total_points: int = Field(..., ge=0, description="Total number of data points")
+    valid_points: int = Field(..., ge=0, description="Number of valid data points")
+    missing_points: int = Field(..., ge=0, description="Number of missing data points")
+    interpolated_points: int = Field(
+        default=0, ge=0, description="Number of interpolated points"
+    )
+    outliers_detected: int = Field(default=0, ge=0, description="Number of outliers detected")
+    outliers_corrected: int = Field(
+        default=0, ge=0, description="Number of outliers corrected"
+    )
+
+    # Field-specific completeness
+    temperature_completeness: float = Field(
+        default=0.0, ge=0, le=1, description="Temperature data completeness (0-1)"
+    )
+    solar_completeness: float = Field(
+        default=0.0, ge=0, le=1, description="Solar irradiance data completeness (0-1)"
+    )
+    wind_completeness: float = Field(
+        default=0.0, ge=0, le=1, description="Wind data completeness (0-1)"
+    )
+
+    # Time range
+    start_time: datetime = Field(..., description="Start of data period")
+    end_time: datetime = Field(..., description="End of data period")
+
+    # Overall quality score
+    quality_score: float = Field(..., ge=0, le=1, description="Overall quality score (0-1)")
+
+    @field_validator("valid_points")
+    @classmethod
+    def validate_valid_points(cls, v: int, info: dict) -> int:
+        """Validate that valid_points <= total_points."""
+        if "total_points" in info.data and v > info.data["total_points"]:
+            raise ValueError("valid_points cannot exceed total_points")
+        return v
+
+    @field_validator("outliers_corrected")
+    @classmethod
+    def validate_outliers_corrected(cls, v: int, info: dict) -> int:
+        """Validate that outliers_corrected <= outliers_detected."""
+        if "outliers_detected" in info.data and v > info.data["outliers_detected"]:
+            raise ValueError("outliers_corrected cannot exceed outliers_detected")
+        return v
+
+    def completeness_ratio(self) -> float:
+        """Calculate overall data completeness ratio."""
+        if self.total_points == 0:
+            return 0.0
+        return self.valid_points / self.total_points
+
+    def has_high_quality(self, threshold: float = 0.8) -> bool:
+        """
+        Check if data meets high quality threshold.
+
+        Args:
+            threshold: Minimum quality score (default: 0.8)
+
+        Returns:
+            True if quality_score >= threshold
+        """
+        return self.quality_score >= threshold

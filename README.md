@@ -1,165 +1,237 @@
-# pv-circularity-simulator
+# PV Circularity Simulator
 
-End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
-
-## Overview
-
-The PV Circularity Simulator is a comprehensive platform for modeling and analyzing the complete lifecycle of photovoltaic systems, from manufacturing through operation to end-of-life circular economy considerations.
+End-to-end PV lifecycle simulation platform with comprehensive weather API integration for accurate energy forecasting and performance monitoring.
 
 ## Features
 
-### Utility Library (`src/pv_simulator/utils/`)
+- **Cell Design** → **Module Engineering** → **System Planning** → **Performance Monitoring** → **Circularity (3R)**
+- **Weather API Integration**: Real-time and historical weather data from multiple providers
+- **CTM Loss Analysis**: Cell-to-module power loss analysis
+- **SCAPS Integration**: Simulation tool for thin-film solar cells
+- **Reliability Testing**: Long-term performance prediction
+- **Energy Forecasting**: Accurate solar irradiance and weather-based predictions
+- **Circular Economy Modeling**: Reduce, Reuse, Recycle analysis
 
-The project includes a comprehensive utility library with the following modules:
+## Weather API Integration (BATCH5-B06-S02)
 
-#### 1. Unit Conversions (`unit_conversions.py`)
-- **Energy conversions**: Wh, kWh, MWh, GWh, J, kJ, MJ, GJ
-- **Power conversions**: W, kW, MW, GW
-- **Area conversions**: m², cm², mm², km², hectares
-- **Mass conversions**: kg, g, mg, ton, lb, oz
-- **Length conversions**: m, cm, mm, km, inch, ft, yard, mile
-- **Temperature conversions**: Celsius, Fahrenheit, Kelvin
-- **Efficiency conversions**: decimal, percent, ppm
-- **Specialized PV calculations**: Energy from power, specific yield
+This release includes comprehensive weather API integration with support for:
 
-#### 2. Data Validation (`data_validation.py`)
-- **Pydantic-based validators** for type safety and data integrity
-- **Basic validators**: positive, non-negative, percentage, efficiency, range
-- **PV-specific models**: `PVModuleSpecs`, `EnergyProductionData`, `MaterialComposition`
-- **Batch validation** and safe validation utilities
-- **Email, date range, and list/dict validators**
+### Supported Weather Providers
 
-#### 3. File I/O (`file_io.py`)
-- **Multi-format support**: JSON, YAML, CSV
-- **Pandas integration** for efficient data processing
-- **Auto-detection** of file format from extension
-- **Utility functions**: file existence, directory creation, file size, backup
-- **File listing** with glob pattern support
+1. **OpenWeatherMap** - Current weather, forecasts, and historical data
+2. **Visual Crossing** - Comprehensive weather data with excellent historical coverage
+3. **Meteomatics** - Professional-grade weather API with solar irradiance
+4. **Tomorrow.io** - Advanced weather forecasting and nowcasting
+5. **NREL PSM** - High-quality solar irradiance data for PV applications
 
-#### 4. Calculation Helpers (`calculations.py`)
-- **Statistical functions**: mean, median, standard deviation, variance, percentiles, weighted average
-- **Financial calculations**: NPV, IRR, payback period, LCOE
-- **PV technical calculations**: panel efficiency, temperature derating, performance ratio, capacity factor, degradation
-- **Circular economy**: material recovery rate, CE score, carbon footprint reduction
-- **Math utilities**: clamp, interpolation, significant figures
+### Core Components
 
-#### 5. Formatting Functions (`formatting.py`)
-- **Number formatting**: decimals, percentages, currency, scientific notation, SI units
-- **Date/time formatting**: dates, timestamps, durations
-- **Data structure formatting**: tables, lists, key-value pairs
-- **Report generation**: headers, sections, summary boxes, progress bars
-- **String utilities**: truncation, compact notation
+#### WeatherAPIIntegrator
+Unified interface for multiple weather providers with automatic fallback:
+- `openweathermap_api()` - OpenWeatherMap integration
+- `visualcrossing_api()` - Visual Crossing integration
+- `meteomatics_api()` - Meteomatics integration
+- `tomorrow_io_api()` - Tomorrow.io integration
+- `nrel_psm_api()` - NREL Physical Solar Model integration
+
+#### RealTimeWeatherFetcher
+High-level interface for weather data operations:
+- `current_conditions()` - Get current weather
+- `forecast_data()` - Get weather forecasts
+- `historical_backfill()` - Fetch historical data for gap filling
+- `api_rate_limiting()` - Monitor API rate limits
+- `cache_manager()` - Cache status and management
+
+#### WeatherDataValidator
+Data quality and preprocessing:
+- `data_quality_checks()` - Comprehensive quality metrics
+- `outlier_detection()` - Statistical outlier detection (IQR, Z-score)
+- `gap_filling()` - Linear/forward/backward interpolation
+- `unit_conversions()` - Temperature, wind, irradiance unit conversions
+- `timestamp_synchronization()` - Timezone conversion and resampling
+
+### Interactive Dashboard
+
+Streamlit-based dashboard with:
+- **Live Weather Display** - Real-time conditions with solar irradiance
+- **Forecast Visualization** - Interactive charts for temperature, GHI, wind
+- **API Configuration** - Provider selection and settings
+- **Data Quality Metrics** - Cache status, provider availability, quality scores
 
 ## Installation
 
-### Using pip
+### Prerequisites
 
+- Python 3.9 or higher
+- pip or poetry for package management
+
+### Setup
+
+1. Clone the repository:
 ```bash
-pip install -e .
+git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
+cd pv-circularity-simulator
 ```
 
-### Development installation
-
+2. Install dependencies:
 ```bash
-pip install -e ".[dev]"
+pip install -r requirements.txt
 ```
+
+For development:
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+```
+
+3. Configure environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your API keys
+```
+
+### Required API Keys
+
+Obtain API keys from:
+- OpenWeatherMap: https://openweathermap.org/api
+- Visual Crossing: https://www.visualcrossing.com/weather-api
+- Meteomatics: https://www.meteomatics.com/
+- Tomorrow.io: https://www.tomorrow.io/
+- NREL: https://developer.nrel.gov/signup/
 
 ## Usage
 
-### Unit Conversions
+### Running the Dashboard
 
-```python
-from pv_simulator.utils.unit_conversions import convert_energy, convert_power
-
-# Convert energy units
-energy_kwh = convert_energy(5000, "Wh", "kWh")  # 5.0 kWh
-
-# Convert power units
-power_kw = convert_power(2000, "W", "kW")  # 2.0 kW
-
-# Calculate specific yield
-from pv_simulator.utils.unit_conversions import calculate_specific_yield
-yield_kwh_kwp = calculate_specific_yield(1000, "kWh", 5, "kW")  # 200.0
+```bash
+streamlit run app.py
 ```
 
-### Data Validation
+The dashboard will be available at `http://localhost:8501`
+
+### Python API
+
+#### Fetch Current Weather
 
 ```python
-from pv_simulator.utils.data_validation import PVModuleSpecs, validate_positive
+from pv_simulator.weather.fetcher import RealTimeWeatherFetcher
 
-# Validate PV module specifications
-module = PVModuleSpecs(
-    name="Solar Panel 300W",
-    power_rating_w=300,
-    efficiency=0.18,
-    area_m2=1.67,
-    voltage_voc=45.0,
-    current_isc=9.5,
-    temperature_coeff_power=-0.4,
-    warranty_years=25
+fetcher = RealTimeWeatherFetcher()
+
+# Get current weather for a location
+current = fetcher.current_conditions(
+    latitude=40.7128,
+    longitude=-74.0060
 )
 
-# Simple validation
-value = validate_positive(5.0)  # Returns 5.0
+print(f"Temperature: {current.data.temperature}°C")
+print(f"Solar GHI: {current.data.ghi} W/m²")
 ```
 
-### File I/O
+#### Fetch Weather Forecast
 
 ```python
-from pv_simulator.utils.file_io import load_data, save_data
+from pv_simulator.weather.fetcher import RealTimeWeatherFetcher
 
-# Auto-detect format from extension
-config = load_data("config.yaml")
-data = load_data("measurements.csv")
+fetcher = RealTimeWeatherFetcher()
 
-# Save data
-save_data({"key": "value"}, "output.json")
-save_data([{"a": 1}, {"a": 2}], "data.csv")
-```
-
-### Calculations
-
-```python
-from pv_simulator.utils.calculations import (
-    calculate_performance_ratio,
-    calculate_lcoe,
-    calculate_material_recovery_rate
+# Get 7-day forecast
+forecast = fetcher.forecast_data(
+    latitude=40.7128,
+    longitude=-74.0060,
+    days=7
 )
 
-# Performance ratio
-pr = calculate_performance_ratio(8500, 10000)  # 0.85
-
-# Levelized Cost of Energy
-lcoe = calculate_lcoe(10000, 50000, 0.05, 25)
-
-# Material recovery rate for circular economy
-recovery = calculate_material_recovery_rate(85, 100)  # 0.85
+for point in forecast.forecast_data:
+    print(f"{point.timestamp}: {point.temperature}°C, GHI: {point.ghi} W/m²")
 ```
 
-### Formatting
+#### Historical Data with Quality Checks
 
 ```python
-from pv_simulator.utils.formatting import (
-    format_currency,
-    format_si_unit,
-    format_table,
-    format_summary_box
+from datetime import datetime, timedelta
+from pv_simulator.weather.fetcher import RealTimeWeatherFetcher
+from pv_simulator.weather.validator import WeatherDataValidator
+
+fetcher = RealTimeWeatherFetcher()
+validator = WeatherDataValidator()
+
+# Fetch historical data
+end_date = datetime.utcnow()
+start_date = end_date - timedelta(days=30)
+
+historical = fetcher.historical_backfill(
+    latitude=40.7128,
+    longitude=-74.0060,
+    start_date=start_date,
+    end_date=end_date
 )
 
-# Format numbers
-cost = format_currency(1234.56)  # "$1,234.56"
-power = format_si_unit(5000, "W")  # "5.00 kW"
+# Validate data quality
+metrics = validator.data_quality_checks(historical.historical_data)
+print(f"Quality Score: {metrics.quality_score:.2f}")
+print(f"Solar Data Completeness: {metrics.solar_completeness:.2%}")
 
-# Format data as table
-data = [
-    {"module": "A", "power": 300, "efficiency": 18.5},
-    {"module": "B", "power": 350, "efficiency": 20.0}
-]
-print(format_table(data))
+# Fill gaps and detect outliers
+cleaned_data, gaps_filled = validator.gap_filling(
+    historical.historical_data,
+    method="linear"
+)
+print(f"Filled {gaps_filled} data gaps")
+```
 
-# Create summary box
-metrics = {"Total Energy": "1000 kWh", "Efficiency": "18.5%"}
-print(format_summary_box("System Metrics", metrics))
+#### Multi-Provider Comparison
+
+```python
+from pv_simulator.weather.fetcher import RealTimeWeatherFetcher
+
+fetcher = RealTimeWeatherFetcher()
+
+# Fetch from multiple providers
+results = fetcher.fetch_multi_provider(
+    latitude=40.7128,
+    longitude=-74.0060,
+    data_type="current"
+)
+
+for provider, result in results.items():
+    if result["success"]:
+        temp = result["data"]["data"]["temperature"]
+        print(f"{provider}: {temp}°C")
+```
+
+## Configuration
+
+Configuration is managed through environment variables (`.env` file):
+
+```env
+# Weather API Keys
+OPENWEATHERMAP_API_KEY=your_key_here
+VISUALCROSSING_API_KEY=your_key_here
+METEOMATICS_USERNAME=your_username
+METEOMATICS_PASSWORD=your_password
+TOMORROW_IO_API_KEY=your_key_here
+NREL_API_KEY=your_key_here
+
+# Cache Configuration
+CACHE_TYPE=sqlite  # Options: sqlite, redis, memory
+CACHE_TTL=3600  # Cache TTL in seconds
+
+# Rate Limiting (requests per minute)
+OPENWEATHERMAP_RATE_LIMIT=60
+VISUALCROSSING_RATE_LIMIT=1000
+METEOMATICS_RATE_LIMIT=50
+TOMORROW_IO_RATE_LIMIT=25
+NREL_RATE_LIMIT=1000
+
+# Data Quality
+OUTLIER_DETECTION_ENABLED=true
+GAP_FILLING_ENABLED=true
+MAX_GAP_HOURS=3
+
+# Units
+TEMPERATURE_UNIT=celsius
+IRRADIANCE_UNIT=w_per_m2
+WIND_SPEED_UNIT=m_per_s
 ```
 
 ## Testing
@@ -170,97 +242,102 @@ Run the test suite:
 pytest
 ```
 
-Run with coverage:
+With coverage:
 
 ```bash
 pytest --cov=src/pv_simulator --cov-report=html
 ```
 
-## Project Structure
+## Architecture
 
 ```
 pv-circularity-simulator/
-├── src/
-│   └── pv_simulator/
-│       ├── __init__.py
-│       └── utils/
-│           ├── __init__.py
-│           ├── unit_conversions.py
-│           ├── data_validation.py
-│           ├── file_io.py
-│           ├── calculations.py
-│           └── formatting.py
-├── tests/
-│   └── utils/
-│       ├── __init__.py
-│       ├── test_unit_conversions.py
-│       ├── test_data_validation.py
-│       ├── test_file_io.py
-│       ├── test_calculations.py
-│       └── test_formatting.py
-├── pyproject.toml
-├── requirements.txt
-├── README.md
-└── LICENSE
+├── src/pv_simulator/
+│   ├── config.py              # Configuration management
+│   ├── models/
+│   │   └── weather.py         # Pydantic data models
+│   ├── weather/
+│   │   ├── cache.py           # Cache backends (SQLite, Redis, Memory)
+│   │   ├── integrator.py      # WeatherAPIIntegrator
+│   │   ├── fetcher.py         # RealTimeWeatherFetcher
+│   │   ├── validator.py       # WeatherDataValidator
+│   │   └── clients/
+│   │       ├── base.py        # BaseWeatherClient with rate limiting
+│   │       ├── openweathermap.py
+│   │       ├── visualcrossing.py
+│   │       ├── meteomatics.py
+│   │       ├── tomorrow_io.py
+│   │       └── nrel_psm.py
+│   └── ui/
+│       └── dashboard.py       # Streamlit dashboard
+├── tests/                     # Comprehensive test suite
+├── app.py                     # Main application entry point
+└── pyproject.toml            # Project configuration
 ```
 
-## Documentation
+## Technology Stack
 
-All functions include comprehensive docstrings with:
-- Parameter descriptions and types
-- Return value descriptions
-- Raised exceptions
-- Usage examples
-- Type hints for IDE support
+- **Python 3.9+** - Core language
+- **Pydantic 2.0** - Data validation and settings
+- **httpx** - Async HTTP client
+- **pandas** - Time-series data manipulation
+- **Streamlit** - Interactive dashboard
+- **Plotly** - Interactive visualizations
+- **SQLite/Redis** - Caching backends
+- **pytest** - Testing framework
 
-## Requirements
+## Data Models
 
-- Python >= 3.9
-- pydantic >= 2.0.0
-- pyyaml >= 6.0
-- numpy >= 1.24.0
-- pandas >= 2.0.0
+All weather data is validated using Pydantic models:
 
-## Development
+- **WeatherDataPoint**: Single weather observation with full meteorological parameters
+- **CurrentWeather**: Current conditions with cache metadata
+- **ForecastWeather**: Time-series forecast data
+- **HistoricalWeather**: Historical weather records
+- **DataQualityMetrics**: Comprehensive quality assessment
+- **GeoLocation**: Geographic coordinates with validation
 
-### Code Quality
+## Performance Features
 
-The project uses:
-- **Black** for code formatting
-- **Ruff** for linting
-- **MyPy** for type checking
-- **Pytest** for testing
-
-### Running Quality Checks
-
-```bash
-# Format code
-black src/ tests/
-
-# Lint code
-ruff check src/ tests/
-
-# Type check
-mypy src/
-```
+- **Automatic Caching**: Configurable SQLite, Redis, or in-memory caching
+- **Rate Limiting**: Token bucket algorithm prevents API quota exhaustion
+- **Retry Logic**: Exponential backoff for failed requests
+- **Provider Fallback**: Automatic failover to alternative providers
+- **Async Support**: Non-blocking API requests for better performance
 
 ## Contributing
 
-Contributions are welcome! Please ensure:
-1. All tests pass
-2. Code is formatted with Black
-3. Type hints are included
-4. Docstrings are comprehensive
-5. New functionality includes tests
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT License - see LICENSE file for details
 
-## Author
+## Roadmap
 
-PV Simulator Team
+- [ ] PV system simulation engine
+- [ ] SCAPS integration
+- [ ] CTM loss analysis tools
+- [ ] Reliability prediction models
+- [ ] Circularity assessment framework
+- [ ] Machine learning for energy forecasting
+- [ ] Integration with real-time monitoring systems
 
-## Version
+## Support
 
-0.1.0 - Initial release with comprehensive utility library
+For issues, questions, or feature requests, please open an issue on GitHub.
+
+## Acknowledgments
+
+Weather data provided by:
+- OpenWeatherMap
+- Visual Crossing
+- Meteomatics
+- Tomorrow.io
+- NREL National Solar Radiation Database

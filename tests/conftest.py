@@ -1,135 +1,85 @@
 """
-Pytest configuration and fixtures for PV Simulator tests.
+Pytest configuration and fixtures for testing.
 """
 
-from datetime import datetime, timedelta
-from pathlib import Path
-
 import pytest
+from datetime import datetime
 
-from pv_simulator.models.weather import (
-    DataQuality,
-    DataSource,
-    GlobalLocation,
-    TemporalResolution,
-    TMYData,
-    TMYFormat,
-    WeatherDataPoint,
-)
+from pv_simulator.config import Settings
+from pv_simulator.models.weather import GeoLocation, WeatherDataPoint, WeatherProvider
+from pv_simulator.weather.cache import CacheManager
 
 
 @pytest.fixture
-def sample_location() -> GlobalLocation:
-    """Sample location for testing (Denver, CO)."""
-    return GlobalLocation(
-        name="Denver",
-        country="USA",
-        latitude=39.7392,
-        longitude=-104.9903,
-        elevation=1609.0,
-        timezone="America/Denver",
-        climate_zone="BSk",
+def test_settings() -> Settings:
+    """Create test settings with mock API keys."""
+    return Settings(
+        openweathermap_api_key="test_openweather_key",
+        visualcrossing_api_key="test_visualcrossing_key",
+        meteomatics_username="test_user",
+        meteomatics_password="test_pass",
+        tomorrow_io_api_key="test_tomorrow_key",
+        nrel_api_key="test_nrel_key",
+        cache_type="memory",
+        cache_ttl=300,
+        log_level="DEBUG",
     )
 
 
 @pytest.fixture
-def sample_weather_point() -> WeatherDataPoint:
-    """Sample weather data point for testing."""
+def cache_manager(test_settings: Settings) -> CacheManager:
+    """Create cache manager for testing."""
+    return CacheManager(test_settings)
+
+
+@pytest.fixture
+def test_location() -> GeoLocation:
+    """Create test location (New York City)."""
+    return GeoLocation(
+        latitude=40.7128,
+        longitude=-74.0060,
+        city="New York",
+        country="US",
+        timezone="America/New_York",
+    )
+
+
+@pytest.fixture
+def sample_weather_data(test_location: GeoLocation) -> WeatherDataPoint:
+    """Create sample weather data point."""
     return WeatherDataPoint(
-        timestamp=datetime(2023, 7, 15, 12, 0, 0),
-        temperature=28.5,
-        irradiance_ghi=950.0,
-        irradiance_dni=850.0,
-        irradiance_dhi=150.0,
-        wind_speed=3.5,
+        timestamp=datetime(2024, 1, 15, 12, 0, 0),
+        location=test_location,
+        provider=WeatherProvider.OPENWEATHERMAP,
+        temperature=15.5,
+        feels_like=14.0,
+        humidity=65.0,
+        pressure=1013.0,
+        wind_speed=5.5,
         wind_direction=180.0,
-        relative_humidity=45.0,
-        pressure=101325.0,
-        albedo=0.2,
-        precipitable_water=1.5,
-        cloud_cover=0.2,
-        data_quality=DataQuality.EXCELLENT,
+        cloud_cover=25.0,
+        ghi=450.0,
+        dni=600.0,
+        dhi=150.0,
     )
 
 
 @pytest.fixture
-def sample_hourly_data() -> list[WeatherDataPoint]:
-    """Sample hourly data for one year (8760 hours)."""
-    base_time = datetime(2023, 1, 1, 0, 0, 0)
+def sample_weather_series(test_location: GeoLocation) -> list[WeatherDataPoint]:
+    """Create sample weather data series."""
     data_points = []
 
-    for hour in range(8760):
-        timestamp = base_time + timedelta(hours=hour)
-
-        # Simple sinusoidal pattern for realistic variation
-        hour_of_day = timestamp.hour
-        day_of_year = timestamp.timetuple().tm_yday
-
-        # Temperature: varies by time of day and season
-        temp = 15.0 + 10.0 * (1 + (day_of_year - 180) / 365) - 5.0 * abs(hour_of_day - 14) / 14
-
-        # GHI: zero at night, peak at noon
-        if 6 <= hour_of_day <= 18:
-            ghi = 800.0 * (1 - abs(hour_of_day - 12) / 6) * (1 + 0.2 * (day_of_year - 180) / 365)
-        else:
-            ghi = 0.0
-
-        # DNI and DHI
-        dni = ghi * 0.8 if ghi > 0 else 0.0
-        dhi = ghi * 0.2 if ghi > 0 else 0.0
-
+    for hour in range(24):
         point = WeatherDataPoint(
-            timestamp=timestamp,
-            temperature=temp,
-            irradiance_ghi=max(0, ghi),
-            irradiance_dni=max(0, dni),
-            irradiance_dhi=max(0, dhi),
-            wind_speed=3.0 + 2.0 * (hour_of_day / 24),
-            wind_direction=180.0,
-            relative_humidity=50.0,
-            pressure=101325.0,
+            timestamp=datetime(2024, 1, 15, hour, 0, 0),
+            location=test_location,
+            provider=WeatherProvider.OPENWEATHERMAP,
+            temperature=10.0 + hour * 0.5,
+            humidity=60.0 + hour * 0.5,
+            pressure=1013.0,
+            wind_speed=3.0 + hour * 0.2,
+            ghi=100.0 * (1 if 6 <= hour <= 18 else 0),
         )
         data_points.append(point)
 
     return data_points
-
-
-@pytest.fixture
-def sample_tmy_data(sample_location: GlobalLocation, sample_hourly_data: list[WeatherDataPoint]) -> TMYData:
-    """Sample TMY data for testing."""
-    return TMYData(
-        location=sample_location,
-        data_source=DataSource.NSRDB,
-        format_type=TMYFormat.TMY3,
-        temporal_resolution=TemporalResolution.HOURLY,
-        start_year=2007,
-        end_year=2021,
-        hourly_data=sample_hourly_data,
-        metadata={"test": "data"},
-        data_quality=DataQuality.EXCELLENT,
-        completeness_percentage=100.0,
-    )
-
-
-@pytest.fixture
-def temp_data_dir(tmp_path: Path) -> Path:
-    """Temporary directory for test data files."""
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-    return data_dir
-
-
-@pytest.fixture
-def sample_csv_tmy(temp_data_dir: Path, sample_tmy_data: TMYData) -> Path:
-    """Create sample CSV TMY file for testing."""
-    import pandas as pd
-
-    csv_path = temp_data_dir / "sample_tmy.csv"
-
-    # Convert TMY data to DataFrame
-    df = pd.DataFrame([point.model_dump() for point in sample_tmy_data.hourly_data])
-
-    # Save to CSV
-    df.to_csv(csv_path, index=False)
-
-    return csv_path
