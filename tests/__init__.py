@@ -1,1 +1,3 @@
-"""Tests for Authentication & Access Control System."""
+"""
+Test suite for PV Circularity Simulator.
+"""

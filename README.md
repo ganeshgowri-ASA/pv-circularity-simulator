@@ -1,102 +1,116 @@
-# PV Circularity Simulator
+# pv-circularity-simulator
 
 End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
 
 ## Features
 
-### Bankability Assessment & Risk Analysis
+### Bifacial Module Modeling (`src/modules/bifacial_model.py`)
 
-Production-ready financial analysis module providing comprehensive bankability assessment for PV projects:
+Comprehensive bifacial PV module modeling and simulation system featuring:
 
-- **Credit Rating Analysis**: Standardized credit assessment (AAA to D) based on financial strength, debt capacity, liquidity, and profitability
-- **Risk Assessment**: Multi-dimensional risk analysis covering technical, financial, market, and regulatory risks
-- **Debt Service Coverage**: DSCR calculation with multi-year projections accounting for degradation and inflation
-- **Bankability Scoring**: Integrated scoring system with actionable recommendations
+- **Backside Irradiance Calculation**: Multiple view factor models (Perez, Durusoy, Simple)
+- **Bifacial Gain Analysis**: Ground albedo effects, mounting structure optimization
+- **View Factor Modeling**: Row-to-row shading, edge effects, inter-row reflections
+- **Advanced Loss Mechanisms**: Mismatch, temperature, soiling impacts
+- **Performance Simulation**: Time-series analysis with TMY data
+- **Row Spacing Optimization**: Maximize energy yield per land area
+- **Multiple Mounting Types**: Fixed tilt, single-axis tracker, dual-axis, vertical, east-west
 
-#### Quick Start
+**Ground Albedo Support**:
+- Grass (0.20), Concrete (0.30), White membrane (0.70), Sand (0.40), Snow (0.80)
+- Seasonal variation modeling
+- Custom albedo values
 
-```python
-from pv_circularity_simulator.financial import BankabilityAssessor, FinancialMetrics, ProjectContext, ProjectStage
+**Module Bifaciality**: 0.65-0.95 (typical n-type and p-type modules)
 
-# Define financial metrics
-metrics = FinancialMetrics(
-    total_project_cost=10_000_000,
-    equity_contribution=3_000_000,
-    debt_amount=7_000_000,
-    annual_revenue=2_000_000,
-    annual_operating_cost=400_000,
-    annual_debt_service=800_000,
-    project_lifespan_years=25,
-    discount_rate=0.08
-)
-
-# Define project context
-context = ProjectContext(
-    project_name="Solar Park Alpha",
-    project_stage=ProjectStage.DEVELOPMENT,
-    location="Arizona, USA",
-    capacity_mw=10.0,
-    technology_type="Monocrystalline Silicon",
-    ppa_term_years=20,
-    ppa_rate_usd_per_kwh=0.08
-)
-
-# Create assessor
-assessor = BankabilityAssessor(financial_metrics=metrics, project_context=context)
-
-# Perform assessments
-credit_rating = assessor.credit_rating()
-risk_assessment = assessor.risk_assessment()
-dscr_analysis = assessor.debt_service_coverage()
-bankability = assessor.project_bankability_score()
-
-# View results
-print(f"Credit Rating: {credit_rating.rating.value} ({credit_rating.rating_score:.1f}/100)")
-print(f"Risk Level: {risk_assessment.overall_risk_level.value}")
-print(f"DSCR: {dscr_analysis.dscr:.2f}x")
-print(f"Bankability Score: {bankability.overall_score:.1f}/100")
-print(f"Is Bankable: {bankability.is_bankable}")
-```
-
-## Installation
+### Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
-cd pv-circularity-simulator
-
 # Install dependencies
 pip install -r requirements.txt
 
-# Install in development mode
-pip install -e .
+# Run example analysis
+python examples/bifacial_analysis_example.py
+
+# Run tests
+pytest tests/test_bifacial_model.py -v
 ```
 
-## Testing
+### Example Usage
 
-```bash
-# Run all tests
-pytest
+```python
+from src.modules.bifacial_model import (
+    BifacialModuleModel,
+    BifacialSystemConfig,
+    BifacialModuleParams,
+    MountingStructure,
+    GroundSurface,
+    AlbedoType
+)
 
-# Run with coverage
-pytest --cov=pv_circularity_simulator --cov-report=html
+# Configure system
+config = BifacialSystemConfig(
+    module=BifacialModuleParams(bifaciality=0.70, front_efficiency=0.21),
+    structure=MountingStructure(
+        mounting_type="fixed_tilt",
+        tilt=30.0,
+        clearance_height=1.0,
+        row_spacing=4.0,
+        row_width=1.1,
+        n_rows=10
+    ),
+    ground=GroundSurface(albedo_type=AlbedoType.WHITE_MEMBRANE),
+    location_latitude=35.0,
+    location_longitude=-106.0
+)
 
-# Run specific test module
-pytest tests/unit/test_financial.py -v
+# Calculate bifacial performance
+model = BifacialModuleModel(config)
+back_irr = model.calculate_backside_irradiance(
+    ground_albedo=0.70,
+    tilt=30.0,
+    clearance=1.0,
+    front_poa_global=1000.0
+)
+gain = model.calculate_bifacial_gain(1000.0, back_irr, 0.70)
+print(f"Bifacial gain: {gain*100:.1f}%")  # ~25% with white membrane
+```
+
+## Documentation
+
+- **Bifacial Model**: See `docs/BIFACIAL_MODEL_DOCUMENTATION.md` for comprehensive documentation
+- **Examples**: See `examples/bifacial_analysis_example.py` for detailed usage examples
+- **Tests**: See `tests/test_bifacial_model.py` for validation and test cases
+
+## Project Structure
+
+```
+pv-circularity-simulator/
+├── src/
+│   └── modules/
+│       ├── __init__.py
+│       └── bifacial_model.py      # Bifacial module modeling
+├── tests/
+│   ├── __init__.py
+│   └── test_bifacial_model.py     # Comprehensive test suite
+├── examples/
+│   └── bifacial_analysis_example.py
+├── docs/
+│   └── BIFACIAL_MODEL_DOCUMENTATION.md
+├── requirements.txt
+├── README.md
+└── LICENSE
 ```
 
 ## Requirements
 
-- Python >= 3.9
-- pydantic >= 2.0.0
-- numpy >= 1.24.0
-- pandas >= 2.0.0
-- scipy >= 1.10.0
+- Python 3.8+
+- NumPy >= 1.24.0
+- Pandas >= 2.0.0
+- Pydantic >= 2.0.0
+- SciPy >= 1.10.0
+- pytest >= 7.4.0 (for testing)
 
 ## License
 
-MIT License - see LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+MIT License - See LICENSE file for details
