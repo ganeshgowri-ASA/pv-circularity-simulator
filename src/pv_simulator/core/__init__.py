@@ -1,6 +1,36 @@
-"""Core models and schemas for the PV simulator."""
+"""
+Core components for PV Circularity Simulator.
 
-from pv_simulator.core.models import *
-from pv_simulator.core.schemas import *
+This module provides base classes and data models used throughout the platform.
+"""
 
-__all__ = ["models", "schemas"]
+from pv_simulator.core.base_integrator import BaseIntegrator, IntegratorMetadata
+from pv_simulator.core.models import (
+    WindResourceData,
+    WindResourceAssessment,
+    TurbineSpecifications,
+    TurbinePerformance,
+    PVSystemConfig,
+    HybridSystemConfig,
+    HybridOptimizationResult,
+    CoordinationStrategy,
+    CoordinationResult,
+    TurbineType,
+    OptimizationObjective,
+)
+
+__all__ = [
+    "BaseIntegrator",
+    "IntegratorMetadata",
+    "WindResourceData",
+    "WindResourceAssessment",
+    "TurbineSpecifications",
+    "TurbinePerformance",
+    "PVSystemConfig",
+    "HybridSystemConfig",
+    "HybridOptimizationResult",
+    "CoordinationStrategy",
+    "CoordinationResult",
+    "TurbineType",
+    "OptimizationObjective",
+]
