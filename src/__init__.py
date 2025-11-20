@@ -1,3 +1,3 @@
-"""PV Circularity Simulator - End-to-end PV lifecycle simulation platform."""
+"""PV Circularity Simulator - Main package."""
 
 __version__ = "0.1.0"

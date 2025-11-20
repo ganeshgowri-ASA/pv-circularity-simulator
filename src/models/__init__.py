@@ -1,25 +1,25 @@
-"""Data models for PV Circularity Simulator."""
+"""Pydantic models for data validation."""
 
-from .eya_models import (
-    ProjectInfo,
-    WeatherData,
-    SystemConfiguration,
-    EnergyOutput,
-    PerformanceMetrics,
-    LossBreakdown,
-    FinancialMetrics,
-    SensitivityAnalysis,
-    ProbabilisticAnalysis,
+from .safety_models import (
+    SafetyTestConfig,
+    SafetyTestResult,
+    ElectricalSafetyTestResult,
+    MechanicalSafetyTestResult,
+    FireSafetyTestResult,
+    EnvironmentalSafetyTestResult,
+    ConstructionRequirement,
+    SafetyClassification,
+    SafetyCertificate,
 )
 
 __all__ = [
-    "ProjectInfo",
-    "WeatherData",
-    "SystemConfiguration",
-    "EnergyOutput",
-    "PerformanceMetrics",
-    "LossBreakdown",
-    "FinancialMetrics",
-    "SensitivityAnalysis",
-    "ProbabilisticAnalysis",
+    "SafetyTestConfig",
+    "SafetyTestResult",
+    "ElectricalSafetyTestResult",
+    "MechanicalSafetyTestResult",
+    "FireSafetyTestResult",
+    "EnvironmentalSafetyTestResult",
+    "ConstructionRequirement",
+    "SafetyClassification",
+    "SafetyCertificate",
 ]

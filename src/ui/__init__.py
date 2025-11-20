@@ -1,7 +1,5 @@
-"""
-User interface modules for the PV Circularity Simulator.
-"""
+"""Streamlit UI components for PV circularity simulator."""
 
-from .hybrid_system_ui import HybridSystemUI
+from .safety_test_ui import SafetyTestUI
 
-__all__ = ["HybridSystemUI"]
+__all__ = ["SafetyTestUI"]
