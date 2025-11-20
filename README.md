@@ -1,316 +1,287 @@
 # PV Circularity Simulator
 
-End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes **IEC 63202 CTM testing**, CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
+End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
 
 ## Features
 
-### IEC 63202 Cell-to-Module (CTM) Testing ⚡ **NEW**
+### Incentives & Tax Credit Modeling (v0.1.0)
 
-Comprehensive CTM testing and power loss validation system per IEC 63202 standard:
+Production-ready tax incentive modeling for solar PV systems with comprehensive support for:
 
-- **IEC63202CTMTester**: Complete test procedure implementation
-  - Reference cell measurement under STC (1000 W/m², 25°C, AM1.5)
-  - Module flash testing with spectral and spatial corrections
-  - CTM power ratio calculation with uncertainty analysis
-  - Automated compliance validation
-  - IEC 63202 certificate generation
+- **Investment Tax Credit (ITC)**: Federal tax credit calculations with bonus adders
+  - Base ITC (typically 30% for solar)
+  - Domestic content bonus (+10%)
+  - Energy community bonus (+10%)
+  - Basis reductions for grants and subsidies
 
-- **B03 CTM Loss Model**: 24-factor (k1-k24) comprehensive loss analysis
-  - Cell-level losses (k1-k5): binning, degradation, breakage, measurement
-  - Interconnection losses (k6-k10): ribbon, solder, busbar, mismatch, shading
-  - Encapsulation losses (k11-k15): glass, encapsulant, backsheet, lamination
-  - Assembly losses (k16-k20): junction box, frame, edge effects, thermal, QC
-  - Measurement losses (k21-k24): spectral, spatial, uncertainty, temperature
+- **Production Tax Credit (PTC)**: Multi-year production credit modeling
+  - Per-kWh credit calculations over 10-year period
+  - Inflation adjustments
+  - Production degradation modeling
+  - Bonus multipliers (up to 5x)
+  - Net Present Value (NPV) analysis
 
-- **CTMPowerLossAnalyzer**: Detailed loss component analysis
-  - Optical losses: reflection, absorption, grid shading
-  - Electrical losses: series resistance, cell mismatch
-  - Thermal losses: assembly temperature effects
-  - Spatial non-uniformity analysis
-  - Spectral mismatch correction (IEC 60904-7)
+- **MACRS Depreciation**: Complete depreciation schedule calculations
+  - MACRS 5-year schedule (standard for solar)
+  - MACRS 7-year schedule
+  - ITC basis adjustment (50% reduction)
+  - Bonus depreciation (up to 100%)
+  - Straight-line and declining balance methods
 
-- **ReferenceDeviceCalibration**: Traceability management
-  - Calibration against primary standards (WPVS)
-  - Temperature and spectral corrections
-  - Flash simulator uniformity validation
-  - Full SI traceability documentation
+- **Tax Equity Partnership Modeling**: Partnership flip structure analysis
+  - Pre-flip and post-flip allocation modeling
+  - IRR calculations for investor and sponsor
+  - NPV analysis with customizable discount rates
+  - Annual cash flow and tax benefit allocation
+  - Flip year determination based on target returns
 
-- **CTMTestReport**: Professional reporting
-  - Interactive HTML reports with Plotly visualizations
-  - Excel exports with detailed data tables
-  - PDF certificates for compliance
-  - Loss waterfall charts and IV curve comparisons
-
-- **Streamlit Web Interface**: User-friendly testing platform
-  - Interactive test configuration
-  - Real-time CTM calculation
-  - Loss breakdown visualization
-  - Compliance dashboard
-  - Multi-format report export
-
-## Quick Start
-
-### Installation
+## Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
+git clone https://github.com/yourusername/pv-circularity-simulator.git
 cd pv-circularity-simulator
 
-# Install dependencies
+# Install in development mode
 pip install -e .
 
-# For development
+# Or install with development dependencies
 pip install -e ".[dev]"
 ```
 
-### Basic CTM Testing Example
+## Quick Start
+
+### Basic ITC Calculation
 
 ```python
-from datetime import datetime
-from pv_circularity_simulator.core.iec63202 import (
-    IEC63202CTMTester,
-    CTMTestConfig,
-    CellProperties,
-    ModuleConfiguration,
-    CellTechnology,
+from datetime import date
+from pv_simulator import IncentiveModeler
+from pv_simulator.models import SystemConfiguration, ITCConfiguration
+
+# Define your solar system
+system = SystemConfiguration(
+    system_size_kw=100.0,
+    installation_cost_total=250_000.0,
+    installation_date=date(2024, 1, 15),
+    location_state="CA",
+    expected_annual_production_kwh=150_000.0,
 )
 
-# Configure test
-cell_props = CellProperties(
-    technology=CellTechnology.PERC,
-    area=244.3,
-    efficiency=22.8,
-    voc=0.682,
-    isc=8.52,
-    pmax=5.22,
-    # ... other parameters
+# Configure ITC calculation
+itc_config = ITCConfiguration(
+    system_config=system,
+    itc_rate=0.30,  # 30% ITC
+    apply_bonus=True,
+    meets_domestic_content=True,  # +10% bonus
 )
 
-module_config = ModuleConfiguration(
-    num_cells_series=60,
-    num_strings_parallel=1,
-)
+# Calculate ITC
+modeler = IncentiveModeler()
+result = modeler.itc_calculation(itc_config)
 
-test_config = CTMTestConfig(
-    test_id="CTM-2025-001",
-    laboratory="PV Testing Lab",
-    operator="Your Name",
-    cell_properties=cell_props,
-    module_config=module_config,
-    # ... reference device and flash simulator config
-)
-
-# Run CTM test
-tester = IEC63202CTMTester(config=test_config)
-result = tester.ctm_power_ratio_test(
-    cell_measurements=cell_iv_curves,
-    module_measurements=module_iv_curves,
-)
-
-print(f"CTM Ratio: {result.ctm_ratio:.2f}%")
-print(f"Compliance: {'PASS' if result.compliance_status else 'FAIL'}")
-
-# Generate certificate
-certificate = tester.generate_ctm_certificate()
+print(f"Total ITC Credit: ${result.total_itc_amount:,.2f}")
+print(f"Effective Rate: {result.effective_rate:.1%}")
 ```
 
-### B03 CTM Loss Model Example
+### PTC Analysis
 
 ```python
-from pv_circularity_simulator.core.ctm.b03_ctm_loss_model import (
-    B03CTMLossModel,
-    B03CTMConfiguration,
+from pv_simulator.models import PTCConfiguration
+
+# Configure PTC
+ptc_config = PTCConfiguration(
+    system_config=system,
+    ptc_rate_per_kwh=0.0275,
+    credit_period_years=10,
+    inflation_adjustment=True,
+    production_degradation_rate=0.005,
 )
 
-# Create model
-model = B03CTMLossModel()
+# Calculate PTC over 10 years
+result = modeler.ptc_computation(ptc_config)
 
-# Analyze premium quality scenario
-config = B03CTMConfiguration.from_scenario("premium_quality")
-result = model.calculate_ctm_losses(config)
+print(f"Total PTC (Nominal): ${result.total_ptc_lifetime:,.2f}")
+print(f"NPV (6% discount): ${result.present_value_ptc:,.2f}")
+```
 
-print(f"CTM Ratio: {result.total_ctm_ratio_percent:.2f}%")
-print(f"Total Loss: {result.total_loss_percent:.2f}%")
+### Depreciation Schedule
 
-# Get loss breakdown
-breakdown = result.get_loss_breakdown()
-for category, loss in breakdown.items():
-    print(f"{category}: {loss:.3f}%")
+```python
+from pv_simulator.models import DepreciationMethod
 
-# Sensitivity analysis
-sensitivity = model.sensitivity_analysis(
-    base_configuration=config,
-    factor_to_vary="k10_interconnect_shading",
+# Calculate depreciation (with ITC basis adjustment)
+asset_basis = 250_000.0 - (0.5 * 75_000.0)  # Cost - 50% of ITC
+
+result = modeler.depreciation_schedule(
+    asset_basis=asset_basis,
+    method=DepreciationMethod.MACRS_5,
+    bonus_depreciation_rate=0.80,  # 80% bonus
 )
+
+print(f"Year 1 Depreciation: ${result.annual_depreciation[0]:,.2f}")
+print(f"Total Depreciation: ${result.total_depreciation:,.2f}")
 ```
 
-### Launch Streamlit Web Interface
+### Complete Tax Equity Analysis
 
-```bash
-streamlit run src/pv_circularity_simulator/ui/app.py
+```python
+from pv_simulator.models import TaxEquityConfiguration
+
+# Configure tax equity partnership
+te_config = TaxEquityConfiguration(
+    system_config=system,
+    investor_equity_percentage=0.99,  # 99% pre-flip
+    target_flip_irr=0.08,  # 8% target IRR
+    post_flip_investor_percentage=0.05,  # 5% post-flip
+)
+
+# Model partnership flip
+result = modeler.tax_equity_modeling(
+    config=te_config,
+    itc_amount=75_000.0,
+    depreciation_schedule=[...],  # From depreciation calculation
+)
+
+print(f"Flip Year: {result.flip_year}")
+print(f"Investor IRR: {result.investor_irr:.2%}")
+print(f"Sponsor IRR: {result.sponsor_irr:.2%}")
 ```
-
-Then navigate to http://localhost:8501 in your browser.
 
 ## Documentation
 
-### CTM Testing Standards Compliance
+- **Examples**: See `examples/` directory for comprehensive usage examples
+- **API Documentation**: All classes and methods include detailed docstrings
+- **Tests**: See `tests/` directory for extensive test coverage
 
-- **IEC 63202**: Cell-to-module power ratio testing
-- **IEC 60904-2**: Reference device calibration
-- **IEC 60904-7**: Spectral mismatch correction
-- **IEC 60904-9**: Flash simulator classification
-- **IEC 60891**: Temperature and irradiance corrections
-- **GUM**: Guide to Uncertainty in Measurement
+## Running Examples
 
-### Project Structure
+```bash
+# Basic ITC calculation
+python examples/basic_itc_calculation.py
 
-```
-pv-circularity-simulator/
-├── src/
-│   └── pv_circularity_simulator/
-│       ├── core/
-│       │   ├── iec63202/          # IEC 63202 CTM testing
-│       │   │   ├── models.py      # Pydantic data models
-│       │   │   ├── tester.py      # IEC63202CTMTester
-│       │   │   ├── loss_analyzer.py  # CTMPowerLossAnalyzer
-│       │   │   ├── calibration.py    # ReferenceDeviceCalibration
-│       │   │   └── report.py         # CTMTestReport
-│       │   ├── ctm/               # CTM loss models
-│       │   │   └── b03_ctm_loss_model.py  # B03 k1-k24 model
-│       │   └── utils/
-│       │       └── constants.py   # Physical constants, k factors
-│       └── ui/
-│           ├── app.py             # Main Streamlit app
-│           └── pages/
-│               └── iec_ctm_testing.py  # CTM testing UI
-├── tests/
-│   ├── unit/                      # Unit tests
-│   └── conftest.py                # Pytest fixtures
-├── examples/
-│   └── example_ctm_testing.py     # Usage examples
-├── pyproject.toml                 # Project configuration
-└── README.md
+# ITC with bonus credits
+python examples/itc_with_bonuses.py
+
+# PTC analysis
+python examples/ptc_analysis.py
+
+# Depreciation schedules
+python examples/depreciation_example.py
+
+# Complete tax equity analysis
+python examples/complete_tax_equity_example.py
 ```
 
 ## Testing
 
+Run the test suite with pytest:
+
 ```bash
+# Install dev dependencies
+pip install -e ".[dev]"
+
 # Run all tests
 pytest
 
 # Run with coverage
-pytest --cov=pv_circularity_simulator --cov-report=html
+pytest --cov=src/pv_simulator --cov-report=html
 
-# Run specific test suite
-pytest tests/unit/test_iec63202_tester.py
-
-# Run tests in parallel
-pytest -n auto
+# Run specific test file
+pytest tests/unit/test_incentive_modeler.py -v
 ```
 
-## Examples
+## Technology Stack
 
-See `examples/example_ctm_testing.py` for comprehensive examples including:
-
-1. **Basic CTM Test**: Complete workflow from configuration to certification
-2. **B03 Loss Model**: Quality scenario comparison and sensitivity analysis
-3. **Advanced Loss Analysis**: Detailed optical, electrical, thermal analysis
-4. **Report Generation**: Multi-format export (HTML, Excel, PDF)
-
-Run examples:
-```bash
-python examples/example_ctm_testing.py
-```
-
-## Key Technologies
-
-- **Pydantic**: Data validation and settings management
-- **NumPy/SciPy**: Scientific computing and numerical analysis
+- **Python 3.10+**: Modern Python features and type hints
+- **Pydantic v2**: Data validation and settings management
+- **NumPy**: Numerical computations and array operations
 - **Pandas**: Data manipulation and analysis
-- **Plotly**: Interactive visualizations
-- **Streamlit**: Web application framework
-- **ReportLab**: PDF report generation
+- **SciPy**: Scientific computing utilities
 
-## CTM Loss Factors (k1-k24)
+## Project Structure
 
-The B03 model includes 24 individual loss factors organized into 5 categories:
+```
+pv-circularity-simulator/
+├── src/pv_simulator/
+│   ├── models/              # Pydantic data models
+│   │   ├── base.py         # Base model classes
+│   │   └── incentives.py   # Tax incentive models
+│   ├── simulators/          # Core simulation modules
+│   │   └── incentive_modeler.py  # Tax incentive calculations
+│   └── utils/               # Utility functions
+├── tests/
+│   ├── unit/               # Unit tests
+│   └── integration/        # Integration tests
+├── examples/               # Usage examples
+├── docs/                   # Documentation
+└── pyproject.toml         # Project configuration
+```
 
-### Cell-Level (k1-k5)
-- k1: Cell binning tolerance
-- k2: Storage degradation
-- k3: Cell breakage/microcracks
-- k4: Measurement uncertainty
-- k5: Temperature variation
+## API Reference
 
-### Interconnection (k6-k10)
-- k6: Ribbon resistance
-- k7: Solder joint quality
-- k8: Busbar resistance
-- k9: Cell mismatch
-- k10: Interconnect shading
+### IncentiveModeler
 
-### Encapsulation (k11-k15)
-- k11: Glass transmission
-- k12: Encapsulant transmission
-- k13: Encapsulant absorption
-- k14: Backsheet reflectance
-- k15: Lamination defects
+Main class for tax incentive calculations.
 
-### Assembly (k16-k20)
-- k16: Junction box/diode losses
-- k17: Frame shading
-- k18: Module edge effects
-- k19: Thermal stress
-- k20: Quality control
+#### Methods
 
-### Measurement (k21-k24)
-- k21: Flash simulator spectrum
-- k22: Spatial uniformity
-- k23: Measurement uncertainty
-- k24: Temperature variation
+- `itc_calculation(config: ITCConfiguration) -> ITCResult`
+  - Calculate Investment Tax Credit with bonus adders
 
-Typical CTM ratios by quality:
-- **Premium Quality**: 98-100% (tight binning, MBB, excellent QC)
-- **Standard Quality**: 96-98% (normal manufacturing)
-- **Economy Quality**: 94-96% (cost-optimized)
+- `ptc_computation(config: PTCConfiguration, discount_rate: float) -> PTCResult`
+  - Compute Production Tax Credit over credit period
+
+- `depreciation_schedule(asset_basis: float, method: DepreciationMethod, bonus_rate: float) -> DepreciationScheduleResult`
+  - Generate MACRS or other depreciation schedules
+
+- `tax_equity_modeling(config: TaxEquityConfiguration, ...) -> TaxEquityResult`
+  - Model partnership flip tax equity structures
+
+### Data Models
+
+All input and output models are Pydantic-based with:
+- Full type validation
+- Comprehensive field descriptions
+- Default values where applicable
+- Custom validators for business logic
+
+See `src/pv_simulator/models/incentives.py` for complete model definitions.
 
 ## Contributing
 
-Contributions are welcome! Please:
+Contributions are welcome! Please ensure:
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
+1. All tests pass: `pytest`
+2. Code is formatted: `black .`
+3. Imports are sorted: `isort .`
+4. Type hints are present: `mypy src/`
+5. Linting passes: `ruff check .`
 
 ## License
 
 MIT License - see LICENSE file for details.
 
-## Citation
+## Acknowledgments
 
-If you use this software in your research, please cite:
+- IRS Publication 946 for MACRS depreciation schedules
+- Solar Energy Industries Association (SEIA) for tax policy guidance
+- Industry standard partnership flip structures
 
-```bibtex
-@software{pv_circularity_simulator,
-  title = {PV Circularity Simulator: IEC 63202 CTM Testing and Power Loss Validation},
-  author = {PV Circularity Team},
-  year = {2025},
-  url = {https://github.com/ganeshgowri-ASA/pv-circularity-simulator}
-}
-```
+## Roadmap
+
+Future development priorities:
+
+- [ ] State-level incentive programs
+- [ ] REAP (Rural Energy for America Program) modeling
+- [ ] Advanced partnership structures (sale-leaseback, inverted lease)
+- [ ] Multi-year tax appetite modeling
+- [ ] Monte Carlo sensitivity analysis
+- [ ] Integration with energy production forecasting
+- [ ] Debt financing and DSCR calculations
 
 ## Support
 
-For questions, issues, or feature requests:
+For questions, issues, or contributions:
 - Open an issue on GitHub
-- Contact: [Project maintainers]
-
-## Acknowledgments
-
-- IEC TC82 for PV testing standards
-- NREL for reference calibration methodology
-- PV research community for CTM loss modeling insights
+- Refer to the examples in `examples/`
+- Check the comprehensive test suite in `tests/`

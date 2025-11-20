@@ -1,17 +1,12 @@
-"""
-PV Circularity Simulator - End-to-end PV lifecycle simulation platform.
+"""PV Circularity Simulator.
 
-This package provides tools for:
-- Cell design and module engineering
-- System planning and performance monitoring
-- Energy forecasting with accuracy metrics
-- Circular economy (3R) modeling
-- CTM loss analysis and reliability testing
+A comprehensive photovoltaic system lifecycle and financial modeling toolkit
+with support for tax incentives, production credits, and depreciation analysis.
 """
 
 __version__ = "0.1.0"
 __author__ = "PV Circularity Team"
-__all__ = [
-    "__version__",
-    "__author__",
-]
+
+from pv_simulator.simulators.incentive_modeler import IncentiveModeler
+
+__all__ = ["IncentiveModeler"]
