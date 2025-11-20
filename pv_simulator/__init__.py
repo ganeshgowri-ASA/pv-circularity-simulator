@@ -1,14 +1,22 @@
-"""
-PV Circularity Simulator
-========================
-
-A comprehensive platform for photovoltaic lifecycle simulation, energy forecasting,
-and circular economy modeling.
-"""
+"""PV Circularity Simulator - End-to-end PV lifecycle simulation platform."""
 
 __version__ = "0.1.0"
 __author__ = "PV Circularity Team"
 
-from pv_simulator.forecasting.ensemble import EnsembleForecaster
+from pv_simulator.system_design import (
+    PVsystIntegration,
+    SystemDesignEngine,
+    ArrayLayoutDesigner,
+    InverterSelector,
+    StringSizingCalculator,
+    SystemLossModel,
+)
 
-__all__ = ["EnsembleForecaster"]
+__all__ = [
+    "PVsystIntegration",
+    "SystemDesignEngine",
+    "ArrayLayoutDesigner",
+    "InverterSelector",
+    "StringSizingCalculator",
+    "SystemLossModel",
+]
