@@ -4,174 +4,155 @@ End-to-end PV lifecycle simulation platform: Cell design → Module engineering 
 
 ## Overview
 
-The PV Circularity Simulator is a comprehensive platform for modeling and optimizing the complete lifecycle of photovoltaic systems, from initial design through end-of-life circularity strategies.
+The PV Circularity Simulator is a comprehensive platform for analyzing photovoltaic systems throughout their entire lifecycle, with a focus on circular economy principles (Reduce, Reuse, Recycle). The platform provides engineering-grade analysis tools for system design, performance monitoring, and end-of-life decision making.
 
 ## Features
 
-### RepairOptimizer - Intelligent Maintenance Planning
+### ✅ RepowerAnalyzer (Production-Ready)
 
-The RepairOptimizer module provides production-ready tools for managing PV system maintenance and repairs:
+Comprehensive repower analysis and feasibility study tool for existing PV systems:
 
-#### Core Capabilities
+- **Capacity Upgrade Analysis**: Evaluate maximum capacity increase potential with constraint identification (space, structural, electrical)
+- **Component Replacement Planning**: Prioritized, time-phased replacement planning based on health status and risk
+- **Technical Feasibility Assessment**: Multi-dimensional feasibility scoring across structural, electrical, spatial, regulatory, and integration dimensions
+- **Economic Viability Analysis**: Complete financial modeling with NPV, IRR, ROI, LCOE, sensitivity analysis, and break-even conditions
 
-- **Fault Diagnosis**: Automated detection and classification of component faults
-  - Rule-based and statistical analysis
-  - Multiple fault types: electrical, thermal, mechanical, degradation
-  - Severity assessment with confidence scoring
-  - Root cause identification
+### 🚧 Coming Soon
 
-- **Repair Cost Estimation**: Detailed cost breakdowns for repairs
-  - Labor cost calculation with customizable rates
-  - Parts cost estimation with inventory integration
-  - Overhead cost modeling
-  - Rush service options
-
-- **Maintenance Scheduling**: Optimized task scheduling
-  - Multiple optimization objectives (cost, time, priority)
-  - Resource constraint management
-  - Technician skill matching
-  - Spare parts availability checking
-
-- **Spare Parts Management**: Inventory optimization
-  - Real-time inventory tracking
-  - Automatic reorder point detection
-  - Demand forecasting
-  - Economic order quantity calculations
+- Cell design optimization
+- Module engineering tools
+- System planning and layout
+- Performance monitoring and degradation analysis
+- Circularity modeling and optimization
+- CTM (Cell-to-Module) loss analysis
+- SCAPS integration for device simulation
+- Reliability testing frameworks
+- Energy forecasting models
 
 ## Installation
-
-### Using pip
-
-```bash
-pip install -r requirements.txt
-pip install -e .
-```
-
-### Development Setup
 
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/pv-circularity-simulator.git
 cd pv-circularity-simulator
 
-# Install dependencies
-pip install -r requirements.txt
-
 # Install in development mode
 pip install -e .
+
+# Or install with dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest
 ```
 
 ## Quick Start
 
-### Basic Usage
+### RepowerAnalyzer Example
 
 ```python
-from datetime import datetime, timedelta
-from pv_simulator import RepairOptimizer
-from pv_simulator.models.maintenance import (
-    MaintenancePriority,
-    MaintenanceType,
-    RepairTask,
-    SparePart
+from pv_simulator import RepowerAnalyzer
+from pv_simulator.core.models import PVSystem, RepowerScenario
+from pv_simulator.core.enums import RepowerStrategy
+
+# Create your PV system model
+system = PVSystem(
+    system_id="MY-SYSTEM-001",
+    dc_capacity=100.0,  # kW
+    # ... other parameters
 )
 
-# Initialize the optimizer
-optimizer = RepairOptimizer(
-    labor_rate=75.0,
-    overhead_rate=0.15,
-    fault_detection_threshold=0.6
+# Initialize the analyzer
+analyzer = RepowerAnalyzer()
+
+# 1. Analyze capacity upgrade potential
+capacity_analysis = analyzer.capacity_upgrade_analysis(system)
+print(f"Max additional capacity: {capacity_analysis.max_additional_capacity:.2f} kW")
+print(f"Recommended upgrade: {capacity_analysis.recommended_upgrade:.2f} kW")
+print(f"Limiting factor: {capacity_analysis.limiting_factor}")
+
+# 2. Plan component replacements
+replacement_plan = analyzer.component_replacement_planning(system)
+print(f"Immediate replacements: {len(replacement_plan.immediate_replacements)}")
+print(f"Total cost: ${replacement_plan.total_replacement_cost:,.2f}")
+
+# 3. Check technical feasibility
+target_capacity = system.dc_capacity + capacity_analysis.recommended_upgrade
+feasibility = analyzer.technical_feasibility_check(
+    system,
+    target_capacity=target_capacity
+)
+print(f"Technically feasible: {feasibility.is_feasible}")
+print(f"Feasibility score: {feasibility.feasibility_score:.1f}/100")
+
+# 4. Analyze economic viability
+scenarios = [
+    RepowerScenario(
+        scenario_id="SCENARIO-1",
+        strategy=RepowerStrategy.MODULE_ONLY,
+        # ... scenario parameters
+    ),
+    # Add more scenarios...
+]
+
+economics = analyzer.economic_viability_analysis(
+    system,
+    repower_scenarios=scenarios,
+    electricity_rate=0.12,
+    incentives={"Federal ITC": 10000.0}
 )
 
-# Diagnose a fault
-fault = optimizer.fault_diagnosis(
-    component_id="PANEL-A23",
-    component_type="panel",
-    performance_data={
-        "voltage": 25.0,
-        "current": 7.0,
-        "efficiency": 0.15,
-        "temperature": 48.0
-    },
-    baseline_data={
-        "voltage": 30.0,
-        "current": 8.0,
-        "efficiency": 0.18,
-        "temperature": 45.0
-    }
-)
-
-# Get cost estimate
-if fault:
-    estimate = optimizer.repair_cost_estimation(fault)
-    print(f"Estimated repair cost: ${estimate.total_cost:.2f}")
-
-    # Create repair task
-    task = RepairTask(
-        fault_id=fault.fault_id,
-        component_id=fault.component_id,
-        task_type=MaintenanceType.CORRECTIVE,
-        priority=MaintenancePriority.HIGH,
-        estimated_duration_hours=estimate.labor_hours,
-        estimated_cost=estimate.total_cost
-    )
-
-    # Schedule maintenance
-    schedule = optimizer.maintenance_scheduling(
-        tasks=[task],
-        start_date=datetime.now(),
-        end_date=datetime.now() + timedelta(days=14)
-    )
-
-# Manage spare parts
-optimizer.add_spare_part(SparePart(
-    part_id="BP-001",
-    part_name="Bypass Diode",
-    part_number="BD-12V-10A",
-    category="electrical",
-    quantity_available=100,
-    unit_cost=15.0,
-    lead_time_days=7,
-    reorder_point=30,
-    reorder_quantity=100,
-    supplier="ElectroSupply Inc"
-))
-
-parts_report = optimizer.spare_parts_management(forecast_days=90)
-print(f"Parts needing reorder: {len(parts_report['reorder_recommendations'])}")
+print(f"Economically viable: {economics.is_viable}")
+print(f"Best scenario NPV: ${economics.best_scenario.economic_metrics.npv:,.2f}")
+print(f"Payback period: {economics.best_scenario.economic_metrics.payback_period:.1f} years")
 ```
 
-### Running the Example
+See `examples/repower_analysis_example.py` for a complete workflow demonstration.
 
-See the [examples](examples/) directory for a complete workflow demonstration:
+## Documentation
 
-```bash
-python examples/repair_optimizer_example.py
-```
+### Core Concepts
+
+The simulator is built around several core concepts:
+
+- **PVSystem**: Complete system model including location, modules, components, and performance data
+- **ComponentHealth**: Health status and performance metrics for individual system components
+- **RepowerScenario**: Complete repower plan with technical specs and cost breakdown
+- **Economic Metrics**: Standard financial metrics (NPV, IRR, ROI, LCOE, payback period)
+
+### Key Models
+
+All models use Pydantic for validation and type safety:
+
+- `PVSystem`: Complete system specification
+- `PVModule`: Module specifications and performance
+- `Location`: Geographic and environmental data
+- `ComponentHealth`: Component status and health
+- `RepowerScenario`: Repower plan and strategy
+- `EconomicMetrics`: Financial performance metrics
+- `TechnicalFeasibilityResult`: Feasibility assessment results
+
+### Analyzers
+
+- **RepowerAnalyzer**: Repower feasibility analysis
+  - `capacity_upgrade_analysis()`: Evaluate upgrade potential
+  - `component_replacement_planning()`: Plan replacements
+  - `technical_feasibility_check()`: Assess feasibility
+  - `economic_viability_analysis()`: Analyze economics
 
 ## Testing
 
-The project includes comprehensive unit and integration tests.
-
-### Run All Tests
+The project includes comprehensive test coverage:
 
 ```bash
+# Run all tests
 pytest
-```
 
-### Run with Coverage
+# Run with coverage
+pytest --cov=src/pv_simulator --cov-report=html
 
-```bash
-pytest --cov=pv_simulator --cov-report=html
-```
-
-### Run Specific Test Files
-
-```bash
-# Unit tests
-pytest tests/unit/test_repair_optimizer.py -v
-
-# Integration tests
-pytest tests/integration/test_repair_optimizer_integration.py -v
+# Run specific test file
+pytest tests/test_repower_analyzer.py -v
 ```
 
 ## Project Structure
@@ -180,93 +161,66 @@ pytest tests/integration/test_repair_optimizer_integration.py -v
 pv-circularity-simulator/
 ├── src/
 │   └── pv_simulator/
-│       ├── models/          # Pydantic data models
-│       │   └── maintenance.py
-│       ├── managers/        # Business logic classes
-│       │   └── repair_optimizer.py
-│       └── core/           # Core utilities
+│       ├── __init__.py
+│       ├── core/
+│       │   ├── __init__.py
+│       │   ├── enums.py          # Enumerations
+│       │   └── models.py         # Pydantic models
+│       └── analyzers/
+│           ├── __init__.py
+│           └── repower_analyzer.py
 ├── tests/
-│   ├── unit/               # Unit tests
-│   └── integration/        # Integration tests
-├── examples/               # Example scripts
-├── pyproject.toml         # Project configuration
-├── requirements.txt       # Dependencies
+│   ├── __init__.py
+│   └── test_repower_analyzer.py
+├── examples/
+│   ├── README.md
+│   └── repower_analysis_example.py
+├── pyproject.toml
+├── LICENSE
 └── README.md
 ```
 
-## Architecture
+## Requirements
 
-### Data Models (Pydantic)
+- Python >= 3.9
+- pydantic >= 2.0.0
+- numpy >= 1.24.0
+- pandas >= 2.0.0
+- scipy >= 1.10.0
 
-All data structures use Pydantic for validation and type safety:
-
-- `Fault`: Diagnosed component faults
-- `RepairTask`: Maintenance tasks
-- `RepairCostEstimate`: Cost breakdowns
-- `MaintenanceSchedule`: Optimized schedules
-- `SparePart`: Inventory items
-- `ComponentHealth`: Component status tracking
-
-### Optimization Algorithms
-
-The RepairOptimizer uses various optimization techniques:
-
-- **Scheduling**: Greedy algorithms with priority-based sorting
-- **Cost Optimization**: Multi-objective optimization
-- **Inventory Management**: Economic Order Quantity (EOQ) principles
-- **Forecasting**: Linear regression for degradation analysis
-
-## Configuration
-
-### Optimizer Parameters
-
-- `labor_rate`: Hourly cost for maintenance labor (default: $75.00)
-- `overhead_rate`: Overhead multiplier (default: 0.15 or 15%)
-- `fault_detection_threshold`: Minimum confidence for fault detection (default: 0.6)
-
-### Fault Detection Thresholds
-
-Configurable thresholds for different fault indicators:
-- Efficiency drop: 10%
-- High temperature: 70°C
-- Voltage deviation: 5%
-- Current imbalance: 10%
-- High degradation rate: 2% per year
-
-## API Documentation
-
-### RepairOptimizer Class
-
-#### Methods
-
-- `fault_diagnosis()`: Diagnose component faults from performance data
-- `repair_cost_estimation()`: Estimate repair costs with detailed breakdown
-- `maintenance_scheduling()`: Create optimized maintenance schedules
-- `spare_parts_management()`: Manage inventory and generate reorder lists
-- `add_spare_part()`: Add parts to inventory
-- `update_component_health()`: Update component health status
-- `get_active_faults()`: Retrieve current active faults
-- `clear_fault()`: Mark faults as resolved
-
-See inline docstrings for detailed parameter descriptions.
+See `pyproject.toml` for complete dependency list.
 
 ## Contributing
 
-Contributions are welcome! Please ensure:
+Contributions are welcome! Please:
 
-1. All new code includes comprehensive docstrings
-2. Unit tests cover new functionality
-3. Code passes linting (black, isort, ruff)
-4. Type hints are provided for all functions
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with tests
+4. Ensure all tests pass
+5. Submit a pull request
 
 ## License
 
-MIT License - see LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Version
+## Acknowledgments
 
-Current version: 0.1.0
+This project is part of ongoing research in photovoltaic system circularity and lifecycle optimization.
+
+## Citation
+
+If you use this software in your research, please cite:
+
+```bibtex
+@software{pv_circularity_simulator,
+  title={PV Circularity Simulator},
+  author={Your Name},
+  year={2024},
+  url={https://github.com/yourusername/pv-circularity-simulator}
+}
+```
 
 ## Contact
 
-For questions or issues, please open an issue on GitHub.
+For questions, issues, or contributions, please open an issue on GitHub.

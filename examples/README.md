@@ -1,63 +1,99 @@
-# Examples
+# RepowerAnalyzer Examples
 
-This directory contains example scripts demonstrating how to use the PV Circularity Simulator components.
+This directory contains example scripts demonstrating how to use the RepowerAnalyzer for PV system repower feasibility analysis.
 
-## Repair Optimizer Example
+## Running the Examples
 
-The `repair_optimizer_example.py` script demonstrates a complete workflow for PV system maintenance and repair optimization.
+### Prerequisites
 
-### Running the Example
-
-```bash
-# From the project root directory
-python examples/repair_optimizer_example.py
-```
-
-### What the Example Demonstrates
-
-1. **Initialization**: Setting up the RepairOptimizer with custom parameters
-2. **Inventory Setup**: Adding spare parts to the inventory system
-3. **Fault Diagnosis**: Detecting and diagnosing various types of faults:
-   - Electrical faults (voltage/current deviations)
-   - Thermal faults (overheating)
-   - Degradation faults (performance decline over time)
-4. **Cost Estimation**: Calculating detailed repair costs including labor, parts, and overhead
-5. **Task Creation**: Converting diagnosed faults into actionable repair tasks
-6. **Schedule Optimization**: Creating an optimized maintenance schedule based on priorities
-7. **Inventory Management**: Checking stock levels and generating reorder recommendations
-
-### Sample Output
-
-The script provides detailed output showing:
-- Detected faults with confidence levels and root causes
-- Detailed cost breakdowns for each repair
-- Optimized maintenance schedule with task priorities
-- Spare parts inventory status and reorder recommendations
-- Complete summary of the maintenance workflow
-
-### Customization
-
-You can modify the example to test different scenarios:
-
-- Adjust `labor_rate` and `overhead_rate` to match your cost structure
-- Add different types of components and faults
-- Experiment with different optimization objectives:
-  - `minimize_cost`: Optimize for lowest total cost
-  - `minimize_time`: Complete tasks as quickly as possible
-  - `maximize_priority`: Handle critical tasks first
-- Change the scheduling constraints (daily hours, date ranges)
-- Modify spare parts inventory levels to test reordering logic
-
-### Requirements
-
-Ensure you have installed the required dependencies:
+First, install the package and its dependencies:
 
 ```bash
-pip install -r requirements.txt
-```
-
-Or install the package in development mode:
-
-```bash
+# Install in development mode
 pip install -e .
+
+# Or install with dev dependencies
+pip install -e ".[dev]"
 ```
+
+### Repower Analysis Example
+
+The main example demonstrates a complete repower analysis workflow:
+
+```bash
+python examples/repower_analysis_example.py
+```
+
+This example shows:
+
+1. **Capacity Upgrade Analysis**: Determine maximum possible capacity increase
+2. **Component Replacement Planning**: Prioritize component replacements
+3. **Technical Feasibility Assessment**: Evaluate technical constraints
+4. **Economic Viability Analysis**: Compare multiple repower scenarios
+
+## Example Output
+
+The example will produce a comprehensive analysis report including:
+
+- Current system status and performance
+- Upgrade potential and limiting factors
+- Component replacement timeline and costs
+- Technical feasibility scores across multiple dimensions
+- Economic metrics (NPV, IRR, ROI, LCOE, payback period)
+- Sensitivity analysis for key variables
+- Break-even conditions
+- Financing options
+- Final recommendations
+
+## Customizing the Analysis
+
+You can modify the example to analyze your own system by:
+
+1. Updating the system parameters in `create_example_system()`
+2. Adjusting the analyzer configuration in `RepowerAnalyzerConfig`
+3. Creating custom repower scenarios with different strategies
+4. Modifying incentive structures and electricity rates
+
+## Quick Start
+
+Here's a minimal example to get started:
+
+```python
+from pv_simulator import RepowerAnalyzer
+from pv_simulator.core.models import PVSystem, Location, PVModule
+
+# Create your system
+system = PVSystem(...)
+
+# Initialize analyzer
+analyzer = RepowerAnalyzer()
+
+# Analyze capacity upgrade potential
+capacity = analyzer.capacity_upgrade_analysis(system)
+print(f"Max upgrade: {capacity.max_additional_capacity} kW")
+
+# Plan component replacements
+replacements = analyzer.component_replacement_planning(system)
+print(f"Total replacement cost: ${replacements.total_replacement_cost}")
+
+# Check technical feasibility
+feasibility = analyzer.technical_feasibility_check(
+    system,
+    target_capacity=120.0
+)
+print(f"Feasible: {feasibility.is_feasible}")
+
+# Analyze economics
+scenarios = [...]  # Define your scenarios
+economics = analyzer.economic_viability_analysis(
+    system,
+    repower_scenarios=scenarios
+)
+print(f"Best NPV: ${economics.best_scenario.economic_metrics.npv}")
+```
+
+## Additional Resources
+
+- See the test suite in `tests/test_repower_analyzer.py` for more usage examples
+- Refer to the API documentation for detailed method descriptions
+- Check the Pydantic models in `src/pv_simulator/core/models.py` for all available fields
