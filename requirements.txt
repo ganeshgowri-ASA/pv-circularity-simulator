@@ -1,14 +1,23 @@
-# PV Circularity Simulator MVP - Dependencies
-streamlit>=1.28.0
-pandas>=2.0.0
+# PV Circularity Simulator - Requirements
+# Production-ready dependencies for dashboard components
+
+# Core framework
+streamlit>=1.31.0
+
+# Data visualization
+plotly>=5.18.0
+
+# Data manipulation (if needed for future enhancements)
+pandas>=2.1.0
 numpy>=1.24.0
-plotly>=5.17.0
-pydantic>=2.0.0
-requests>=2.31.0
+
+# Utilities
 python-dateutil>=2.8.2
 
-# Optional: Future integrations
-# scikit-learn>=1.3.0
-# tensorflow>=2.13.0
-# prophet>=1.1.4
-# roboflow>=0.2.30
+# Development dependencies (optional, uncomment for development)
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+# black>=23.12.0
+# flake8>=7.0.0
+# mypy>=1.8.0
+# sphinx>=7.2.0
