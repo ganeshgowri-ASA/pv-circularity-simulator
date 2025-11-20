@@ -5,14 +5,22 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pv-circularity-simulator"
 version = "0.1.0"
-description = "Photovoltaic Circularity Simulator with time-series forecasting and IR image processing"
+description = "End-to-end PV lifecycle simulation platform with advanced time-series forecasting"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "PV Circularity Team"}
 ]
-keywords = ["photovoltaic", "solar", "circularity", "forecasting", "time-series", "ir-imaging"]
+keywords = [
+    "photovoltaic",
+    "pv",
+    "solar-energy",
+    "forecasting",
+    "time-series",
+    "machine-learning",
+    "circular-economy",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -21,209 +29,88 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
 ]
 
 dependencies = [
-    # Core scientific computing
-    "numpy>=1.24.0,<2.0.0",
-    "pandas>=2.0.0,<3.0.0",
-    "scipy>=1.10.0,<2.0.0",
-    "scikit-learn>=1.3.0,<2.0.0",
-
-    # Data validation
-    "pydantic>=2.0.0,<3.0.0",
-    "pydantic-settings>=2.0.0,<3.0.0",
-
-    # Time-series forecasting
-    "statsmodels>=0.14.0,<1.0.0",
-    "prophet>=1.1.5,<2.0.0",
-
-    # Deep learning for LSTM
-    "tensorflow>=2.14.0,<3.0.0",
-    "keras>=3.0.0,<4.0.0",
-
-    # Image processing
-    "opencv-python>=4.8.0,<5.0.0",
-    "Pillow>=10.0.0,<11.0.0",
-    "scikit-image>=0.21.0,<1.0.0",
-
-    # Visualization
-    "matplotlib>=3.7.0,<4.0.0",
-    "seaborn>=0.12.0,<1.0.0",
-    "plotly>=5.17.0,<6.0.0",
-
-    # Utilities
-    "python-dateutil>=2.8.0,<3.0.0",
-    "pytz>=2023.3",
-    "tqdm>=4.65.0,<5.0.0",
+    "numpy>=1.22.0",
+    "pandas>=1.4.0",
+    "scipy>=1.8.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dateutil>=2.8.0",
+    "pytz>=2022.1",
 ]
 
 [project.optional-dependencies]
+forecasting = [
+    "statsmodels>=0.14.0",
+    "scikit-learn>=1.2.0",
+    "xgboost>=1.7.0",
+    "lightgbm>=4.0.0",
+    "prophet>=1.1.0",
+    "optuna>=3.0.0",
+]
+
+deep-learning = [
+    "tensorflow>=2.13.0",
+    "keras>=2.13.0",
+]
+
+visualization = [
+    "matplotlib>=3.5.0",
+    "plotly>=5.14.0",
+    "seaborn>=0.12.0",
+    "streamlit>=1.28.0",
+]
+
 dev = [
-    # Testing
-    "pytest>=7.4.0,<8.0.0",
-    "pytest-cov>=4.1.0,<5.0.0",
-    "pytest-mock>=3.11.0,<4.0.0",
-    "pytest-asyncio>=0.21.0,<1.0.0",
-    "hypothesis>=6.82.0,<7.0.0",
-
-    # Code quality
-    "black>=23.7.0,<24.0.0",
-    "ruff>=0.0.280,<1.0.0",
-    "pylint>=2.17.0,<3.0.0",
-    "mypy>=1.4.0,<2.0.0",
-    "isort>=5.12.0,<6.0.0",
-
-    # Pre-commit hooks
-    "pre-commit>=3.3.0,<4.0.0",
-
-    # Documentation
-    "sphinx>=7.1.0,<8.0.0",
-    "sphinx-rtd-theme>=1.3.0,<2.0.0",
-    "sphinx-autodoc-typehints>=1.24.0,<2.0.0",
-
-    # Jupyter
-    "jupyter>=1.0.0,<2.0.0",
-    "ipykernel>=6.25.0,<7.0.0",
-    "ipywidgets>=8.1.0,<9.0.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "isort>=5.12.0",
+    "jupyterlab>=3.6.0",
 ]
 
-gpu = [
-    "tensorflow-gpu>=2.14.0,<3.0.0",
+all = [
+    "pv-circularity-simulator[forecasting,deep-learning,visualization,dev]",
 ]
-
-all = ["pv-circularity-simulator[dev,gpu]"]
 
 [project.urls]
 Homepage = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
+Documentation = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator/docs"
 Repository = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
-Issues = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator/issues"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["pv_circularity*"]
-namespaces = false
+include = ["pv_simulator*"]
 
 [tool.black]
 line-length = 100
 target-version = ['py39', 'py310', 'py311']
 include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
 
 [tool.isort]
 profile = "black"
 line_length = 100
 multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-
-[tool.pylint.messages_control]
-max-line-length = 100
-disable = [
-    "C0111",  # missing-docstring
-    "C0103",  # invalid-name
-    "R0913",  # too-many-arguments
-    "R0914",  # too-many-locals
-]
 
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-check_untyped_defs = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-strict_equality = true
-
-[[tool.mypy.overrides]]
-module = [
-    "prophet.*",
-    "statsmodels.*",
-    "cv2.*",
-    "sklearn.*",
-    "scipy.*",
-]
+disallow_untyped_defs = true
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-minversion = "7.0"
 testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
+python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = [
-    "--verbose",
-    "--cov=src/pv_circularity",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
-]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
-]
-
-[tool.coverage.run]
-source = ["src"]
-omit = [
-    "*/tests/*",
-    "*/test_*.py",
-    "*/__pycache__/*",
-    "*/site-packages/*",
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-    "@abstractmethod",
-]
-
-[tool.ruff]
-line-length = 100
-target-version = "py39"
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
-]
-ignore = [
-    "E501",  # line too long (handled by black)
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
-]
-
-[tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]
+addopts = "-v --cov=src/pv_simulator --cov-report=term-missing --cov-report=html"

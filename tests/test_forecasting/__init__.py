@@ -1,6 +1,1 @@
-"""
-Forecasting Tests
-=================
-
-Tests for forecasting modules.
-"""
+"""Tests for forecasting module."""

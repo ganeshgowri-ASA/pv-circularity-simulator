@@ -1,10 +1,7 @@
-"""Setup script for pv-circularity-simulator package.
-
-This file is maintained for compatibility with tools that don't yet support PEP 517/518.
-Modern installation should use: pip install .
-"""
+"""Setup script for pv-circularity-simulator package."""
 
 from setuptools import setup
 
-# Configuration is in pyproject.toml
+# Package metadata is defined in pyproject.toml
+# This file exists for compatibility with older build tools
 setup()
