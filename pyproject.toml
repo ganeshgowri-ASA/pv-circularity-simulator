@@ -5,69 +5,121 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pv-circularity-simulator"
 version = "0.1.0"
-description = "End-to-end PV lifecycle simulation platform with circularity and 3R system modeling"
-readme = "README.md"
-requires-python = ">=3.9"
-license = {text = "MIT"}
+description = "End-to-end PV lifecycle simulation platform"
 authors = [
-    {name = "PV Circularity Team"}
+    {name = "ganeshgowri-ASA", email = "ganeshgowri-asa@example.com"}
 ]
-keywords = ["photovoltaic", "circularity", "recycling", "sustainability", "LCA"]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
 ]
-
 dependencies = [
-    "pydantic>=2.0.0",
-    "numpy>=1.24.0",
-    "pandas>=2.0.0",
-    "matplotlib>=3.7.0",
-    "plotly>=5.14.0",
-    "streamlit>=1.28.0",
-    "scipy>=1.10.0",
+    "pydantic>=2.0.0,<3.0.0",
+    "pydantic-settings>=2.0.0",
+    "typing-extensions>=4.8.0",
+    "python-dateutil>=2.8.2",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "mypy>=1.5.0",
+    "ruff>=0.1.0",
     "black>=23.0.0",
-    "ruff>=0.0.280",
-    "mypy>=1.4.0",
+    "isort>=5.12.0",
+]
+docs = [
+    "sphinx>=7.0.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "sphinx-autodoc-typehints>=1.24.0",
+]
+analysis = [
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "matplotlib>=3.7.0",
+    "scipy>=1.11.0",
+    "jupyter>=1.0.0",
 ]
 
-[project.urls]
-Homepage = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
-Documentation = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator/blob/main/README.md"
-Repository = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
-
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
+include = ["pv_circularity_simulator*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --cov=src --cov-report=term-missing"
-
-[tool.black]
-line-length = 100
-target-version = ['py39']
-
-[tool.ruff]
-line-length = 100
-target-version = "py39"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=pv_circularity_simulator",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
