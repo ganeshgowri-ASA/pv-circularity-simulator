@@ -1,105 +1,73 @@
 [build-system]
-requires = ["setuptools>=65.0", "wheel"]
+requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pv-circularity-simulator"
 version = "0.1.0"
-description = "End-to-end PV lifecycle simulation platform"
+description = "End-to-end PV lifecycle simulation platform with circularity and 3R system modeling"
 readme = "README.md"
+requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-    {name = "ganeshgowri-ASA"}
+    {name = "PV Circularity Team"}
 ]
-requires-python = ">=3.9"
+keywords = ["photovoltaic", "circularity", "recycling", "sustainability", "LCA"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering",
+]
+
 dependencies = [
-    "pandas>=2.0.0",
-    "numpy>=1.24.0",
     "pydantic>=2.0.0",
-    "openpyxl>=3.1.0",
-    "python-dateutil>=2.8.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "matplotlib>=3.7.0",
+    "plotly>=5.14.0",
+    "streamlit>=1.28.0",
+    "scipy>=1.10.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
-    "pytest-mock>=3.11.0",
     "black>=23.0.0",
-    "ruff>=0.0.290",
-    "mypy>=1.5.0",
-    "pandas-stubs>=2.0.0",
+    "ruff>=0.0.280",
+    "mypy>=1.4.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
+Documentation = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator/blob/main/README.md"
+Repository = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
+
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["src*"]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = [
-    "-v",
-    "--strict-markers",
-    "--tb=short",
-    "--cov=src",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-]
+addopts = "-v --cov=src --cov-report=term-missing"
 
 [tool.black]
 line-length = 100
-target-version = ["py39", "py310", "py311"]
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.git
-  | \.venv
-  | build
-  | dist
-)/
-'''
+target-version = ['py39']
 
 [tool.ruff]
 line-length = 100
 target-version = "py39"
-select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
-]
-ignore = [
-    "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
-]
-
-[tool.ruff.per-file-ignores]
-"__init__.py" = ["F401"]
 
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-follow_imports = "normal"
-strict_optional = true
-plugins = ["pydantic.mypy"]
-
-[[tool.mypy.overrides]]
-module = "tests.*"
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
