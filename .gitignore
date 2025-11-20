@@ -206,6 +206,15 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# PV Circularity Simulator - Project data directories
-projects/
-example_projects/
+# Project-specific
+logs/
+*.log
+data/
+*.db
+*.sqlite
+
+# Docker volumes
+docker-compose.override.yml
+
+# Mosquitto password file
+config/mosquitto/passwd
