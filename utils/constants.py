@@ -1,588 +1,512 @@
 """
-Constants and Configuration for PV Circularity Simulator
-
-This module contains all standards, configurations, presets, and reference data
-used across the entire PV lifecycle simulation platform.
-
-Author: PV Circularity Simulator Team
-Version: 1.0 (71 Sessions Integrated)
+Constants Module
+================
+Application-wide constants for PV Circularity Simulator.
 """
 
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List
 from enum import Enum
-import numpy as np
+
 
 # ============================================================================
-# MATERIAL CONSTANTS
+# APPLICATION CONSTANTS
 # ============================================================================
 
-class MaterialType(Enum):
-    """PV material types."""
-    SILICON_MONO = "Monocrystalline Silicon"
-    SILICON_POLY = "Polycrystalline Silicon"
-    PEROVSKITE = "Perovskite"
-    CIGS = "CIGS"
-    CDTE = "CdTe"
-    BIFACIAL = "Bifacial Silicon"
-    HIT = "HIT (Heterojunction)"
-    PERC = "PERC"
-    TOPCON = "TOPCon"
-    IBC = "IBC (Interdigitated Back Contact)"
+APP_NAME = "PV Circularity Simulator"
+APP_VERSION = "1.0.0"
+APP_DESCRIPTION = "End-to-end Solar PV Lifecycle Management Platform"
+APP_AUTHOR = "PV Circularity Team"
+APP_LICENSE = "MIT"
 
-MATERIALS_DATABASE: Dict[str, Dict[str, Any]] = {
-    "Silicon (c-Si)": {
-        "efficiency": 21.5,
-        "cost_per_wp": 0.45,
-        "degradation_rate": 0.5,
-        "recyclability": 95,
-        "bandgap_ev": 1.12,
-        "temp_coefficient": -0.45,
-        "density": 2.33,
-        "thermal_conductivity": 148,
-        "lifespan_years": 25,
-        "carbon_footprint": 45,
-    },
-    "Perovskite": {
-        "efficiency": 24.2,
-        "cost_per_wp": 0.38,
-        "degradation_rate": 2.0,
-        "recyclability": 65,
-        "bandgap_ev": 1.55,
-        "temp_coefficient": -0.30,
-        "density": 4.0,
-        "thermal_conductivity": 0.5,
-        "lifespan_years": 15,
-        "carbon_footprint": 30,
-    },
-    "CIGS": {
-        "efficiency": 18.8,
-        "cost_per_wp": 0.52,
-        "degradation_rate": 1.2,
-        "recyclability": 75,
-        "bandgap_ev": 1.15,
-        "temp_coefficient": -0.36,
-        "density": 5.75,
-        "thermal_conductivity": 10,
-        "lifespan_years": 25,
-        "carbon_footprint": 38,
-    },
-    "CdTe": {
-        "efficiency": 20.5,
-        "cost_per_wp": 0.40,
-        "degradation_rate": 0.8,
-        "recyclability": 90,
-        "bandgap_ev": 1.45,
-        "temp_coefficient": -0.25,
-        "density": 5.85,
-        "thermal_conductivity": 6.2,
-        "lifespan_years": 25,
-        "carbon_footprint": 25,
-    },
-    "Bifacial Si": {
-        "efficiency": 22.1,
-        "cost_per_wp": 0.48,
-        "degradation_rate": 0.6,
-        "recyclability": 96,
-        "bandgap_ev": 1.12,
-        "temp_coefficient": -0.40,
-        "density": 2.33,
-        "thermal_conductivity": 148,
-        "lifespan_years": 30,
-        "carbon_footprint": 50,
-    },
+# Session tracking
+TOTAL_SESSIONS = 71
+TOTAL_BRANCHES = 15
+
+
+# ============================================================================
+# PHYSICAL CONSTANTS
+# ============================================================================
+
+# Solar constants
+SOLAR_CONSTANT = 1361  # W/m² (extraterrestrial solar irradiance)
+STANDARD_TEST_CONDITIONS_IRRADIANCE = 1000  # W/m²
+STANDARD_TEST_CONDITIONS_TEMP = 25  # °C
+STANDARD_TEST_CONDITIONS_SPECTRUM = "AM1.5G"
+
+# Standard reference irradiance levels
+REFERENCE_IRRADIANCES = {
+    'STC': 1000,      # W/m² - Standard Test Conditions
+    'NOCT': 800,      # W/m² - Nominal Operating Cell Temperature
+    'LOW': 200,       # W/m² - Low light conditions
+    'MEDIUM': 500     # W/m² - Medium irradiance
 }
 
+# Temperature coefficients (typical ranges)
+TEMP_COEFF_RANGES = {
+    'c_Si': (-0.45, -0.35),         # %/°C
+    'Perovskite': (-0.30, -0.20),   # %/°C
+    'CIGS': (-0.36, -0.28),         # %/°C
+    'CdTe': (-0.28, -0.21)          # %/°C
+}
+
+
 # ============================================================================
-# CTM LOSS FACTORS (Fraunhofer ISE Standard - 24 factors)
+# MODULE & SYSTEM CONSTANTS
 # ============================================================================
 
-CTM_LOSS_FACTORS: Dict[str, Dict[str, Any]] = {
-    "k1_reflection": {"loss_pct": 2.5, "description": "Front glass reflection loss"},
-    "k2_absorption": {"loss_pct": 1.8, "description": "Glass absorption"},
-    "k3_transmission": {"loss_pct": 0.5, "description": "Transmission losses"},
-    "k4_soiling": {"loss_pct": 1.2, "description": "Soiling and dust"},
-    "k5_temperature": {"loss_pct": 3.2, "description": "Temperature coefficient"},
-    "k6_low_irradiance": {"loss_pct": 1.5, "description": "Low irradiance losses"},
-    "k7_spectral": {"loss_pct": 1.0, "description": "Spectral mismatch"},
-    "k8_shading": {"loss_pct": 0.8, "description": "Self-shading"},
-    "k9_mismatch": {"loss_pct": 1.5, "description": "Cell mismatch"},
-    "k10_wiring": {"loss_pct": 0.8, "description": "Internal wiring resistance"},
-    "k11_connection": {"loss_pct": 0.5, "description": "Connection losses"},
-    "k12_lid": {"loss_pct": 2.0, "description": "Light-induced degradation"},
-    "k13_pid": {"loss_pct": 1.0, "description": "Potential-induced degradation"},
-    "k14_encapsulation": {"loss_pct": 0.7, "description": "Encapsulation losses"},
-    "k15_backsheet": {"loss_pct": 0.3, "description": "Backsheet reflection"},
-    "k16_edge_delete": {"loss_pct": 0.4, "description": "Edge deletion area"},
-    "k17_bus_bar": {"loss_pct": 2.5, "description": "Bus bar shading"},
-    "k18_junction_box": {"loss_pct": 0.2, "description": "Junction box shading"},
-    "k19_cell_gap": {"loss_pct": 3.0, "description": "Cell gap losses"},
-    "k20_lamination": {"loss_pct": 0.5, "description": "Lamination stress"},
-    "k21_quality": {"loss_pct": 1.0, "description": "Manufacturing quality"},
-    "k22_sorting": {"loss_pct": 0.8, "description": "Cell sorting binning"},
-    "k23_flash_test": {"loss_pct": 0.3, "description": "Flash test uncertainty"},
-    "k24_outdoor": {"loss_pct": 1.5, "description": "Indoor-outdoor spectral"},
+# Standard module configurations
+STANDARD_CELL_COUNTS = [36, 60, 72, 96, 120, 144]
+
+# Standard module dimensions (mm)
+STANDARD_MODULE_SIZES = {
+    '60cell': {'width': 1000, 'height': 1650, 'thickness': 40},
+    '72cell': {'width': 1000, 'height': 2000, 'thickness': 40},
+    '144cell': {'width': 1134, 'height': 2278, 'thickness': 35}
 }
+
+# Module weight (kg)
+TYPICAL_MODULE_WEIGHT_KG = {
+    '60cell': 18.5,
+    '72cell': 22.0,
+    '144cell': 30.0
+}
+
+# System voltage ranges
+DC_VOLTAGE_RANGES = {
+    'residential': (300, 600),      # V
+    'commercial': (600, 1000),      # V
+    'utility': (800, 1500)          # V
+}
+
+# Inverter efficiency by type
+INVERTER_EFFICIENCY = {
+    'micro': 96.5,          # %
+    'string': 97.5,         # %
+    'central': 98.5,        # %
+    'hybrid': 96.0          # %
+}
+
+
+# ============================================================================
+# DEGRADATION & LIFETIME
+# ============================================================================
+
+# Annual degradation rates (%/year)
+DEGRADATION_RATES = {
+    'c_Si': 0.5,
+    'Perovskite': 2.0,
+    'CIGS': 1.2,
+    'CdTe': 0.8,
+    'HJT': 0.25,
+    'TOPCon': 0.30
+}
+
+# Expected lifetimes (years)
+COMPONENT_LIFETIMES = {
+    'module': 25,
+    'inverter_string': 15,
+    'inverter_central': 20,
+    'mounting_structure': 30,
+    'cables': 25,
+    'combiner_box': 20,
+    'monitoring_system': 10
+}
+
+# Performance thresholds
+PERFORMANCE_THRESHOLDS = {
+    'end_of_life': 80,          # % of original efficiency
+    'warranty_guarantee': 80,    # % at 25 years
+    'alarm_threshold': 85,       # % below expected triggers alarm
+    'critical_threshold': 75     # % requires immediate action
+}
+
 
 # ============================================================================
 # IEC TESTING STANDARDS
 # ============================================================================
 
-IEC_STANDARDS: Dict[str, Dict[str, Any]] = {
-    "IEC_61215": {
-        "name": "Crystalline Silicon Terrestrial PV Modules",
-        "tests": [
-            "Visual Inspection",
-            "Maximum Power Determination",
-            "Insulation Test",
-            "Temperature Coefficients",
-            "NOCT Measurement",
-            "Low Irradiance Performance",
-            "Outdoor Exposure",
-            "Hot-Spot Endurance",
-            "UV Preconditioning",
-            "Thermal Cycling",
-            "Humidity-Freeze",
-            "Damp Heat",
-            "Robustness of Terminations",
-            "Wet Leakage Current",
-            "Mechanical Load",
-            "Hail Impact",
-            "Bypass Diode",
-        ],
-        "duration_hours": 1200,
-    },
-    "IEC_61730": {
-        "name": "PV Module Safety Qualification",
-        "tests": [
-            "Construction Requirements",
-            "Marking and Instructions",
-            "Environmental Requirements",
-            "Electrical Requirements",
-            "Mechanical Requirements",
-        ],
-        "duration_hours": 480,
-    },
-    "IEC_62804": {
-        "name": "PID Testing",
-        "tests": ["PID Stress Test", "Recovery Test"],
-        "duration_hours": 192,
-    },
-    "IEC_61853": {
-        "name": "PV Module Performance Testing",
-        "tests": [
-            "Irradiance and Temperature Performance",
-            "Spectral Responsivity",
-            "Incidence Angle and Module Temperature",
-        ],
-        "duration_hours": 240,
-    },
+IEC_STANDARDS = {
+    'IEC_61215': 'Design qualification and type approval',
+    'IEC_61730': 'Safety qualification',
+    'IEC_61853': 'PV module performance testing',
+    'IEC_62804': 'Potential Induced Degradation (PID)',
+    'IEC_61701': 'Salt mist corrosion',
+    'IEC_60891': 'I-V curve procedures',
+    'IEC_61724': 'System performance monitoring'
 }
 
-# ============================================================================
-# WEATHER AND ENVIRONMENTAL DATA
-# ============================================================================
-
-WEATHER_PRESETS: Dict[str, Dict[str, float]] = {
-    "Desert": {
-        "annual_ghi": 2400,
-        "avg_temp": 35,
-        "humidity": 20,
-        "wind_speed": 4.5,
-        "soiling_rate": 0.3,
-        "rainfall_mm": 100,
-    },
-    "Tropical": {
-        "annual_ghi": 1800,
-        "avg_temp": 28,
-        "humidity": 80,
-        "wind_speed": 3.2,
-        "soiling_rate": 0.1,
-        "rainfall_mm": 2500,
-    },
-    "Temperate": {
-        "annual_ghi": 1400,
-        "avg_temp": 15,
-        "humidity": 65,
-        "wind_speed": 4.0,
-        "soiling_rate": 0.15,
-        "rainfall_mm": 800,
-    },
-    "Coastal": {
-        "annual_ghi": 1900,
-        "avg_temp": 22,
-        "humidity": 75,
-        "wind_speed": 5.5,
-        "soiling_rate": 0.12,
-        "rainfall_mm": 1200,
-    },
-    "Mountain": {
-        "annual_ghi": 1600,
-        "avg_temp": 10,
-        "humidity": 60,
-        "wind_speed": 6.0,
-        "soiling_rate": 0.08,
-        "rainfall_mm": 1000,
-    },
+# Test duration requirements (hours)
+IEC_TEST_DURATIONS = {
+    'damp_heat': 1000,
+    'thermal_cycling': 200,
+    'humidity_freeze': 80,
+    'uv_preconditioning': 120,
+    'outdoor_exposure': 720,
+    'pid_test': 96
 }
 
-# ============================================================================
-# SYSTEM DESIGN PARAMETERS
-# ============================================================================
-
-INVERTER_TYPES: Dict[str, Dict[str, Any]] = {
-    "String": {
-        "efficiency": 97.5,
-        "cost_per_kw": 150,
-        "lifespan_years": 12,
-        "power_range": (1, 100),
-        "max_dc_voltage": 1000,
-        "mppt_efficiency": 99.5,
-    },
-    "Central": {
-        "efficiency": 98.5,
-        "cost_per_kw": 120,
-        "lifespan_years": 15,
-        "power_range": (100, 5000),
-        "max_dc_voltage": 1500,
-        "mppt_efficiency": 99.8,
-    },
-    "Micro": {
-        "efficiency": 96.0,
-        "cost_per_kw": 200,
-        "lifespan_years": 25,
-        "power_range": (0.2, 1),
-        "max_dc_voltage": 60,
-        "mppt_efficiency": 98.5,
-    },
-    "Hybrid": {
-        "efficiency": 97.0,
-        "cost_per_kw": 180,
-        "lifespan_years": 12,
-        "power_range": (3, 50),
-        "max_dc_voltage": 1000,
-        "mppt_efficiency": 99.0,
-        "battery_compatible": True,
-    },
+# Test temperature ranges
+IEC_TEST_TEMPERATURES = {
+    'low_temp': -40,    # °C
+    'high_temp': 85,    # °C
+    'damp_heat': 85,    # °C with 85% RH
+    'noct_ambient': 20  # °C
 }
 
-MOUNTING_TYPES: Dict[str, Dict[str, Any]] = {
-    "Fixed Tilt": {
-        "cost_per_kw": 50,
-        "energy_gain": 0,
-        "maintenance": "Low",
-    },
-    "Single-Axis Tracking": {
-        "cost_per_kw": 120,
-        "energy_gain": 25,
-        "maintenance": "Medium",
-    },
-    "Dual-Axis Tracking": {
-        "cost_per_kw": 200,
-        "energy_gain": 40,
-        "maintenance": "High",
-    },
-    "Rooftop": {
-        "cost_per_kw": 80,
-        "energy_gain": -5,
-        "maintenance": "Low",
-    },
-}
 
 # ============================================================================
-# MONITORING AND DIAGNOSTICS
+# CTM LOSS CATEGORIES
 # ============================================================================
 
-FAULT_TYPES: Dict[str, Dict[str, Any]] = {
-    "Hot Spot": {
-        "severity": "High",
-        "detection_method": "IR Imaging",
-        "action": "Immediate inspection",
-        "power_loss_pct": 15,
-    },
-    "Bypass Diode Failure": {
-        "severity": "Medium",
-        "detection_method": "IV Curve",
-        "action": "Schedule replacement",
-        "power_loss_pct": 33,
-    },
-    "Soiling": {
-        "severity": "Low",
-        "detection_method": "Performance Ratio",
-        "action": "Cleaning",
-        "power_loss_pct": 5,
-    },
-    "Shading": {
-        "severity": "Medium",
-        "detection_method": "String Monitoring",
-        "action": "Trim vegetation",
-        "power_loss_pct": 20,
-    },
-    "PID": {
-        "severity": "High",
-        "detection_method": "EL Imaging",
-        "action": "Voltage correction",
-        "power_loss_pct": 30,
-    },
-    "Cell Crack": {
-        "severity": "Medium",
-        "detection_method": "EL Imaging",
-        "action": "Monitor degradation",
-        "power_loss_pct": 10,
-    },
-    "Delamination": {
-        "severity": "High",
-        "detection_method": "Visual + IR",
-        "action": "Module replacement",
-        "power_loss_pct": 25,
-    },
-    "Corrosion": {
-        "severity": "Medium",
-        "detection_method": "Visual Inspection",
-        "action": "Replace affected",
-        "power_loss_pct": 12,
-    },
-}
-
-SENSOR_TYPES: List[str] = [
-    "Irradiance (POA)",
-    "Module Temperature",
-    "Ambient Temperature",
-    "Wind Speed",
-    "Humidity",
-    "String Current",
-    "String Voltage",
-    "Inverter Power",
-    "Grid Frequency",
-    "Energy Meter",
+CTM_LOSS_CATEGORIES = [
+    'Optical',
+    'Electrical',
+    'Thermal',
+    'Geometric',
+    'Environmental',
+    'Manufacturing',
+    'Degradation'
 ]
 
-# ============================================================================
-# CIRCULARITY AND RECYCLING
-# ============================================================================
-
-RECYCLING_PROCESSES: Dict[str, Dict[str, Any]] = {
-    "Mechanical": {
-        "efficiency": 85,
-        "cost_per_module": 5,
-        "recovered_materials": ["Glass", "Aluminum", "Copper"],
-        "energy_consumption": 50,
-    },
-    "Thermal": {
-        "efficiency": 92,
-        "cost_per_module": 8,
-        "recovered_materials": ["Silicon", "Silver", "Glass"],
-        "energy_consumption": 120,
-    },
-    "Chemical": {
-        "efficiency": 95,
-        "cost_per_module": 12,
-        "recovered_materials": ["Silicon", "Silver", "Copper", "Lead"],
-        "energy_consumption": 80,
-    },
+# Typical CTM ratio ranges
+CTM_RATIO_RANGES = {
+    'excellent': (0.95, 1.00),
+    'good': (0.90, 0.95),
+    'average': (0.85, 0.90),
+    'poor': (0.80, 0.85)
 }
 
-MATERIAL_RECOVERY_RATES: Dict[str, float] = {
-    "Glass": 95,
-    "Aluminum": 98,
-    "Silicon": 85,
-    "Silver": 92,
-    "Copper": 96,
-    "Lead": 88,
-    "EVA": 70,
-    "Backsheet": 65,
+
+# ============================================================================
+# FINANCIAL CONSTANTS
+# ============================================================================
+
+# Default financial parameters
+DEFAULT_DISCOUNT_RATE = 8.0         # %
+DEFAULT_INFLATION_RATE = 2.0        # %
+DEFAULT_TAX_RATE = 21.0             # %
+DEFAULT_LOAN_TERM = 15              # years
+DEFAULT_PROJECT_LIFETIME = 25       # years
+
+# Cost ranges ($/W)
+CAPEX_RANGES = {
+    'residential': (2.5, 3.5),
+    'commercial': (1.8, 2.5),
+    'utility': (0.9, 1.5)
 }
 
-# ============================================================================
-# FINANCIAL PARAMETERS
-# ============================================================================
-
-FINANCIAL_DEFAULTS: Dict[str, Any] = {
-    "discount_rate": 6.0,
-    "inflation_rate": 2.5,
-    "electricity_price": 0.12,
-    "electricity_escalation": 3.0,
-    "system_lifetime": 25,
-    "inverter_replacement_year": 12,
-    "o_and_m_annual": 15,  # $/kW/year
-    "insurance_annual": 0.25,  # % of capex
-    "tax_rate": 21,
-    "depreciation_period": 5,
-    "itc_percent": 30,  # Investment Tax Credit
+# O&M costs ($/kW/year)
+OPEX_RANGES = {
+    'residential': (15, 25),
+    'commercial': (12, 20),
+    'utility': (8, 15)
 }
 
-ELECTRICITY_TARIFFS: Dict[str, float] = {
-    "Residential": 0.13,
-    "Commercial": 0.11,
-    "Industrial": 0.08,
-    "Utility": 0.06,
+# Electricity prices ($/kWh) - US averages
+ELECTRICITY_PRICES = {
+    'residential': 0.13,
+    'commercial': 0.11,
+    'industrial': 0.07,
+    'utility_ppa': 0.04
 }
 
-# ============================================================================
-# PERFORMANCE METRICS
-# ============================================================================
-
-PERFORMANCE_THRESHOLDS: Dict[str, Tuple[float, float, float]] = {
-    # (critical, warning, good)
-    "Performance Ratio": (0.75, 0.80, 0.85),
-    "System Efficiency": (0.12, 0.14, 0.16),
-    "Capacity Factor": (0.15, 0.18, 0.22),
-    "Availability": (0.95, 0.97, 0.99),
-    "Inverter Efficiency": (0.95, 0.97, 0.98),
+# Bankability thresholds
+BANKABILITY_THRESHOLDS = {
+    'min_dscr': 1.20,               # Debt Service Coverage Ratio
+    'min_irr': 8.0,                 # %
+    'max_payback': 12,              # years
+    'min_equity_irr': 10.0          # %
 }
 
+
 # ============================================================================
-# STC AND NOCT CONDITIONS
+# CIRCULARITY CONSTANTS
 # ============================================================================
 
-STC_CONDITIONS: Dict[str, float] = {
-    "irradiance": 1000,  # W/m²
-    "cell_temperature": 25,  # °C
-    "air_mass": 1.5,
+# Material recovery rates (%)
+MATERIAL_RECOVERY_RATES = {
+    'silicon': 95,
+    'glass': 98,
+    'aluminum': 96,
+    'copper': 98,
+    'silver': 90,
+    'plastic': 60
 }
 
-NOCT_CONDITIONS: Dict[str, float] = {
-    "irradiance": 800,  # W/m²
-    "ambient_temperature": 20,  # °C
-    "wind_speed": 1,  # m/s
-    "mounting": 0,  # open rack
+# Material weights in typical 60-cell c-Si module (kg)
+MODULE_MATERIAL_COMPOSITION = {
+    'glass': 12.0,
+    'aluminum_frame': 2.5,
+    'silicon_cells': 3.5,
+    'copper': 0.5,
+    'silver': 0.03,
+    'eva_encapsulant': 1.2,
+    'backsheet': 0.8,
+    'junction_box': 0.3,
+    'other': 0.5
 }
 
+# Material prices ($/kg)
+MATERIAL_PRICES = {
+    'silicon': 2.0,
+    'glass': 0.05,
+    'aluminum': 2.5,
+    'copper': 8.0,
+    'silver': 600.0,
+    'plastic': 0.5,
+    'eva': 2.0
+}
+
+# Recycling costs ($/module)
+RECYCLING_COSTS = {
+    'mechanical': 2.0,
+    'thermal': 3.5,
+    'chemical': 5.0
+}
+
+# Reuse value depreciation (%/year)
+REUSE_DEPRECIATION_RATE = 5.0
+
+
 # ============================================================================
-# DEGRADATION MODELS
+# ENERGY STORAGE CONSTANTS
 # ============================================================================
 
-DEGRADATION_MODES: Dict[str, Dict[str, Any]] = {
-    "Linear": {
-        "formula": "P(t) = P0 * (1 - rate * t)",
-        "typical_rate": 0.5,
+# Battery technology specifications
+BATTERY_SPECS = {
+    'lithium_ion': {
+        'energy_density': 250,      # Wh/kg
+        'power_density': 1000,      # W/kg
+        'efficiency': 95,           # %
+        'cycle_life': 6000,
+        'calendar_life': 15,        # years
+        'cost_per_kwh': 400         # $/kWh
     },
-    "Exponential": {
-        "formula": "P(t) = P0 * exp(-rate * t)",
-        "typical_rate": 0.006,
+    'lead_acid': {
+        'energy_density': 40,
+        'power_density': 180,
+        'efficiency': 80,
+        'cycle_life': 1500,
+        'calendar_life': 8,
+        'cost_per_kwh': 200
     },
-    "Piecewise": {
-        "formula": "LID + Linear",
-        "lid_year1": 2.0,
-        "linear_rate": 0.5,
-    },
+    'flow_battery': {
+        'energy_density': 30,
+        'power_density': 20,
+        'efficiency': 75,
+        'cycle_life': 10000,
+        'calendar_life': 20,
+        'cost_per_kwh': 500
+    }
 }
 
-# ============================================================================
-# SIMULATION PARAMETERS
-# ============================================================================
-
-SIMULATION_DEFAULTS: Dict[str, Any] = {
-    "time_step_hours": 1,
-    "simulation_years": 25,
-    "monte_carlo_iterations": 1000,
-    "confidence_interval": 0.95,
-    "weather_year_type": "TMY3",  # Typical Meteorological Year
+# C-rates for different applications
+C_RATES = {
+    'residential_backup': 0.5,      # 2-hour discharge
+    'frequency_regulation': 2.0,    # 30-minute discharge
+    'peak_shaving': 0.25,           # 4-hour discharge
+    'energy_arbitrage': 0.2         # 5-hour discharge
 }
 
-# ============================================================================
-# SCAPS-1D SIMULATION PARAMETERS
-# ============================================================================
-
-SCAPS_DEFAULTS: Dict[str, Any] = {
-    "substrate_types": ["Glass", "Plastic", "Metal", "Flexible"],
-    "device_thickness_um": (0.1, 10.0),
-    "simulation_temperature": 300,  # K
-    "illumination": "AM1.5G",
-    "voltage_points": 100,
-    "convergence_criteria": 1e-6,
-}
 
 # ============================================================================
-# HYBRID ENERGY STORAGE
+# WEATHER & LOCATION CONSTANTS
 # ============================================================================
 
-BATTERY_TYPES: Dict[str, Dict[str, Any]] = {
-    "Lithium-Ion": {
-        "efficiency": 95,
-        "cycle_life": 5000,
-        "cost_per_kwh": 400,
-        "degradation_per_cycle": 0.01,
-        "depth_of_discharge": 90,
-    },
-    "Lead-Acid": {
-        "efficiency": 85,
-        "cycle_life": 1500,
-        "cost_per_kwh": 200,
-        "degradation_per_cycle": 0.03,
-        "depth_of_discharge": 50,
-    },
-    "Flow Battery": {
-        "efficiency": 80,
-        "cycle_life": 10000,
-        "cost_per_kwh": 500,
-        "degradation_per_cycle": 0.005,
-        "depth_of_discharge": 100,
-    },
-}
-
-# ============================================================================
-# REVAMP AND RETROFIT OPTIONS
-# ============================================================================
-
-REVAMP_OPTIONS: Dict[str, Dict[str, Any]] = {
-    "Module Replacement": {
-        "cost_per_kw": 600,
-        "efficiency_gain": 25,
-        "lifespan_extension": 20,
-    },
-    "Inverter Upgrade": {
-        "cost_per_kw": 150,
-        "efficiency_gain": 2,
-        "lifespan_extension": 12,
-    },
-    "Tracker Retrofit": {
-        "cost_per_kw": 120,
-        "efficiency_gain": 20,
-        "lifespan_extension": 0,
-    },
-    "BESS Integration": {
-        "cost_per_kw": 800,
-        "efficiency_gain": 0,
-        "value_enhancement": 40,
-    },
-}
-
-# ============================================================================
-# COLOR SCHEMES
-# ============================================================================
-
-COLOR_PALETTE: Dict[str, str] = {
-    "primary": "#2ecc71",
-    "secondary": "#3498db",
-    "warning": "#f39c12",
-    "danger": "#e74c3c",
-    "success": "#27ae60",
-    "info": "#16a085",
-    "dark": "#2c3e50",
-    "light": "#ecf0f1",
-}
-
-# ============================================================================
-# EXPORT FORMATS
-# ============================================================================
-
-EXPORT_FORMATS: List[str] = [
-    "CSV",
-    "Excel",
-    "JSON",
-    "PDF Report",
-    "HTML Dashboard",
-    "PowerPoint",
+# Typical meteorological year (TMY) sources
+TMY_SOURCES = [
+    'PVGIS',
+    'NASA_SSE',
+    'Meteonorm',
+    'NREL_NSRDB',
+    'SOLCAST'
 ]
 
+# Climate zones
+CLIMATE_ZONES = {
+    'tropical': {'latitude_range': (-23.5, 23.5)},
+    'subtropical': {'latitude_range': (23.5, 35.0)},
+    'temperate': {'latitude_range': (35.0, 50.0)},
+    'cold': {'latitude_range': (50.0, 70.0)}
+}
+
+# Soiling rates by environment (%/month)
+SOILING_RATES = {
+    'clean': 0.2,
+    'rural': 0.5,
+    'suburban': 1.0,
+    'urban': 1.5,
+    'industrial': 2.5,
+    'desert': 3.0
+}
+
+
 # ============================================================================
-# VERSION INFORMATION
+# FAULT DETECTION CONSTANTS
 # ============================================================================
 
-VERSION_INFO: Dict[str, str] = {
-    "version": "1.0.0",
-    "release_date": "2025-11-17",
-    "sessions_integrated": "71",
-    "branches": "15",
-    "status": "Production-Ready",
+# Fault severity multipliers (power loss factor)
+FAULT_SEVERITY_MULTIPLIERS = {
+    'hotspot': 0.15,            # 15% power loss
+    'cell_crack': 0.05,         # 5% power loss
+    'diode_failure': 0.30,      # 30% power loss
+    'soiling': 0.10,            # 10% power loss
+    'shading': 0.20,            # 20% power loss
+    'delamination': 0.08        # 8% power loss
 }
+
+# Thermal imaging thresholds
+THERMAL_THRESHOLDS = {
+    'normal_temp_diff': 10,         # °C above ambient
+    'hotspot_warning': 15,          # °C above module average
+    'hotspot_critical': 25,         # °C above module average
+    'max_operating_temp': 85        # °C
+}
+
+# I-V curve analysis thresholds
+IV_CURVE_THRESHOLDS = {
+    'min_fill_factor': 0.70,
+    'normal_fill_factor': 0.75,
+    'good_fill_factor': 0.78,
+    'excellent_fill_factor': 0.82
+}
+
+
+# ============================================================================
+# DATA QUALITY CONSTANTS
+# ============================================================================
+
+# Data quality score thresholds
+DATA_QUALITY_THRESHOLDS = {
+    'excellent': 95,
+    'good': 85,
+    'acceptable': 75,
+    'poor': 60,
+    'unacceptable': 0
+}
+
+# Maximum acceptable data gaps
+MAX_DATA_GAPS = {
+    'real_time': 5,         # minutes
+    'hourly': 2,            # hours
+    'daily': 1,             # days
+    'monthly': 3            # days
+}
+
+
+# ============================================================================
+# UNIT CONVERSIONS
+# ============================================================================
+
+UNIT_CONVERSIONS = {
+    # Power
+    'kw_to_w': 1000,
+    'mw_to_kw': 1000,
+    'gw_to_mw': 1000,
+
+    # Energy
+    'kwh_to_wh': 1000,
+    'mwh_to_kwh': 1000,
+    'gwh_to_mwh': 1000,
+
+    # Area
+    'm2_to_cm2': 10000,
+    'km2_to_m2': 1000000,
+
+    # Temperature
+    'c_to_k_offset': 273.15,
+    'c_to_f_factor': 1.8,
+    'c_to_f_offset': 32,
+
+    # Pressure
+    'pa_to_bar': 0.00001,
+    'psi_to_pa': 6894.76
+}
+
+
+# ============================================================================
+# COLOR SCHEMES (for visualization)
+# ============================================================================
+
+COLOR_SCHEMES = {
+    'performance': {
+        'excellent': '#2ecc71',     # Green
+        'good': '#3498db',          # Blue
+        'warning': '#f39c12',       # Orange
+        'critical': '#e74c3c',      # Red
+        'offline': '#95a5a6'        # Gray
+    },
+    'efficiency': {
+        'high': '#27ae60',
+        'medium': '#f1c40f',
+        'low': '#e67e22'
+    },
+    'circularity': {
+        'reduce': '#1abc9c',
+        'reuse': '#3498db',
+        'recycle': '#9b59b6'
+    }
+}
+
+
+# ============================================================================
+# API & INTEGRATION CONSTANTS
+# ============================================================================
+
+# API timeout settings (seconds)
+API_TIMEOUTS = {
+    'weather_api': 30,
+    'scada_api': 10,
+    'database': 60,
+    'external_services': 45
+}
+
+# Rate limits (requests per minute)
+API_RATE_LIMITS = {
+    'weather_api': 60,
+    'pvgis': 30,
+    'nasa_sse': 100
+}
+
+
+# ============================================================================
+# VALIDATION RANGES
+# ============================================================================
+
+VALIDATION_RANGES = {
+    'efficiency': {'min': 0, 'max': 50},                    # %
+    'performance_ratio': {'min': 0, 'max': 100},            # %
+    'irradiance': {'min': 0, 'max': 1500},                  # W/m²
+    'ambient_temp': {'min': -50, 'max': 60},                # °C
+    'module_temp': {'min': -40, 'max': 100},                # °C
+    'voltage': {'min': 0, 'max': 1500},                     # V
+    'current': {'min': 0, 'max': 20},                       # A
+    'power': {'min': 0, 'max': 1000000},                    # kW
+    'wind_speed': {'min': 0, 'max': 50},                    # m/s
+    'humidity': {'min': 0, 'max': 100},                     # %
+}
+
+
+# ============================================================================
+# ERROR MESSAGES
+# ============================================================================
+
+ERROR_MESSAGES = {
+    'invalid_efficiency': "Efficiency must be between 0% and 50%",
+    'invalid_irradiance': "Irradiance must be between 0 and 1500 W/m²",
+    'invalid_temperature': "Temperature out of valid range",
+    'missing_data': "Required data not provided",
+    'database_error': "Database connection error",
+    'api_timeout': "API request timed out",
+    'invalid_configuration': "Invalid system configuration"
+}
+
+
+# Export all constants
+__all__ = [
+    'APP_NAME', 'APP_VERSION', 'TOTAL_SESSIONS', 'TOTAL_BRANCHES',
+    'SOLAR_CONSTANT', 'STANDARD_TEST_CONDITIONS_IRRADIANCE',
+    'DEGRADATION_RATES', 'COMPONENT_LIFETIMES', 'IEC_STANDARDS',
+    'CTM_LOSS_CATEGORIES', 'DEFAULT_DISCOUNT_RATE', 'MATERIAL_RECOVERY_RATES',
+    'BATTERY_SPECS', 'VALIDATION_RANGES', 'ERROR_MESSAGES'
+]

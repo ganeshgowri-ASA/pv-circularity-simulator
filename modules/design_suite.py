@@ -1,882 +1,586 @@
 """
-Design Suite Module - Branches B01-B03
-
-This module provides functionality for:
+Design Suite Module (B01-B03)
+=============================
+Integrates:
 - B01: Materials Engineering Database
-- B02: Cell Design (SCAPS-1D Simulation)
+- B02: Cell Design & SCAPS-1D Simulation
 - B03: Module Design & CTM Loss Analysis
 
-Author: PV Circularity Simulator Team
-Version: 1.0 (71 Sessions Integrated)
+This module provides comprehensive PV design capabilities from material selection
+through cell design to complete module engineering with Fraunhofer ISE CTM loss factors.
 """
 
-import streamlit as st
+from typing import Dict, List, Optional, Tuple, Any
+from dataclasses import dataclass, field
+from enum import Enum
 import pandas as pd
-import plotly.graph_objects as go
-import plotly.express as px
 import numpy as np
-from typing import Dict, List, Tuple, Optional, Any
-import sys
-import os
-
-# Add parent directory to path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from utils.constants import (
-    MATERIALS_DATABASE,
-    CTM_LOSS_FACTORS,
-    SCAPS_DEFAULTS,
-    STC_CONDITIONS,
-    COLOR_PALETTE,
-)
-from utils.validators import Material, CellDesign, ModuleDesign, CTMLoss
+from pydantic import BaseModel, Field, validator
 
 
 # ============================================================================
-# BRANCH 01: MATERIALS ENGINEERING DATABASE
+# B01: MATERIALS ENGINEERING DATABASE
 # ============================================================================
 
-def render_materials_database() -> None:
+class MaterialType(str, Enum):
+    """Enumeration of PV material types."""
+    C_SI = "c-Si"
+    PEROVSKITE = "Perovskite"
+    CIGS = "CIGS"
+    CDTE = "CdTe"
+    BIFACIAL_SI = "Bi-facial Si"
+    TANDEM = "Tandem"
+    HJT = "HJT"
+    TOPCON = "TOPCon"
+    IBC = "IBC"
+
+
+class MaterialSpecification(BaseModel):
+    """Comprehensive material specification model."""
+
+    material_id: str = Field(..., description="Unique material identifier")
+    name: str = Field(..., description="Material name")
+    material_type: MaterialType = Field(..., description="Material category")
+    efficiency: float = Field(..., ge=0, le=100, description="Efficiency percentage")
+    cost_per_wp: float = Field(..., ge=0, description="Cost per watt-peak ($/Wp)")
+    degradation_rate: float = Field(..., ge=0, description="Annual degradation (%/year)")
+    recyclability_score: int = Field(..., ge=0, le=100, description="Recyclability score (0-100)")
+    embodied_energy: float = Field(default=0.0, ge=0, description="Embodied energy (MJ/m²)")
+    carbon_footprint: float = Field(default=0.0, ge=0, description="Carbon footprint (kg CO2e/m²)")
+    temperature_coefficient: float = Field(default=-0.4, description="Temperature coefficient (%/°C)")
+    warranty_years: int = Field(default=25, ge=0, description="Warranty period (years)")
+    spectral_response: Dict[str, float] = Field(default_factory=dict, description="Spectral response data")
+
+    class Config:
+        use_enum_values = True
+
+
+class MaterialsDatabase:
     """
-    Render the Materials Engineering Database interface.
-
-    Features:
-    - Material selection and comparison
-    - Property visualization
-    - Cost-efficiency analysis
-    - Recyclability scoring
-    - Custom material addition
+    Materials Engineering Database with comprehensive PV material specifications.
+    Supports material search, comparison, and lifecycle analysis.
     """
-    st.header("🔬 Materials Engineering Database")
-    st.markdown("*Comprehensive database of PV materials with technical specifications*")
 
-    # Create tabs for different views
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "📊 Material Database",
-        "📈 Comparison Analysis",
-        "➕ Add Custom Material",
-        "🔍 Property Search"
-    ])
+    def __init__(self):
+        """Initialize materials database with default entries."""
+        self.materials: Dict[str, MaterialSpecification] = {}
+        self._load_default_materials()
 
-    # Tab 1: Material Database
-    with tab1:
-        st.subheader("Material Properties Database")
-
-        # Convert materials database to DataFrame
-        materials_df = pd.DataFrame.from_dict(MATERIALS_DATABASE, orient='index')
-        materials_df.index.name = 'Material'
-        materials_df.reset_index(inplace=True)
-
-        # Display with formatting
-        st.dataframe(
-            materials_df.style.background_gradient(subset=['efficiency'], cmap='Greens')
-                             .background_gradient(subset=['recyclability'], cmap='Blues')
-                             .format({
-                                 'efficiency': '{:.1f}%',
-                                 'cost_per_wp': '${:.2f}',
-                                 'degradation_rate': '{:.2f}%/yr',
-                                 'temp_coefficient': '{:.2f}%/°C',
-                                 'carbon_footprint': '{:.0f} kg CO₂/kWp'
-                             }),
-            use_container_width=True
-        )
-
-        # Summary statistics
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Total Materials", len(MATERIALS_DATABASE))
-        with col2:
-            avg_eff = materials_df['efficiency'].mean()
-            st.metric("Avg Efficiency", f"{avg_eff:.1f}%")
-        with col3:
-            avg_cost = materials_df['cost_per_wp'].mean()
-            st.metric("Avg Cost", f"${avg_cost:.2f}/Wp")
-        with col4:
-            avg_recycle = materials_df['recyclability'].mean()
-            st.metric("Avg Recyclability", f"{avg_recycle:.0f}/100")
-
-    # Tab 2: Comparison Analysis
-    with tab2:
-        st.subheader("Material Comparison Analysis")
-
-        # Material selection for comparison
-        selected_materials = st.multiselect(
-            "Select materials to compare:",
-            list(MATERIALS_DATABASE.keys()),
-            default=list(MATERIALS_DATABASE.keys())[:3]
-        )
-
-        if selected_materials:
-            # Efficiency vs Cost scatter plot
-            fig_scatter = go.Figure()
-
-            for material in selected_materials:
-                props = MATERIALS_DATABASE[material]
-                fig_scatter.add_trace(go.Scatter(
-                    x=[props['cost_per_wp']],
-                    y=[props['efficiency']],
-                    mode='markers+text',
-                    marker=dict(
-                        size=props['recyclability'],
-                        sizemode='diameter',
-                        sizeref=2,
-                        color=props['degradation_rate'],
-                        colorscale='RdYlGn_r',
-                        showscale=True,
-                        colorbar=dict(title="Degradation<br>(%/yr)")
-                    ),
-                    text=material,
-                    textposition="top center",
-                    name=material
-                ))
-
-            fig_scatter.update_layout(
-                title="Efficiency vs Cost Analysis (Bubble size = Recyclability)",
-                xaxis_title="Cost ($/Wp)",
-                yaxis_title="Efficiency (%)",
-                hovermode='closest',
-                height=500
-            )
-            st.plotly_chart(fig_scatter, use_container_width=True)
-
-            # Radar chart for selected materials
-            st.subheader("Multi-dimensional Comparison")
-            fig_radar = create_material_radar_chart(selected_materials)
-            st.plotly_chart(fig_radar, use_container_width=True)
-
-    # Tab 3: Add Custom Material
-    with tab3:
-        st.subheader("Add Custom Material")
-
-        with st.form("custom_material_form"):
-            col1, col2 = st.columns(2)
-
-            with col1:
-                custom_name = st.text_input("Material Name", "My Custom Material")
-                custom_efficiency = st.slider("Efficiency (%)", 5.0, 50.0, 20.0, 0.1)
-                custom_cost = st.number_input("Cost ($/Wp)", 0.1, 5.0, 0.5, 0.01)
-                custom_degradation = st.number_input("Degradation Rate (%/yr)", 0.1, 5.0, 0.5, 0.1)
-                custom_recyclability = st.slider("Recyclability Score", 0, 100, 80)
-
-            with col2:
-                custom_bandgap = st.number_input("Bandgap (eV)", 0.5, 3.5, 1.5, 0.01)
-                custom_temp_coeff = st.number_input("Temp Coefficient (%/°C)", -1.0, 0.0, -0.4, 0.01)
-                custom_lifespan = st.slider("Lifespan (years)", 10, 50, 25)
-                custom_carbon = st.number_input("Carbon Footprint (kg CO₂/kWp)", 0, 200, 40)
-
-            submitted = st.form_submit_button("Add Material")
-
-            if submitted:
-                # Validate using Pydantic model
-                try:
-                    new_material = Material(
-                        name=custom_name,
-                        efficiency=custom_efficiency,
-                        cost_per_wp=custom_cost,
-                        degradation_rate=custom_degradation,
-                        recyclability=custom_recyclability,
-                        bandgap_ev=custom_bandgap,
-                        temp_coefficient=custom_temp_coeff,
-                        lifespan_years=custom_lifespan,
-                        carbon_footprint=custom_carbon
-                    )
-                    st.success(f"✓ Material '{custom_name}' validated successfully!")
-                    st.json(new_material.dict())
-                except Exception as e:
-                    st.error(f"Validation error: {str(e)}")
-
-    # Tab 4: Property Search
-    with tab4:
-        st.subheader("Search by Properties")
-
-        col1, col2 = st.columns(2)
-        with col1:
-            min_efficiency = st.slider("Minimum Efficiency (%)", 0.0, 50.0, 18.0)
-            max_cost = st.slider("Maximum Cost ($/Wp)", 0.0, 5.0, 1.0)
-
-        with col2:
-            min_recyclability = st.slider("Minimum Recyclability", 0, 100, 70)
-            max_degradation = st.slider("Maximum Degradation (%/yr)", 0.0, 5.0, 1.5)
-
-        # Filter materials
-        filtered_materials = filter_materials(
-            min_efficiency, max_cost, min_recyclability, max_degradation
-        )
-
-        st.write(f"**{len(filtered_materials)} materials match your criteria:**")
-        if filtered_materials:
-            filtered_df = pd.DataFrame.from_dict(filtered_materials, orient='index')
-            st.dataframe(filtered_df, use_container_width=True)
-        else:
-            st.warning("No materials match the specified criteria.")
-
-
-def create_material_radar_chart(materials: List[str]) -> go.Figure:
-    """
-    Create a radar chart comparing multiple materials.
-
-    Args:
-        materials: List of material names to compare
-
-    Returns:
-        Plotly Figure object with radar chart
-    """
-    categories = ['Efficiency', 'Cost Efficiency', 'Recyclability', 'Lifespan', 'Low Degradation']
-
-    fig = go.Figure()
-
-    for material in materials:
-        props = MATERIALS_DATABASE[material]
-        values = [
-            props['efficiency'] / 25 * 100,  # Normalize to 100
-            (1 - props['cost_per_wp'] / 5) * 100,  # Invert cost (lower is better)
-            props['recyclability'],
-            props['lifespan_years'] / 50 * 100,
-            (1 - props['degradation_rate'] / 5) * 100  # Invert degradation
+    def _load_default_materials(self) -> None:
+        """Load default material specifications."""
+        default_materials = [
+            MaterialSpecification(
+                material_id="MAT001",
+                name="Monocrystalline Silicon",
+                material_type=MaterialType.C_SI,
+                efficiency=21.5,
+                cost_per_wp=0.45,
+                degradation_rate=0.5,
+                recyclability_score=95,
+                embodied_energy=4500,
+                carbon_footprint=45,
+                temperature_coefficient=-0.38,
+                warranty_years=25
+            ),
+            MaterialSpecification(
+                material_id="MAT002",
+                name="Perovskite Silicon Tandem",
+                material_type=MaterialType.PEROVSKITE,
+                efficiency=24.2,
+                cost_per_wp=0.38,
+                degradation_rate=2.0,
+                recyclability_score=65,
+                embodied_energy=3800,
+                carbon_footprint=38,
+                temperature_coefficient=-0.25,
+                warranty_years=15
+            ),
+            MaterialSpecification(
+                material_id="MAT003",
+                name="CIGS Thin Film",
+                material_type=MaterialType.CIGS,
+                efficiency=18.8,
+                cost_per_wp=0.52,
+                degradation_rate=1.2,
+                recyclability_score=75,
+                embodied_energy=3200,
+                carbon_footprint=32,
+                temperature_coefficient=-0.32,
+                warranty_years=20
+            ),
+            MaterialSpecification(
+                material_id="MAT004",
+                name="CdTe Thin Film",
+                material_type=MaterialType.CDTE,
+                efficiency=20.5,
+                cost_per_wp=0.40,
+                degradation_rate=0.8,
+                recyclability_score=90,
+                embodied_energy=2800,
+                carbon_footprint=28,
+                temperature_coefficient=-0.25,
+                warranty_years=25
+            ),
+            MaterialSpecification(
+                material_id="MAT005",
+                name="Bifacial PERC",
+                material_type=MaterialType.BIFACIAL_SI,
+                efficiency=22.1,
+                cost_per_wp=0.48,
+                degradation_rate=0.6,
+                recyclability_score=96,
+                embodied_energy=4800,
+                carbon_footprint=48,
+                temperature_coefficient=-0.35,
+                warranty_years=30
+            ),
+            MaterialSpecification(
+                material_id="MAT006",
+                name="HJT (Heterojunction)",
+                material_type=MaterialType.HJT,
+                efficiency=23.8,
+                cost_per_wp=0.55,
+                degradation_rate=0.25,
+                recyclability_score=94,
+                embodied_energy=5200,
+                carbon_footprint=52,
+                temperature_coefficient=-0.24,
+                warranty_years=30
+            ),
         ]
 
-        fig.add_trace(go.Scatterpolar(
-            r=values,
-            theta=categories,
-            fill='toself',
-            name=material
-        ))
+        for material in default_materials:
+            self.materials[material.material_id] = material
 
-    fig.update_layout(
-        polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
-        showlegend=True,
-        title="Material Performance Comparison (Normalized to 100)"
-    )
+    def get_material(self, material_id: str) -> Optional[MaterialSpecification]:
+        """Retrieve material by ID."""
+        return self.materials.get(material_id)
 
-    return fig
+    def search_materials(
+        self,
+        material_type: Optional[MaterialType] = None,
+        min_efficiency: Optional[float] = None,
+        max_cost: Optional[float] = None,
+        min_recyclability: Optional[int] = None
+    ) -> List[MaterialSpecification]:
+        """Search materials with filters."""
+        results = list(self.materials.values())
 
+        if material_type:
+            results = [m for m in results if m.material_type == material_type]
+        if min_efficiency:
+            results = [m for m in results if m.efficiency >= min_efficiency]
+        if max_cost:
+            results = [m for m in results if m.cost_per_wp <= max_cost]
+        if min_recyclability:
+            results = [m for m in results if m.recyclability_score >= min_recyclability]
 
-def filter_materials(
-    min_efficiency: float,
-    max_cost: float,
-    min_recyclability: int,
-    max_degradation: float
-) -> Dict[str, Dict[str, Any]]:
-    """
-    Filter materials based on specified criteria.
+        return results
 
-    Args:
-        min_efficiency: Minimum efficiency (%)
-        max_cost: Maximum cost ($/Wp)
-        min_recyclability: Minimum recyclability score
-        max_degradation: Maximum degradation rate (%/yr)
-
-    Returns:
-        Dictionary of filtered materials
-    """
-    filtered = {}
-    for name, props in MATERIALS_DATABASE.items():
-        if (props['efficiency'] >= min_efficiency and
-            props['cost_per_wp'] <= max_cost and
-            props['recyclability'] >= min_recyclability and
-            props['degradation_rate'] <= max_degradation):
-            filtered[name] = props
-    return filtered
+    def get_dataframe(self) -> pd.DataFrame:
+        """Export materials database as DataFrame."""
+        data = []
+        for mat in self.materials.values():
+            data.append({
+                'Material ID': mat.material_id,
+                'Material': mat.name,
+                'Type': mat.material_type,
+                'Efficiency (%)': mat.efficiency,
+                'Cost ($/Wp)': mat.cost_per_wp,
+                'Degradation (%/yr)': mat.degradation_rate,
+                'Recyclability': mat.recyclability_score,
+                'Embodied Energy (MJ/m²)': mat.embodied_energy,
+                'Carbon (kg CO2e/m²)': mat.carbon_footprint,
+                'Temp Coef (%/°C)': mat.temperature_coefficient,
+                'Warranty (yrs)': mat.warranty_years
+            })
+        return pd.DataFrame(data)
 
 
 # ============================================================================
-# BRANCH 02: CELL DESIGN (SCAPS-1D SIMULATION)
+# B02: CELL DESIGN & SCAPS-1D SIMULATION
 # ============================================================================
 
-def render_cell_design() -> None:
+class SubstrateType(str, Enum):
+    """Cell substrate types."""
+    GLASS = "Glass"
+    PLASTIC = "Plastic"
+    METAL = "Metal"
+    SILICON_WAFER = "Silicon Wafer"
+
+
+class CellArchitecture(str, Enum):
+    """Cell architecture types."""
+    N_TYPE_REAR_PASS = "n-type Si with rear passivation"
+    P_TYPE_PERC = "p-type PERC"
+    HJT = "Heterojunction (HJT)"
+    TOPCON = "TOPCon"
+    IBC = "Interdigitated Back Contact (IBC)"
+    TANDEM = "Tandem (Perovskite/Si)"
+
+
+class CellDesignParameters(BaseModel):
+    """Cell design input parameters for SCAPS-1D simulation."""
+
+    substrate: SubstrateType = Field(..., description="Substrate material type")
+    thickness_um: float = Field(..., ge=0.1, le=500, description="Device thickness (micrometers)")
+    architecture: CellArchitecture = Field(..., description="Cell architecture")
+    doping_concentration: float = Field(default=1e16, ge=1e14, le=1e20, description="Doping concentration (cm⁻³)")
+    front_metal_coverage: float = Field(default=5.0, ge=0, le=20, description="Front metallization coverage (%)")
+    rear_passivation: bool = Field(default=True, description="Rear surface passivation enabled")
+    anti_reflective_coating: bool = Field(default=True, description="ARC enabled")
+    texture_enabled: bool = Field(default=True, description="Surface texturing enabled")
+
+    class Config:
+        use_enum_values = True
+
+
+class CellSimulationResults(BaseModel):
+    """SCAPS-1D simulation output results."""
+
+    efficiency: float = Field(..., ge=0, le=100, description="Cell efficiency (%)")
+    voc: float = Field(..., ge=0, description="Open circuit voltage (mV)")
+    jsc: float = Field(..., ge=0, description="Short circuit current density (mA/cm²)")
+    fill_factor: float = Field(..., ge=0, le=100, description="Fill factor (%)")
+    isc: float = Field(default=0.0, ge=0, description="Short circuit current (A)")
+    vmpp: float = Field(default=0.0, ge=0, description="Voltage at MPP (mV)")
+    impp: float = Field(default=0.0, ge=0, description="Current at MPP (A)")
+    series_resistance: float = Field(default=0.0, ge=0, description="Series resistance (Ω)")
+    shunt_resistance: float = Field(default=float('inf'), ge=0, description="Shunt resistance (Ω)")
+    quantum_efficiency: Dict[int, float] = Field(default_factory=dict, description="QE data (wavelength: efficiency)")
+
+
+class CellDesignSimulator:
     """
-    Render the Cell Design and SCAPS-1D Simulation interface.
-
-    Features:
-    - Device structure configuration
-    - Layer stack definition
-    - SCAPS-1D parameter input
-    - IV curve simulation
-    - Efficiency optimization
-    - Bandgap engineering
+    Cell Design & SCAPS-1D Simulation Engine.
+    Simulates solar cell performance based on material and architecture parameters.
     """
-    st.header("🔋 Cell Design & SCAPS-1D Simulation")
-    st.markdown("*Advanced solar cell design with physics-based simulation*")
 
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "⚙️ Cell Configuration",
-        "📊 IV Characteristics",
-        "🎯 Optimization",
-        "📈 Parametric Analysis"
-    ])
+    def __init__(self):
+        """Initialize cell design simulator."""
+        self.simulation_cache: Dict[str, CellSimulationResults] = {}
 
-    # Tab 1: Cell Configuration
-    with tab1:
-        st.subheader("Device Structure Configuration")
+    def simulate_cell(self, params: CellDesignParameters) -> CellSimulationResults:
+        """
+        Run SCAPS-1D simulation with given parameters.
 
-        col1, col2 = st.columns(2)
+        Args:
+            params: Cell design parameters
 
-        with col1:
-            st.markdown("**Basic Parameters**")
-            substrate = st.selectbox(
-                "Substrate Material",
-                SCAPS_DEFAULTS['substrate_types']
-            )
-            thickness = st.slider(
-                "Device Thickness (μm)",
-                SCAPS_DEFAULTS['device_thickness_um'][0],
-                SCAPS_DEFAULTS['device_thickness_um'][1],
-                2.0,
-                0.1
-            )
-            architecture = st.selectbox(
-                "Cell Architecture",
-                ["n-type Si", "p-type Si", "Perovskite", "Tandem", "HIT"]
-            )
-            area_cm2 = st.number_input("Cell Area (cm²)", 100.0, 300.0, 156.75, 0.01)
+        Returns:
+            Simulation results with electrical characteristics
+        """
+        # Base efficiency calculations based on architecture
+        base_efficiency = self._calculate_base_efficiency(params)
 
-        with col2:
-            st.markdown("**Operating Conditions**")
-            temp_k = st.number_input(
-                "Simulation Temperature (K)",
-                250, 400, SCAPS_DEFAULTS['simulation_temperature']
-            )
-            illumination = st.selectbox(
-                "Illumination Spectrum",
-                ["AM1.5G", "AM1.5D", "AM0"]
-            )
-            voltage_points = st.number_input("Voltage Points", 50, 500, 100)
+        # Apply loss factors
+        efficiency = self._apply_loss_factors(base_efficiency, params)
 
-        with col1:
-            st.markdown("**Electrical Parameters**")
-            voc_mv = st.number_input("Target Voc (mV)", 400, 1000, 730)
-            jsc_ma_cm2 = st.number_input("Target Jsc (mA/cm²)", 20.0, 50.0, 42.5, 0.1)
-            fill_factor = st.slider("Fill Factor", 0.60, 0.90, 0.82, 0.01)
+        # Calculate electrical parameters
+        voc = self._calculate_voc(params, efficiency)
+        jsc = self._calculate_jsc(params, efficiency)
+        fill_factor = self._calculate_fill_factor(params)
 
-        # Validate cell design
-        try:
-            cell = CellDesign(
-                substrate=substrate,
-                thickness_um=thickness,
-                architecture=architecture,
-                voc_mv=voc_mv,
-                jsc_ma_cm2=jsc_ma_cm2,
-                fill_factor=fill_factor,
-                area_cm2=area_cm2,
-                simulation_temp_k=temp_k
-            )
+        results = CellSimulationResults(
+            efficiency=efficiency,
+            voc=voc,
+            jsc=jsc,
+            fill_factor=fill_factor,
+            vmpp=voc * 0.85,  # Typical MPP voltage
+            impp=jsc * 0.92,  # Typical MPP current
+            series_resistance=self._calculate_series_resistance(params),
+            shunt_resistance=self._calculate_shunt_resistance(params)
+        )
 
-            # Display calculated efficiency
-            st.success(f"✓ Cell design validated. Predicted efficiency: **{cell.efficiency:.2f}%**")
+        return results
 
-            # Show cell specs
-            with st.expander("View Complete Cell Specifications"):
-                specs_df = pd.DataFrame({
-                    'Parameter': [
-                        'Substrate', 'Architecture', 'Thickness', 'Area',
-                        'Voc', 'Jsc', 'Fill Factor', 'Efficiency',
-                        'Pmax', 'Simulation Temp'
-                    ],
-                    'Value': [
-                        substrate, architecture, f"{thickness} μm", f"{area_cm2} cm²",
-                        f"{voc_mv} mV", f"{jsc_ma_cm2} mA/cm²", f"{fill_factor:.3f}",
-                        f"{cell.efficiency:.2f}%",
-                        f"{voc_mv * jsc_ma_cm2 * fill_factor / 1000:.2f} W",
-                        f"{temp_k} K"
-                    ]
+    def _calculate_base_efficiency(self, params: CellDesignParameters) -> float:
+        """Calculate base efficiency based on architecture."""
+        base_efficiencies = {
+            CellArchitecture.N_TYPE_REAR_PASS: 22.5,
+            CellArchitecture.P_TYPE_PERC: 21.0,
+            CellArchitecture.HJT: 24.0,
+            CellArchitecture.TOPCON: 23.5,
+            CellArchitecture.IBC: 25.0,
+            CellArchitecture.TANDEM: 28.0
+        }
+        return base_efficiencies.get(params.architecture, 20.0)
+
+    def _apply_loss_factors(self, base_eff: float, params: CellDesignParameters) -> float:
+        """Apply various loss factors to base efficiency."""
+        efficiency = base_eff
+
+        # Thickness losses
+        if params.thickness_um < 100:
+            efficiency *= 0.95
+
+        # Front metallization losses
+        metallization_loss = params.front_metal_coverage / 100 * 0.5
+        efficiency *= (1 - metallization_loss)
+
+        # Passivation gain
+        if params.rear_passivation:
+            efficiency *= 1.05
+
+        # ARC gain
+        if params.anti_reflective_coating:
+            efficiency *= 1.03
+
+        # Texturing gain
+        if params.texture_enabled:
+            efficiency *= 1.02
+
+        return min(efficiency, 29.0)  # Cap at theoretical limit
+
+    def _calculate_voc(self, params: CellDesignParameters, efficiency: float) -> float:
+        """Calculate open circuit voltage."""
+        base_voc = 650  # mV
+        return base_voc + (efficiency - 20) * 15
+
+    def _calculate_jsc(self, params: CellDesignParameters, efficiency: float) -> float:
+        """Calculate short circuit current density."""
+        base_jsc = 38.0  # mA/cm²
+        if params.texture_enabled:
+            base_jsc *= 1.1
+        if params.anti_reflective_coating:
+            base_jsc *= 1.05
+        return base_jsc + (efficiency - 20) * 0.5
+
+    def _calculate_fill_factor(self, params: CellDesignParameters) -> float:
+        """Calculate fill factor."""
+        base_ff = 78.0
+        if params.rear_passivation:
+            base_ff += 2.0
+        if params.front_metal_coverage < 3:
+            base_ff -= 1.5
+        return min(base_ff, 86.0)
+
+    def _calculate_series_resistance(self, params: CellDesignParameters) -> float:
+        """Calculate series resistance."""
+        return 0.5 + params.front_metal_coverage * 0.05
+
+    def _calculate_shunt_resistance(self, params: CellDesignParameters) -> float:
+        """Calculate shunt resistance."""
+        base_rsh = 5000
+        if params.rear_passivation:
+            base_rsh *= 2
+        return base_rsh
+
+
+# ============================================================================
+# B03: MODULE DESIGN & CTM LOSS ANALYSIS
+# ============================================================================
+
+class CTMLossFactor(BaseModel):
+    """Fraunhofer ISE CTM loss factor (k1-k24)."""
+
+    factor_id: str = Field(..., description="Factor ID (k1-k24)")
+    name: str = Field(..., description="Loss factor name")
+    description: str = Field(..., description="Detailed description")
+    loss_percentage: float = Field(..., ge=0, le=100, description="Loss percentage")
+    category: str = Field(..., description="Loss category")
+
+    @validator('factor_id')
+    def validate_factor_id(cls, v):
+        """Validate CTM factor ID."""
+        valid_ids = [f"k{i}" for i in range(1, 25)]
+        if v not in valid_ids:
+            raise ValueError(f"Factor ID must be one of {valid_ids}")
+        return v
+
+
+class ModuleConfiguration(BaseModel):
+    """Module configuration parameters."""
+
+    cells_in_series: int = Field(default=60, ge=36, le=144, description="Cells in series")
+    cells_in_parallel: int = Field(default=1, ge=1, le=4, description="Cells in parallel")
+    cell_efficiency: float = Field(..., ge=0, le=100, description="Individual cell efficiency (%)")
+    cell_area_cm2: float = Field(default=243, ge=0, description="Cell area (cm²)")
+    glass_thickness_mm: float = Field(default=3.2, ge=2.0, le=5.0, description="Front glass thickness (mm)")
+    encapsulant_type: str = Field(default="EVA", description="Encapsulant material")
+    backsheet_type: str = Field(default="Tedlar", description="Backsheet material")
+    frame_material: str = Field(default="Aluminum", description="Frame material")
+    bypass_diodes: int = Field(default=3, ge=0, le=6, description="Number of bypass diodes")
+    junction_box_type: str = Field(default="IP67", description="Junction box rating")
+
+
+class CTMAnalyzer:
+    """
+    CTM (Cell-to-Module) Loss Analysis using Fraunhofer ISE 24-factor model.
+    Analyzes losses in converting cell efficiency to module efficiency.
+    """
+
+    def __init__(self):
+        """Initialize CTM analyzer with standard loss factors."""
+        self.loss_factors: List[CTMLossFactor] = self._initialize_ctm_factors()
+
+    def _initialize_ctm_factors(self) -> List[CTMLossFactor]:
+        """Initialize all 24 CTM loss factors."""
+        return [
+            CTMLossFactor(factor_id="k1", name="Optical Reflection", description="Front glass and ARC reflection losses", loss_percentage=2.5, category="Optical"),
+            CTMLossFactor(factor_id="k2", name="Soiling", description="Dust and dirt accumulation on module surface", loss_percentage=1.8, category="Environmental"),
+            CTMLossFactor(factor_id="k3", name="Temperature", description="Operating temperature above STC", loss_percentage=3.2, category="Thermal"),
+            CTMLossFactor(factor_id="k4", name="Resistive (Series)", description="Interconnect and busbar resistance", loss_percentage=2.1, category="Electrical"),
+            CTMLossFactor(factor_id="k5", name="Cell Mismatch", description="Current mismatch between cells", loss_percentage=1.5, category="Electrical"),
+            CTMLossFactor(factor_id="k6", name="Wiring Loss", description="Internal module wiring resistance", loss_percentage=0.8, category="Electrical"),
+            CTMLossFactor(factor_id="k7", name="Inactive Area", description="Non-active area between cells", loss_percentage=3.5, category="Geometric"),
+            CTMLossFactor(factor_id="k8", name="Cell Breakage", description="Micro-crack induced losses", loss_percentage=0.5, category="Manufacturing"),
+            CTMLossFactor(factor_id="k9", name="Encapsulant Absorption", description="EVA/POE light absorption", loss_percentage=1.2, category="Optical"),
+            CTMLossFactor(factor_id="k10", name="Glass Transmission", description="Glass optical losses", loss_percentage=1.5, category="Optical"),
+            CTMLossFactor(factor_id="k11", name="Spectral Mismatch", description="Spectral response variation", loss_percentage=0.8, category="Optical"),
+            CTMLossFactor(factor_id="k12", name="Incident Angle", description="Angle of incidence losses", loss_percentage=1.0, category="Optical"),
+            CTMLossFactor(factor_id="k13", name="Shading", description="Frame and junction box shading", loss_percentage=0.6, category="Geometric"),
+            CTMLossFactor(factor_id="k14", name="Quality Binning", description="Cell sorting and binning tolerances", loss_percentage=0.3, category="Manufacturing"),
+            CTMLossFactor(factor_id="k15", name="LID (Light Induced)", description="Light-induced degradation", loss_percentage=1.5, category="Degradation"),
+            CTMLossFactor(factor_id="k16", name="PID (Potential Induced)", description="Potential-induced degradation", loss_percentage=0.4, category="Degradation"),
+            CTMLossFactor(factor_id="k17", name="Contact Resistance", description="Cell-to-ribbon contact resistance", loss_percentage=0.7, category="Electrical"),
+            CTMLossFactor(factor_id="k18", name="Lamination Stress", description="Mechanical stress during lamination", loss_percentage=0.3, category="Manufacturing"),
+            CTMLossFactor(factor_id="k19", name="Solder Bond", description="Solder joint quality", loss_percentage=0.4, category="Manufacturing"),
+            CTMLossFactor(factor_id="k20", name="Bypass Diode", description="Diode voltage drop losses", loss_percentage=0.2, category="Electrical"),
+            CTMLossFactor(factor_id="k21", name="Encapsulation EVA", description="EVA yellowing over time", loss_percentage=0.5, category="Degradation"),
+            CTMLossFactor(factor_id="k22", name="Backsheet Reflectance", description="Reduced rear reflectance", loss_percentage=0.3, category="Optical"),
+            CTMLossFactor(factor_id="k23", name="Hotspot Formation", description="Localized hotspot losses", loss_percentage=0.2, category="Thermal"),
+            CTMLossFactor(factor_id="k24", name="Manufacturing Tolerance", description="General manufacturing variations", loss_percentage=0.5, category="Manufacturing"),
+        ]
+
+    def calculate_module_efficiency(
+        self,
+        cell_efficiency: float,
+        module_config: ModuleConfiguration,
+        active_loss_factors: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Calculate module efficiency considering CTM losses.
+
+        Args:
+            cell_efficiency: Input cell efficiency (%)
+            module_config: Module configuration parameters
+            active_loss_factors: List of factor IDs to apply (default: all)
+
+        Returns:
+            Dictionary with module efficiency and detailed loss breakdown
+        """
+        if active_loss_factors is None:
+            active_loss_factors = [f"k{i}" for i in range(1, 25)]
+
+        # Start with cell efficiency
+        remaining_efficiency = cell_efficiency
+        loss_breakdown = []
+
+        for factor in self.loss_factors:
+            if factor.factor_id in active_loss_factors:
+                loss_amount = remaining_efficiency * (factor.loss_percentage / 100)
+                remaining_efficiency -= loss_amount
+                loss_breakdown.append({
+                    'factor_id': factor.factor_id,
+                    'name': factor.name,
+                    'category': factor.category,
+                    'loss_percentage': factor.loss_percentage,
+                    'absolute_loss': loss_amount,
+                    'remaining_efficiency': remaining_efficiency
                 })
-                st.dataframe(specs_df, use_container_width=True)
 
-        except Exception as e:
-            st.error(f"Validation error: {str(e)}")
-            cell = None
-
-    # Tab 2: IV Characteristics
-    with tab2:
-        st.subheader("Current-Voltage Characteristics")
-
-        if cell:
-            # Generate IV curve
-            voltage = np.linspace(0, voc_mv / 1000, 100)
-            current = generate_iv_curve(voltage, voc_mv / 1000, jsc_ma_cm2, fill_factor)
-            power = voltage * current * 1000  # Convert to mW
-
-            # Create IV and Power curves
-            fig = go.Figure()
-
-            # Current curve
-            fig.add_trace(go.Scatter(
-                x=voltage,
-                y=current,
-                mode='lines',
-                name='Current',
-                line=dict(color=COLOR_PALETTE['primary'], width=3),
-                yaxis='y1'
-            ))
-
-            # Power curve
-            fig.add_trace(go.Scatter(
-                x=voltage,
-                y=power,
-                mode='lines',
-                name='Power',
-                line=dict(color=COLOR_PALETTE['danger'], width=3),
-                yaxis='y2'
-            ))
-
-            # Mark MPP
-            mpp_idx = np.argmax(power)
-            fig.add_trace(go.Scatter(
-                x=[voltage[mpp_idx]],
-                y=[current[mpp_idx]],
-                mode='markers',
-                marker=dict(size=12, color=COLOR_PALETTE['warning']),
-                name='MPP',
-                yaxis='y1'
-            ))
-
-            fig.update_layout(
-                title="IV and Power Characteristics",
-                xaxis_title="Voltage (V)",
-                yaxis=dict(title="Current (mA/cm²)", side='left'),
-                yaxis2=dict(title="Power (mW/cm²)", overlaying='y', side='right'),
-                hovermode='x unified',
-                height=500
-            )
-
-            st.plotly_chart(fig, use_container_width=True)
-
-            # Display key metrics
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric("Voc", f"{voc_mv} mV")
-            with col2:
-                st.metric("Jsc", f"{jsc_ma_cm2:.2f} mA/cm²")
-            with col3:
-                st.metric("FF", f"{fill_factor:.3f}")
-            with col4:
-                st.metric("Vmpp", f"{voltage[mpp_idx]*1000:.0f} mV")
-
-    # Tab 3: Optimization
-    with tab3:
-        st.subheader("Cell Optimization")
-
-        st.markdown("**Optimization Objectives**")
-        objective = st.radio(
-            "Select optimization target:",
-            ["Maximum Efficiency", "Maximum Power", "Cost-Efficiency Balance"]
-        )
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("**Optimization Parameters**")
-            opt_thickness = st.checkbox("Optimize Thickness", True)
-            opt_bandgap = st.checkbox("Optimize Bandgap", True)
-            opt_doping = st.checkbox("Optimize Doping", False)
-
-        with col2:
-            st.markdown("**Constraints**")
-            max_cost = st.number_input("Max Cost ($/cell)", 0.1, 10.0, 2.0)
-            min_efficiency = st.number_input("Min Efficiency (%)", 15.0, 30.0, 20.0)
-
-        if st.button("🚀 Run Optimization", type="primary"):
-            with st.spinner("Running optimization..."):
-                # Simulate optimization results
-                import time
-                progress_bar = st.progress(0)
-                for i in range(100):
-                    time.sleep(0.01)
-                    progress_bar.progress(i + 1)
-
-                optimized_results = {
-                    'Thickness': f"{thickness * 1.1:.2f} μm",
-                    'Efficiency Gain': "+2.3%",
-                    'New Efficiency': f"{cell.efficiency * 1.023:.2f}%",
-                    'Cost': f"${max_cost * 0.95:.2f}"
-                }
-
-                st.success("✓ Optimization completed!")
-                st.json(optimized_results)
-
-    # Tab 4: Parametric Analysis
-    with tab4:
-        st.subheader("Parametric Sensitivity Analysis")
-
-        param_to_vary = st.selectbox(
-            "Select parameter to analyze:",
-            ["Thickness", "Temperature", "Bandgap", "Doping Concentration"]
-        )
-
-        # Generate parametric sweep
-        if param_to_vary == "Thickness":
-            param_range = np.linspace(0.5, 10, 20)
-            efficiency_values = 21.5 * (1 - 0.3 * np.exp(-param_range / 3))
-
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=param_range,
-                y=efficiency_values,
-                mode='lines+markers',
-                line=dict(color=COLOR_PALETTE['primary'], width=3)
-            ))
-            fig.update_layout(
-                title="Efficiency vs Thickness",
-                xaxis_title="Thickness (μm)",
-                yaxis_title="Efficiency (%)",
-                height=400
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-
-def generate_iv_curve(
-    voltage: np.ndarray,
-    voc: float,
-    jsc: float,
-    ff: float
-) -> np.ndarray:
-    """
-    Generate idealized IV curve using single-diode model.
-
-    Args:
-        voltage: Voltage array (V)
-        voc: Open-circuit voltage (V)
-        jsc: Short-circuit current density (mA/cm²)
-        ff: Fill factor
-
-    Returns:
-        Current density array (mA/cm²)
-    """
-    # Simplified single-diode model
-    n = 1.5  # Ideality factor
-    Vt = 0.026  # Thermal voltage at 300K
-    Rs = (1 - ff) * voc / jsc / 1000  # Series resistance estimate
-
-    current = jsc * (1 - np.exp((voltage - voc) / (n * Vt))) - voltage / Rs * 1000
-    current = np.maximum(current, 0)  # No negative current
-
-    return current
-
-
-# ============================================================================
-# BRANCH 03: MODULE DESIGN & CTM LOSS ANALYSIS
-# ============================================================================
-
-def render_module_design() -> None:
-    """
-    Render the Module Design and CTM Loss Analysis interface.
-
-    Features:
-    - Cell-to-Module (CTM) loss breakdown (k1-k24)
-    - Module configuration
-    - Efficiency calculations
-    - Bill of Materials
-    - Cost analysis
-    - Thermal modeling
-    """
-    st.header("📦 Module Design & CTM Loss Analysis")
-    st.markdown("*Fraunhofer ISE k1-k24 Cell-to-Module loss framework*")
-
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "⚙️ Module Configuration",
-        "📉 CTM Loss Analysis",
-        "💰 Bill of Materials",
-        "🌡️ Thermal Analysis"
-    ])
-
-    # Tab 1: Module Configuration
-    with tab1:
-        st.subheader("Module Configuration")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.markdown("**Cell Configuration**")
-            num_cells = st.selectbox("Number of Cells", [36, 48, 60, 72, 96, 120, 144], index=2)
-            cell_efficiency = st.slider("Cell Efficiency (%)", 15.0, 26.0, 21.5, 0.1)
-            cell_area_cm2 = st.number_input("Cell Area (cm²)", 100.0, 300.0, 156.75)
-
-            st.markdown("**Module Specifications**")
-            module_length = st.number_input("Module Length (mm)", 1000, 2500, 1650)
-            module_width = st.number_input("Module Width (mm)", 800, 1400, 992)
-            module_area_m2 = (module_length * module_width) / 1_000_000
-
-        with col2:
-            st.markdown("**Design Elements**")
-            bypass_diodes = st.selectbox("Bypass Diodes", [2, 3, 4, 6], index=1)
-            bus_bars = st.slider("Bus Bars per Cell", 3, 12, 5)
-            encapsulation = st.selectbox("Encapsulation", ["EVA", "POE", "Silicone"])
-            backsheet = st.selectbox("Backsheet", ["White", "Black", "Transparent", "Bifacial"])
-            frame_material = st.selectbox("Frame", ["Aluminum", "Frameless", "Composite"])
-            glass_type = st.selectbox("Front Glass", ["AR-coated", "Textured", "Standard"])
+        total_ctm_loss = cell_efficiency - remaining_efficiency
+        ctm_ratio = remaining_efficiency / cell_efficiency if cell_efficiency > 0 else 0
 
         # Calculate module power
-        total_cell_area_m2 = num_cells * cell_area_cm2 / 10000
-        theoretical_power = cell_efficiency * total_cell_area_m2 * 1000  # W
+        total_cell_area = module_config.cell_area_cm2 * module_config.cells_in_series * module_config.cells_in_parallel
+        module_power = (remaining_efficiency / 100) * total_cell_area * 0.1  # kW under 1000 W/m²
 
-        st.info(f"**Module Area:** {module_area_m2:.2f} m² | **Theoretical Power:** {theoretical_power:.0f} W (before CTM losses)")
-
-    # Tab 2: CTM Loss Analysis
-    with tab2:
-        st.subheader("Cell-to-Module Loss Breakdown (Fraunhofer ISE)")
-
-        # Allow users to customize CTM losses
-        st.markdown("**Customize CTM Loss Factors (k1-k24)**")
-
-        # Create adjustable CTM losses
-        ctm_losses_custom = []
-        loss_categories = {
-            "Optical Losses": ["k1_reflection", "k2_absorption", "k3_transmission", "k7_spectral"],
-            "Electrical Losses": ["k9_mismatch", "k10_wiring", "k11_connection"],
-            "Environmental": ["k4_soiling", "k5_temperature", "k6_low_irradiance"],
-            "Degradation": ["k12_lid", "k13_pid"],
-            "Geometric": ["k8_shading", "k16_edge_delete", "k17_bus_bar", "k18_junction_box", "k19_cell_gap"],
-            "Manufacturing": ["k14_encapsulation", "k15_backsheet", "k20_lamination", "k21_quality", "k22_sorting", "k23_flash_test", "k24_outdoor"]
+        return {
+            'cell_efficiency': cell_efficiency,
+            'module_efficiency': remaining_efficiency,
+            'total_ctm_loss': total_ctm_loss,
+            'ctm_ratio': ctm_ratio,
+            'module_power_wp': module_power * 1000,
+            'loss_breakdown': loss_breakdown,
+            'module_config': module_config.dict()
         }
 
-        total_loss = 0
-        for category, factors in loss_categories.items():
-            with st.expander(f"**{category}**"):
-                for factor_id in factors:
-                    if factor_id in CTM_LOSS_FACTORS:
-                        default_loss = CTM_LOSS_FACTORS[factor_id]['loss_pct']
-                        description = CTM_LOSS_FACTORS[factor_id]['description']
+    def get_loss_summary_df(self, analysis_result: Dict[str, Any]) -> pd.DataFrame:
+        """Convert CTM analysis to DataFrame."""
+        return pd.DataFrame(analysis_result['loss_breakdown'])
 
-                        loss_value = st.slider(
-                            f"{factor_id}: {description}",
-                            0.0, 10.0, default_loss, 0.1,
-                            key=factor_id
-                        )
 
-                        ctm_losses_custom.append(CTMLoss(
-                            factor_id=factor_id,
-                            description=description,
-                            loss_pct=loss_value,
-                            category=category
-                        ))
-                        total_loss += loss_value
+# ============================================================================
+# DESIGN SUITE INTEGRATION INTERFACE
+# ============================================================================
 
-        # Calculate final module efficiency and power
-        module_efficiency = cell_efficiency * (1 - total_loss / 100)
-        module_power_w = module_efficiency * module_area_m2 * 1000
+class DesignSuite:
+    """
+    Unified Design Suite Interface integrating B01-B03.
+    Provides end-to-end design workflow from materials to complete modules.
+    """
 
-        # Display results
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Cell Efficiency", f"{cell_efficiency:.1f}%")
-        with col2:
-            st.metric("Total CTM Loss", f"{total_loss:.1f}%", delta=f"-{total_loss:.1f}%", delta_color="inverse")
-        with col3:
-            st.metric("Module Efficiency", f"{module_efficiency:.2f}%")
-        with col4:
-            st.metric("Module Power", f"{module_power_w:.0f} W")
+    def __init__(self):
+        """Initialize all design suite components."""
+        self.materials_db = MaterialsDatabase()
+        self.cell_simulator = CellDesignSimulator()
+        self.ctm_analyzer = CTMAnalyzer()
 
-        # Waterfall chart showing CTM losses
-        st.subheader("CTM Loss Waterfall Chart")
-        fig_waterfall = create_ctm_waterfall(cell_efficiency, ctm_losses_custom)
-        st.plotly_chart(fig_waterfall, use_container_width=True)
+    def design_workflow(
+        self,
+        material_id: str,
+        cell_params: CellDesignParameters,
+        module_config: ModuleConfiguration
+    ) -> Dict[str, Any]:
+        """
+        Execute complete design workflow: Material → Cell → Module.
 
-        # Loss breakdown pie chart
-        col1, col2 = st.columns(2)
-        with col1:
-            fig_pie = create_loss_pie_chart(ctm_losses_custom)
-            st.plotly_chart(fig_pie, use_container_width=True)
+        Args:
+            material_id: Material database ID
+            cell_params: Cell design parameters
+            module_config: Module configuration
 
-        with col2:
-            # Loss by category
-            category_losses = {}
-            for loss in ctm_losses_custom:
-                if loss.category in category_losses:
-                    category_losses[loss.category] += loss.loss_pct
-                else:
-                    category_losses[loss.category] = loss.loss_pct
+        Returns:
+            Complete design analysis results
+        """
+        # Step 1: Get material specifications
+        material = self.materials_db.get_material(material_id)
+        if not material:
+            raise ValueError(f"Material {material_id} not found in database")
 
-            fig_category = go.Figure(data=[
-                go.Bar(
-                    x=list(category_losses.keys()),
-                    y=list(category_losses.values()),
-                    marker_color=COLOR_PALETTE['secondary']
-                )
-            ])
-            fig_category.update_layout(
-                title="Loss by Category",
-                xaxis_title="Category",
-                yaxis_title="Total Loss (%)",
-                height=400
-            )
-            st.plotly_chart(fig_category, use_container_width=True)
+        # Step 2: Simulate cell design
+        cell_results = self.cell_simulator.simulate_cell(cell_params)
 
-    # Tab 3: Bill of Materials
-    with tab3:
-        st.subheader("Bill of Materials (BOM)")
-
-        # Generate BOM
-        bom_data = {
-            'Component': [
-                f'Solar Cells ({num_cells}x)',
-                f'Bypass Diodes ({bypass_diodes}x)',
-                f'Front Glass (3.2mm {glass_type})',
-                f'Encapsulant ({encapsulation})',
-                f'Backsheet ({backsheet})',
-                f'Frame ({frame_material})',
-                'Junction Box',
-                'Cables & Connectors',
-                'Bus Bars (Silver)',
-                'Ribbons (Copper)'
-            ],
-            'Quantity': [num_cells, bypass_diodes, 1, 2, 1, 1, 1, 1, num_cells * bus_bars, num_cells * 2],
-            'Unit Cost ($)': [2.50, 0.15, 8.50, 3.20, 2.80, 12.00, 4.50, 3.00, 0.05, 0.08],
-            'Total Cost ($)': [
-                num_cells * 2.50,
-                bypass_diodes * 0.15,
-                8.50,
-                6.40,
-                2.80,
-                12.00,
-                4.50,
-                3.00,
-                num_cells * bus_bars * 0.05,
-                num_cells * 2 * 0.08
-            ]
-        }
-
-        bom_df = pd.DataFrame(bom_data)
-        bom_df['Total Cost ($)'] = bom_df['Total Cost ($)'].round(2)
-
-        st.dataframe(bom_df, use_container_width=True)
-
-        # Total costs
-        total_material_cost = bom_df['Total Cost ($)'].sum()
-        labor_cost = total_material_cost * 0.15
-        overhead_cost = total_material_cost * 0.20
-        total_cost = total_material_cost + labor_cost + overhead_cost
-
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric("Material Cost", f"${total_material_cost:.2f}")
-        with col2:
-            st.metric("Labor (15%)", f"${labor_cost:.2f}")
-        with col3:
-            st.metric("Overhead (20%)", f"${overhead_cost:.2f}")
-        with col4:
-            st.metric("Total Module Cost", f"${total_cost:.2f}")
-
-        cost_per_watt = total_cost / module_power_w if module_power_w > 0 else 0
-        st.info(f"**Manufacturing Cost:** ${cost_per_watt:.3f}/W")
-
-    # Tab 4: Thermal Analysis
-    with tab4:
-        st.subheader("Thermal Performance Analysis")
-
-        col1, col2 = st.columns(2)
-        with col1:
-            irradiance = st.slider("Irradiance (W/m²)", 200, 1200, 1000, 50)
-            ambient_temp = st.slider("Ambient Temperature (°C)", 0, 50, 25)
-            wind_speed = st.slider("Wind Speed (m/s)", 0.0, 10.0, 1.0, 0.1)
-
-        # Calculate NOCT and operating temperature
-        noct = 45 + (module_efficiency - 20) * 0.5  # Simplified NOCT estimate
-        module_temp = ambient_temp + (noct - 20) * (irradiance / 800) * (1 - wind_speed / 10)
-
-        # Temperature coefficient effect
-        temp_diff = module_temp - 25  # STC is 25°C
-        temp_coefficient = -0.40  # %/°C
-        power_loss_temp = temp_diff * temp_coefficient
-
-        actual_power = module_power_w * (1 + power_loss_temp / 100)
-
-        with col2:
-            st.metric("Module Temperature", f"{module_temp:.1f}°C")
-            st.metric("NOCT", f"{noct:.1f}°C")
-            st.metric("Temperature Loss", f"{power_loss_temp:.2f}%")
-            st.metric("Actual Power", f"{actual_power:.0f} W")
-
-        # Temperature vs Power curve
-        temp_range = np.arange(-20, 80, 5)
-        power_range = module_power_w * (1 + (temp_range - 25) * temp_coefficient / 100)
-
-        fig_temp = go.Figure()
-        fig_temp.add_trace(go.Scatter(
-            x=temp_range,
-            y=power_range,
-            mode='lines',
-            line=dict(color=COLOR_PALETTE['danger'], width=3),
-            name='Power Output'
-        ))
-        fig_temp.add_trace(go.Scatter(
-            x=[module_temp],
-            y=[actual_power],
-            mode='markers',
-            marker=dict(size=12, color=COLOR_PALETTE['warning']),
-            name='Current Operating Point'
-        ))
-        fig_temp.update_layout(
-            title="Power vs Module Temperature",
-            xaxis_title="Module Temperature (°C)",
-            yaxis_title="Power Output (W)",
-            height=400
+        # Step 3: Analyze CTM losses
+        module_config.cell_efficiency = cell_results.efficiency
+        ctm_results = self.ctm_analyzer.calculate_module_efficiency(
+            cell_efficiency=cell_results.efficiency,
+            module_config=module_config
         )
-        st.plotly_chart(fig_temp, use_container_width=True)
+
+        return {
+            'material': material.dict(),
+            'cell_simulation': cell_results.dict(),
+            'ctm_analysis': ctm_results,
+            'final_module_efficiency': ctm_results['module_efficiency'],
+            'final_module_power': ctm_results['module_power_wp']
+        }
+
+    def get_materials_database(self) -> MaterialsDatabase:
+        """Access materials database."""
+        return self.materials_db
+
+    def get_cell_simulator(self) -> CellDesignSimulator:
+        """Access cell simulator."""
+        return self.cell_simulator
+
+    def get_ctm_analyzer(self) -> CTMAnalyzer:
+        """Access CTM analyzer."""
+        return self.ctm_analyzer
 
 
-def create_ctm_waterfall(cell_efficiency: float, ctm_losses: List[CTMLoss]) -> go.Figure:
-    """
-    Create waterfall chart showing CTM losses.
-
-    Args:
-        cell_efficiency: Initial cell efficiency (%)
-        ctm_losses: List of CTM loss factors
-
-    Returns:
-        Plotly Figure object
-    """
-    # Sort losses by magnitude
-    sorted_losses = sorted(ctm_losses, key=lambda x: x.loss_pct, reverse=True)
-
-    x_labels = ['Cell Efficiency'] + [f"{loss.factor_id}" for loss in sorted_losses] + ['Module Efficiency']
-    y_values = [cell_efficiency] + [-loss.loss_pct for loss in sorted_losses]
-
-    # Calculate final efficiency
-    final_efficiency = cell_efficiency - sum(loss.loss_pct for loss in sorted_losses)
-
-    fig = go.Figure(go.Waterfall(
-        x=x_labels,
-        y=y_values + [final_efficiency],
-        measure=['absolute'] + ['relative'] * len(sorted_losses) + ['total'],
-        text=[f"{cell_efficiency:.2f}%"] + [f"-{loss.loss_pct:.1f}%" for loss in sorted_losses] + [f"{final_efficiency:.2f}%"],
-        textposition="outside",
-        connector={"line": {"color": "rgb(63, 63, 63)"}},
-    ))
-
-    fig.update_layout(
-        title="CTM Loss Waterfall Analysis",
-        showlegend=False,
-        height=500
-    )
-
-    return fig
-
-
-def create_loss_pie_chart(ctm_losses: List[CTMLoss]) -> go.Figure:
-    """
-    Create pie chart of CTM losses.
-
-    Args:
-        ctm_losses: List of CTM loss factors
-
-    Returns:
-        Plotly Figure object
-    """
-    # Get top 10 losses
-    sorted_losses = sorted(ctm_losses, key=lambda x: x.loss_pct, reverse=True)[:10]
-
-    labels = [loss.factor_id for loss in sorted_losses]
-    values = [loss.loss_pct for loss in sorted_losses]
-
-    fig = go.Figure(data=[go.Pie(
-        labels=labels,
-        values=values,
-        hole=.3,
-        textinfo='label+percent'
-    )])
-
-    fig.update_layout(
-        title="Top 10 CTM Loss Factors",
-        height=400
-    )
-
-    return fig
+# Export main interface
+__all__ = [
+    'DesignSuite',
+    'MaterialsDatabase',
+    'MaterialSpecification',
+    'MaterialType',
+    'CellDesignSimulator',
+    'CellDesignParameters',
+    'CellSimulationResults',
+    'CTMAnalyzer',
+    'ModuleConfiguration',
+    'CTMLossFactor'
+]
