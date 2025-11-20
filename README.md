@@ -2,294 +2,182 @@
 
 End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
 
-## Features
+## 🔐 Authentication & Access Control System
 
-### B10-S01: Asset Management & Portfolio Tracking (Production-Ready)
+Production-ready authentication and authorization system with JWT tokens, password hashing, and role-based access control.
 
-Comprehensive asset management system for PV installations with support for circular economy principles.
+### Features
 
-**Core Components:**
-- **AssetManager**: Central management class for sites, equipment, and performance tracking
-- **Site Inventory**: Track and manage solar installation sites with capacity and status monitoring
-- **Equipment Tracking**: Detailed equipment management with lifecycle and circular economy features
-- **Performance History**: Historical performance data tracking and analysis
+- **User Authentication**: Secure login with JWT tokens and session management
+- **Password Security**: Bcrypt hashing with configurable work factor
+- **Role-Based Access Control (RBAC)**: Hierarchical roles with permission inheritance
+- **Permission System**: Fine-grained permissions for resource-level access control
+- **Session Management**: Token-based sessions with expiration and invalidation
+- **Account Security**: Failed login tracking, account lockout, and password validation
+- **Production-Ready**: Full type hints, comprehensive docstrings, and extensive test coverage
 
-**Key Capabilities:**
-- Site portfolio management with geographic tracking
-- Equipment lifecycle tracking (manufacturing → installation → maintenance → decommissioning)
-- Performance monitoring with environmental conditions
-- Material composition tracking for circular economy
-- Recyclability and end-of-life value estimation
-- Comprehensive inventory summaries and analytics
+### Quick Start
 
-## Installation
-
-### Requirements
-
-- Python 3.9 or higher
-- SQLAlchemy 2.0+
-- Pydantic 2.0+
-
-### Setup
+#### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/pv-circularity-simulator.git
+git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
 cd pv-circularity-simulator
 
 # Install dependencies
 pip install -r requirements.txt
 
-# For development
-pip install -r requirements-dev.txt
+# Configure environment (copy and edit .env file)
+cp .env.example .env
+# Edit .env and set your AUTH_SECRET_KEY
 ```
 
-## Quick Start
-
-### Basic Usage
+#### Basic Usage
 
 ```python
-from datetime import datetime
-from src.pv_circularity.database.session import init_db
-from src.pv_circularity.managers.asset_manager import AssetManager
-from src.pv_circularity.database.models import AssetStatus, EquipmentType
-from src.pv_circularity.models.schemas import SiteCreate, EquipmentCreate
+from src.auth import AuthenticationManager, Role, Permission
+from config import AuthConfig
 
-# Initialize database
-db_manager = init_db("sqlite:///./pv_circularity.db", create_tables=True)
-db_session = next(db_manager.get_session())
-asset_manager = AssetManager(db_session)
-
-# Create a site
-site_data = SiteCreate(
-    name="Solar Farm Alpha",
-    location="Phoenix, AZ",
-    latitude=33.4484,
-    longitude=-112.0740,
-    capacity_kw=5000.0,
-    installation_date=datetime(2020, 1, 1),
-    status=AssetStatus.ACTIVE
+# Initialize authentication manager
+auth_manager = AuthenticationManager(
+    secret_key=AuthConfig.SECRET_KEY,
+    password_rounds=12,
 )
-site = asset_manager.create_site(site_data)
 
-# Add equipment
-equipment_data = EquipmentCreate(
-    equipment_id="PANEL-001",
-    site_id=site.id,
-    equipment_type=EquipmentType.SOLAR_PANEL,
-    name="High Efficiency Panel",
-    manufacturer="SolarTech",
-    model="ST-550W",
-    installation_date=datetime(2020, 1, 1),
-    rated_power_w=550.0,
-    efficiency_percent=22.5,
-    recyclable=True,
-    material_composition={"silicon": 0.4, "glass": 0.3, "aluminum": 0.2, "other": 0.1}
+# Create a role with permissions
+admin_role = auth_manager.create_role(
+    name="admin",
+    description="Administrator",
+    permissions={Permission("system:admin", "Full access", "*", "*")},
 )
-equipment = asset_manager.create_equipment(equipment_data)
 
-# Get site inventory
-inventory = asset_manager.site_inventory(include_summary=True)
-print(f"Total Sites: {inventory['summary'].total_sites}")
-print(f"Total Capacity: {inventory['summary'].total_capacity_kw} kW")
-
-# Track equipment
-tracking = asset_manager.equipment_tracking(include_summary=True)
-print(f"Total Equipment: {tracking['summary'].total_equipment}")
-
-# View performance history
-history = asset_manager.performance_history(include_summary=True)
-print(f"Total Energy: {history['summary'].total_energy_kwh} kWh")
-```
-
-### Core Methods
-
-#### site_inventory()
-Get comprehensive site inventory with summary statistics.
-
-```python
-inventory = asset_manager.site_inventory(
-    status=AssetStatus.ACTIVE,
-    include_summary=True
+# Create a user
+user = auth_manager.create_user(
+    username="admin",
+    email="admin@example.com",
+    password="SecurePass123!",
+    roles={admin_role},
 )
-# Returns: {'sites': [...], 'summary': SiteInventorySummary(...)}
-```
 
-#### equipment_tracking()
-Track equipment with filtering and analytics.
-
-```python
-tracking = asset_manager.equipment_tracking(
-    site_id=1,
-    equipment_type=EquipmentType.SOLAR_PANEL,
-    status=AssetStatus.ACTIVE,
-    include_summary=True
+# User login
+result = auth_manager.user_login(
+    username="admin",
+    password="SecurePass123!",
 )
-# Returns: {'equipment': [...], 'summary': EquipmentInventorySummary(...)}
-```
+print(f"Access Token: {result['access_token']}")
 
-#### performance_history()
-Retrieve performance data with time-based filtering.
+# Check role-based access
+auth_manager.role_based_access_control(user, required_role="admin")
 
-```python
-history = asset_manager.performance_history(
-    site_id=1,
-    start_date=datetime(2023, 1, 1),
-    end_date=datetime(2023, 12, 31),
-    include_summary=True
+# Validate permission
+auth_manager.permission_validator(
+    user=user,
+    resource="simulation",
+    action="execute",
 )
-# Returns: {'records': [...], 'summary': PerformanceHistorySummary(...)}
-```
 
-## Database Schema
-
-### Sites
-- Site metadata (name, location, coordinates)
-- Capacity and installation information
-- Status tracking (planned, active, maintenance, decommissioned)
-
-### Equipment
-- Equipment identification and specifications
-- Technical parameters (power, efficiency, degradation)
-- Lifecycle tracking (manufacturing → end-of-life)
-- Circular economy attributes (recyclability, material composition)
-
-### Performance Records
-- Energy generation and power output
-- Efficiency and capacity factor
-- Environmental conditions (irradiance, temperature, wind)
-- System health metrics
-
-### Assets
-- Generic asset tracking
-- Financial information (cost, current value)
-- Warranty and lifetime management
-
-## Circular Economy Features
-
-### Material Composition Tracking
-Track material composition of equipment for recycling assessment:
-
-```python
-equipment_data = EquipmentCreate(
-    # ... other fields ...
-    recyclable=True,
-    material_composition={
-        "silicon": 0.35,
-        "glass": 0.30,
-        "aluminum": 0.20,
-        "copper": 0.05,
-        "other": 0.10
-    },
-    recycling_value=50.0
+# Manage session
+session = auth_manager.session_management(
+    action="validate",
+    session_id=result["session_id"],
 )
 ```
 
-### Lifecycle Management
-- Manufacturing date tracking
-- Installation and commissioning dates
-- Maintenance scheduling
-- Expected lifetime estimation
-- Degradation rate monitoring
-- End-of-life planning
+### Core API Methods
 
-## Testing
+#### `user_login(username, password, ip_address=None, user_agent=None)`
+Authenticate user and create session with JWT tokens.
 
-Run the test suite:
+**Returns**: Dictionary with access_token, refresh_token, session_id, user info, and expiration.
+
+#### `role_based_access_control(user, required_role=None, required_roles=None, require_all=False)`
+Check if user has required role(s) for access control.
+
+**Returns**: True if user has required role(s).
+
+**Raises**: `AuthorizationError` if user lacks required roles.
+
+#### `permission_validator(user, permission=None, resource=None, action=None)`
+Validate if user has required permission.
+
+**Returns**: True if user has permission.
+
+**Raises**: `AuthorizationError` if user lacks required permission.
+
+#### `session_management(action, session_id=None, token=None, user_id=None)`
+Manage sessions with actions: validate, get, list, cleanup, invalidate.
+
+**Returns**: Depends on action (Session object, list of sessions, cleanup count, or success boolean).
+
+### Running Tests
 
 ```bash
 # Run all tests
-pytest
+pytest tests/ -v
 
 # Run with coverage
-pytest --cov=src/pv_circularity --cov-report=term-missing
+pytest tests/ --cov=src/auth --cov-report=html
 
 # Run specific test file
-pytest tests/unit/test_asset_manager.py
-
-# Run specific test class
-pytest tests/unit/test_asset_manager.py::TestSiteManagement
+pytest tests/test_authentication_manager.py -v
 ```
 
-## Examples
-
-See the `examples/` directory for complete usage examples:
-
-- `asset_management_example.py`: Comprehensive demonstration of AssetManager features
-
-Run the example:
+### Running Examples
 
 ```bash
-python examples/asset_management_example.py
+# Run basic usage example
+python examples/basic_usage.py
 ```
 
-## Project Structure
+### Architecture
 
 ```
-pv-circularity-simulator/
-├── src/
-│   └── pv_circularity/
-│       ├── database/           # Database models and session management
-│       │   ├── models.py       # SQLAlchemy ORM models
-│       │   └── session.py      # Database session management
-│       ├── managers/           # Business logic managers
-│       │   └── asset_manager.py  # AssetManager implementation
-│       ├── models/             # Pydantic schemas
-│       │   └── schemas.py      # Validation and serialization schemas
-│       └── utils/              # Utility functions
-├── tests/
-│   ├── unit/                   # Unit tests
-│   │   └── test_asset_manager.py
-│   ├── integration/            # Integration tests
-│   └── conftest.py            # Pytest fixtures
-├── examples/                   # Usage examples
-│   └── asset_management_example.py
-├── pyproject.toml             # Project configuration
-├── requirements.txt           # Production dependencies
-└── requirements-dev.txt       # Development dependencies
+src/auth/
+├── authentication_manager.py  # Core AuthenticationManager class
+├── models.py                   # User, Role, Permission, Session models
+├── password_handler.py         # Password hashing and validation
+├── jwt_handler.py              # JWT token generation and validation
+├── rbac.py                     # Role-based access control
+└── exceptions.py               # Custom exceptions
+
+tests/
+├── test_authentication_manager.py
+├── test_password_handler.py
+└── test_jwt_handler.py
+
+examples/
+└── basic_usage.py              # Usage examples
 ```
 
-## Technology Stack
+### Security Features
 
-- **Database**: SQLAlchemy 2.0+ (SQLite, PostgreSQL compatible)
-- **Validation**: Pydantic 2.0+ with comprehensive schemas
-- **Testing**: pytest with coverage
-- **Code Quality**: ruff, black, mypy
+- **Password Hashing**: Bcrypt with configurable work factor (default: 12 rounds)
+- **JWT Tokens**: HS256 algorithm with configurable expiration
+- **Account Lockout**: Automatic lockout after failed login attempts
+- **Session Management**: Token blacklist and concurrent session limits
+- **Password Validation**: Configurable strength requirements
+- **Token Refresh**: Secure token renewal without re-authentication
 
-## Roadmap
+### Configuration
 
-### Completed (B10-S01)
-- ✅ Asset Management & Portfolio Tracking
-- ✅ Site Inventory Management
-- ✅ Equipment Tracking with Circular Economy Features
-- ✅ Performance History Tracking
+Configuration is managed via environment variables (see `.env.example`):
 
-### Upcoming
-- **B10-S02**: Repower Analysis & Technology Upgrade
-  - Technology comparison engine
-  - Upgrade scenario modeling
-  - ROI analysis
-- **B10-S03**: ROI Calculations & Financial Analysis
-  - Payback period calculation
-  - NPV and IRR analysis
-  - Sensitivity analysis
-- **B10-S04**: Revamp Planning UI & Project Management
-  - Streamlit-based interface
-  - Project timeline management
-  - Budget and vendor tracking
+- `AUTH_SECRET_KEY`: JWT signing key (min 32 characters)
+- `BCRYPT_ROUNDS`: Password hashing work factor (4-31, default: 12)
+- `ACCESS_TOKEN_EXPIRY_HOURS`: Access token lifetime (default: 1)
+- `REFRESH_TOKEN_EXPIRY_DAYS`: Refresh token lifetime (default: 7)
+- `MAX_FAILED_LOGIN_ATTEMPTS`: Failed login threshold (default: 5)
+- `MAX_CONCURRENT_SESSIONS`: Per-user session limit (default: 5)
 
-## Contributing
+### Type Hints & Documentation
 
-Contributions are welcome! Please ensure:
-- All tests pass
-- Code follows style guidelines (ruff, black)
-- Type hints are included (mypy)
-- Documentation is updated
+All code includes:
+- Full type hints for all function parameters and return values
+- Comprehensive docstrings with Args, Returns, and Raises sections
+- Detailed inline comments for complex logic
+- Production-ready error handling
 
-## License
+### License
 
-Apache-2.0 License - See LICENSE file for details
-
-## Support
-
-For issues, questions, or contributions, please open an issue on GitHub.
+MIT License - see LICENSE file for details.
