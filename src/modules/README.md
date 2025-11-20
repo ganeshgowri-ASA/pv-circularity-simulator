@@ -1,329 +1,346 @@
-# Module Configuration Builder
+# Module Temperature & NOCT Calculations
 
-Comprehensive PV module design, configuration, and analysis tools.
+Comprehensive photovoltaic module temperature modeling system with support for multiple industry-standard calculation methods, mounting configurations, and thermal effects.
 
 ## Features
 
-### 1. Module Layout Configurations
+### 1. NOCT (Nominal Operating Cell Temperature) Calculation
+- **Standard conditions**: 800 W/m², 20°C ambient, 1 m/s wind, open rack
+- **Mounting configuration factors**: Open rack, close roof, building-integrated, ground mount, trackers
+- **Wind speed effects**: Convective cooling modeling
+- **Module backside ventilation**: Different thermal resistance values
 
-Support for all modern module architectures:
+### 2. Operating Temperature Models
 
-- **Standard**: Traditional full-cell modules (60, 72, 120, 132, 144 cells)
-- **Half-Cut**: Reduced resistive losses with 2 sub-modules
-- **Quarter-Cut**: 4 sub-modules for even better performance
-- **Shingled**: Overlapping cells, no gaps, maximum efficiency
-- **IBC (Interdigitated Back Contact)**: No visible busbars
-- **Bifacial**: Glass-glass construction with rear power generation
+#### Simple Linear Model
+Basic NOCT-based calculation:
+```
+Tmod = Tamb + (NOCT - 20) * (G / 800)
+```
 
-### 2. Cell Technologies
+#### Ross/Faiman Model
+Empirical model with wind speed dependency:
+```
+Tmod = Tamb + (G / (a + b * v))
+```
 
-Built-in support for:
+#### Sandia Model
+Detailed model from Sandia National Laboratories:
+```
+Tmod = G * exp(a + b*v) + Tamb + G/1000 * DeltaC
+```
 
-- Mono PERC
-- Mono TOPCon
-- Mono HJT (Heterojunction)
-- Mono IBC
-- Multi-Si
-- Perovskite
-- Tandem cells
+#### King Model (SAPM)
+Sandia Array Performance Model temperature equations with NOCT-derived coefficients.
 
-### 3. Module Specifications Calculator
+### 3. Mounting Configuration Effects
 
-Calculates complete electrical and thermal specifications:
+| Mounting Type | Temperature Adjustment |
+|--------------|------------------------|
+| Open Rack | Baseline (0°C) |
+| Ground Mount | -2°C (optimized clearance) |
+| Single-axis Tracker | -3°C (better ventilation) |
+| Dual-axis Tracker | -4°C (best ventilation) |
+| Close Roof Mount | +12.5°C (limited airflow) |
+| Building Integrated (BIPV) | +25°C (minimal ventilation) |
 
-- **Power**: Pmax, Voc, Isc, Vmpp, Impp at STC
-- **Temperature Coefficients**: Pmax, Voc, Isc, Vmpp, Impp
-- **Thermal**: NOCT calculation
-- **Efficiency**: Module efficiency with CTM losses
-- **Fill Factor**: Automatic calculation
-- **CTM Losses**: Cell-to-Module loss breakdown
-  - Resistance losses
-  - Reflection losses
-  - Mismatch losses
-  - Inactive area losses
+### 4. Temperature Coefficient Application
 
-### 4. PVsyst PAN File Generator
+Default temperature coefficients by technology:
 
-Generate industry-standard PVsyst PAN files with:
+| Technology | Temp Coefficient (%/°C) |
+|-----------|-------------------------|
+| HJT (Heterojunction) | -0.25 |
+| CdTe Thin Film | -0.25 |
+| TOPCon | -0.35 |
+| PERC | -0.37 |
+| Bifacial | -0.38 |
+| Mono-Si | -0.40 |
+| Poly-Si | -0.43 |
 
-- Complete electrical parameters
-- Mechanical specifications
-- Temperature behavior
-- Low irradiance performance
-- IAM (Incidence Angle Modifier) curves
-- Bifacial parameters (when applicable)
+### 5. Additional Features
+- **Seasonal variations**: Latitude-based temperature adjustments
+- **Time-of-day modeling**: Diurnal temperature patterns
+- **Thermal time constant**: Module thermal response dynamics
+- **System yield integration**: Power loss calculations
 
-### 5. Design Validation
+## Installation
 
-Comprehensive validation against industry standards:
-
-- Electrical parameter ranges
-- Thermal characteristics
-- Mechanical specifications
-- Layout configuration checks
-- Safety requirements
-- Performance metrics
-
-### 6. Layout Optimization
-
-Intelligent optimization for different objectives:
-
-- **Efficiency**: Maximize module efficiency
-- **Cost**: Minimize cost per watt
-- **Performance**: Balanced optimization
-
-Considers:
-- Target power output
-- Voltage and current constraints
-- Physical size limitations
-- Cost factors
-
-### 7. Export Capabilities
-
-Export to multiple formats:
-
-- **JSON**: Complete configuration and specifications
-- **CSV**: Batch comparison of multiple modules
-- **PAN**: PVsyst simulation files
+```bash
+pip install -r requirements.txt
+```
 
 ## Quick Start
 
-### Basic Module Creation
+### Basic NOCT Calculation
+
+```python
+from src.modules import ModuleTemperatureModel, MountingType
+
+model = ModuleTemperatureModel()
+
+noct = model.calculate_noct(
+    ambient_temp=25.0,
+    irradiance=1000.0,
+    wind_speed=2.0,
+    mounting=MountingType.OPEN_RACK
+)
+
+print(f"NOCT: {noct:.2f}°C")
+```
+
+### Module Temperature Calculation
 
 ```python
 from src.modules import (
-    CellType,
-    LayoutType,
-    CellDesign,
-    ModuleConfigBuilder
+    ModuleTemperatureModel,
+    TemperatureModelType,
+    MountingType
 )
 
-# Create a cell design
-cell = CellDesign(
-    cell_type=CellType.MONO_PERC,
-    efficiency=0.225,
-    area=0.0244,  # 156mm x 156mm M6 cell
-    voltage_oc=0.68,
-    current_sc=10.3,
-    voltage_mpp=0.58,
-    current_mpp=9.8,
-    temp_coeff_voc=-0.28,
-    temp_coeff_isc=0.05,
-    temp_coeff_pmax=-0.35,
-    series_resistance=0.005,
-    shunt_resistance=500,
-    ideality_factor=1.2,
-    busbar_count=9
+model = ModuleTemperatureModel()
+
+module_temp = model.calculate_module_temp(
+    ambient=30.0,
+    irr=950.0,
+    wind=1.5,
+    noct=45.0,
+    mounting=MountingType.CLOSE_ROOF,
+    model_type=TemperatureModelType.SANDIA
 )
 
-# Create module builder
-builder = ModuleConfigBuilder()
+print(f"Module temperature: {module_temp:.2f}°C")
+```
 
-# Define layout
-layout = {
-    'layout_type': LayoutType.HALF_CUT,
-    'cells_series': 120,
-    'cells_parallel': 2,
-    'submodules': 2,
-    'bypass_diodes': 3
-}
+### Temperature Coefficient Losses
 
-# Create module configuration
-module = builder.create_module_config(
-    cell_design=cell,
-    layout=layout,
-    name="My 450W Module",
-    manufacturer="My Solar Company"
+```python
+from src.modules import ModuleTemperatureModel, ModuleTechnology
+
+model = ModuleTemperatureModel()
+
+loss_factor = model.calculate_temp_coefficient_losses(
+    module_temp=55.0,
+    technology=ModuleTechnology.MONO_SI
 )
 
-# Calculate specifications
-specs = builder.calculate_module_specs(module)
-print(f"Module Power: {specs.pmax:.1f} W")
-print(f"Efficiency: {specs.efficiency*100:.2f}%")
+stc_power = 400.0  # W
+actual_power = stc_power * loss_factor
+
+print(f"Power at 55°C: {actual_power:.1f} W ({loss_factor*100:.1f}% of STC)")
 ```
 
-### Using Standard Module Templates
+### Comprehensive Analysis
 
 ```python
-from src.modules import create_standard_module, CellType, LayoutType
-
-# Quick creation of standard modules
-module = create_standard_module(
-    power_class=450,  # Target power in watts
-    cell_type=CellType.MONO_PERC,
-    layout_type=LayoutType.HALF_CUT,
-    manufacturer="Solar Inc."
-)
-```
-
-### Generate PVsyst PAN File
-
-```python
-# Generate PAN file
-pan_content = builder.generate_pvsyst_pan_file(module)
-
-# Save to file
-with open('my_module.PAN', 'w') as f:
-    f.write(pan_content)
-```
-
-### Validate Design
-
-```python
-# Validate module design
-report = builder.validate_module_design(module)
-
-if report.is_valid:
-    print("Design is valid!")
-else:
-    print(f"Design has {report.error_count} errors")
-    for issue in report.issues:
-        print(f"  {issue.level}: {issue.message}")
-```
-
-### Optimize Layout
-
-```python
-# Optimize layout for specific constraints
-constraints = {
-    'target_power': 550,
-    'max_voltage': 50,
-    'max_current': 15,
-    'optimize_for': 'efficiency',  # or 'cost', 'performance'
-    'allow_half_cut': True,
-    'allow_shingled': True
-}
-
-optimal = builder.optimize_cell_layout(cell, constraints)
-print(f"Optimal: {optimal.layout.layout_type.value}")
-print(f"Cells: {optimal.layout.total_cells}")
-print(f"Efficiency gain: {optimal.efficiency_gain:.2f}%")
-```
-
-### Export to JSON/CSV
-
-```python
-# Export single module to JSON
-json_str = builder.export_to_json(module, include_specs=True)
-
-# Export multiple modules to CSV for comparison
-modules = [module1, module2, module3]
-csv_str = builder.export_to_csv(modules, filepath="comparison.csv")
-```
-
-## Advanced Features
-
-### Multi-Busbar (MBB) Support
-
-```python
-cell = CellDesign(
-    # ... other parameters ...
-    busbar_count=9  # or 12, 16 for advanced MBB
-)
-```
-
-### Bifacial Modules
-
-```python
-cell = CellDesign(
-    # ... other parameters ...
-    is_bifacial=True,
-    bifacial_factor=0.75  # 75% rear/front ratio
+from src.modules import (
+    ModuleTemperatureModel,
+    ModuleSpecification,
+    ModuleTechnology,
+    MountingType,
+    TemperatureModelType
 )
 
-module = builder.create_module_config(
-    cell_design=cell,
-    layout=layout,
-    glass_thickness_rear=2.0  # Required for bifacial
+model = ModuleTemperatureModel()
+
+module_spec = ModuleSpecification(
+    area=1.7,
+    mass=18.0,
+    technology=ModuleTechnology.MONO_SI,
+    noct=45.0,
+    temp_coeff_power=-0.40
 )
+
+result = model.calculate_comprehensive_temperature(
+    ambient_base=20.0,
+    irradiance=950.0,
+    wind_speed=2.0,
+    module_spec=module_spec,
+    day_of_year=195,  # Mid-summer
+    hour=14.0,  # 2 PM
+    latitude=35.0,
+    mounting=MountingType.OPEN_RACK,
+    model_type=TemperatureModelType.SIMPLE_LINEAR
+)
+
+print(f"Module temperature: {result.module_temperature:.2f}°C")
+print(f"Power loss factor: {result.power_loss_factor:.4f}")
+print(f"Metadata: {result.metadata}")
 ```
-
-### CTM Loss Analysis
-
-```python
-specs = builder.calculate_module_specs(module)
-print(f"Resistance loss: {specs.ctm_loss_resistance:.1f}%")
-print(f"Reflection loss: {specs.ctm_loss_reflection:.1f}%")
-print(f"Mismatch loss: {specs.ctm_loss_mismatch:.1f}%")
-print(f"Inactive area loss: {specs.ctm_loss_inactive:.1f}%")
-print(f"Total CTM loss: {specs.ctm_total_loss:.1f}%")
-```
-
-## Data Models
-
-### CellDesign
-
-Complete cell-level specifications including electrical parameters, temperature coefficients, and physical properties.
-
-### ModuleLayout
-
-Layout configuration specifying:
-- Layout type (standard, half-cut, etc.)
-- Series/parallel cell arrangement
-- Submodules and bypass diodes
-- Cell gaps and overlaps
-- Connection type
-
-### ModuleConfig
-
-Complete module definition including:
-- Cell design
-- Layout configuration
-- Mechanical specifications
-- Operating conditions
-- Certifications
-
-### ModuleSpecs
-
-Calculated specifications including:
-- Electrical parameters
-- Temperature coefficients
-- CTM losses
-- Performance characteristics
 
 ## Examples
 
-See `examples/module_builder_demo.py` for comprehensive demonstrations of all features.
-
-Run the demo:
+Run the comprehensive demonstration:
 
 ```bash
-python3 examples/module_builder_demo.py
+python examples/module_temperature_demo.py
 ```
 
-## CTM (Cell-to-Module) Loss Model
+This will show:
+1. Basic NOCT calculations
+2. Temperature model comparisons
+3. Mounting configuration effects
+4. Temperature coefficient impacts
+5. Seasonal variations
+6. Time-of-day variations
+7. Thermal time constant calculations
+8. Comprehensive temperature analysis
+9. Power calculations with temperature effects
 
-The builder includes a comprehensive CTM loss model that accounts for:
+## API Reference
 
-1. **Resistance Losses** (0.8-2.5%)
-   - Reduced in half-cut configurations
-   - Minimal in shingled modules
-   - Lower with multi-busbar designs
+### Main Classes
 
-2. **Reflection Losses** (1.5-3.0%)
-   - AR coating effects
-   - Glass properties
+#### `ModuleTemperatureModel`
+Main class for temperature calculations.
 
-3. **Mismatch Losses** (0.3-0.8%)
-   - Cell-to-cell variations
-   - Parallel string effects
+**Methods:**
+- `calculate_noct()`: Calculate NOCT with adjustments
+- `calculate_module_temp()`: Calculate operating temperature
+- `calculate_temp_coefficient_losses()`: Calculate power loss factor
+- `model_thermal_time_constant()`: Calculate thermal time constant
+- `calculate_seasonal_adjustment()`: Seasonal temperature variation
+- `calculate_time_of_day_adjustment()`: Diurnal temperature variation
+- `calculate_comprehensive_temperature()`: Complete analysis
 
-4. **Inactive Area Losses** (0.5-1.2%)
-   - Cell gaps
-   - Frame area
-   - Minimal in shingled designs
+### Enumerations
 
-## PVsyst Integration
+#### `MountingType`
+- `OPEN_RACK`: Full ventilation, baseline temperature
+- `CLOSE_ROOF`: <6 inches clearance, limited airflow
+- `BUILDING_INTEGRATED`: Minimal ventilation, highest temperature
+- `GROUND_MOUNT`: Optimized clearance
+- `TRACKER_SINGLE_AXIS`: Better ventilation
+- `TRACKER_DUAL_AXIS`: Best ventilation and orientation
 
-Generated PAN files are compatible with PVsyst 7.x and include:
+#### `TemperatureModelType`
+- `SIMPLE_LINEAR`: Basic NOCT-based model
+- `ROSS_FAIMAN`: Empirical model with wind effects
+- `SANDIA`: Detailed Sandia National Labs model
+- `KING_SAPM`: Sandia Array Performance Model
 
-- All electrical parameters at STC
-- Temperature coefficients
-- NOCT thermal behavior
-- IAM profile for angle-dependent performance
-- Low irradiance characteristics
-- Bifacial parameters (when applicable)
+#### `ModuleTechnology`
+- `MONO_SI`: Monocrystalline silicon
+- `POLY_SI`: Polycrystalline silicon
+- `HJT`: Heterojunction (best temp coefficient)
+- `PERC`: Passivated Emitter Rear Cell
+- `TOPCON`: Tunnel Oxide Passivated Contact
+- `THIN_FILM_CDTE`: CdTe thin film
+- `THIN_FILM_CIGS`: CIGS thin film
+- `BIFACIAL`: Bifacial modules
+
+### Pydantic Models
+
+All input/output data is validated using Pydantic models:
+- `NOCTCalculationInput`: NOCT calculation parameters
+- `ModuleTemperatureInput`: Temperature calculation parameters
+- `TemperatureCoefficientInput`: Temp coefficient calculation parameters
+- `ModuleSpecification`: Complete module specifications
+- `TemperatureCalculationResult`: Comprehensive calculation results
+
+## References
+
+### Standards
+- **IEC 61215**: Crystalline silicon terrestrial photovoltaic modules
+- **ASTM E1036**: Standard Test Methods for Electrical Performance of NOCT
+
+### Scientific Literature
+1. **Faiman, D. (2008)**: "Assessing the outdoor operating temperature of PV modules"
+2. **King, D.L., et al. (2004)**: "Sandia Photovoltaic Array Performance Model"
+3. **Kurnik, J., et al. (2011)**: "Outdoor testing of PV module temperature and performance under different mounting and operational conditions"
+4. **Ross, R.G., & Smokler, M.I. (1986)**: "Flat-plate solar array project final report"
+
+### Industry Resources
+- Sandia National Laboratories PV Performance Modeling Collaborative
+- NREL System Advisor Model (SAM) documentation
+- PVsyst temperature modeling methodology
+
+## Advanced Usage
+
+### Custom Temperature Model Coefficients
+
+```python
+# Ross/Faiman with custom coefficients
+temp = model.calculate_module_temp(
+    ambient=28.0,
+    irr=1000.0,
+    wind=3.0,
+    noct=45.0,
+    model_type=TemperatureModelType.ROSS_FAIMAN,
+    ross_a=22.0,  # Custom coefficient
+    ross_b=7.2    # Custom coefficient
+)
+```
+
+### Thermal Time Constant for Transient Analysis
+
+```python
+module_spec = ModuleSpecification(
+    area=1.7,
+    mass=18.0,
+    specific_heat=900.0,
+    emissivity=0.84,
+    technology=ModuleTechnology.MONO_SI,
+    noct=45.0
+)
+
+tau = model.model_thermal_time_constant(module_spec)
+print(f"Thermal time constant: {tau:.0f} seconds ({tau/60:.1f} minutes)")
+```
+
+### Seasonal and Geographic Analysis
+
+```python
+# Compare different latitudes
+latitudes = [0, 30, 45, 60]  # Equator to high latitude
+
+for lat in latitudes:
+    summer_temp = model.calculate_seasonal_adjustment(
+        day_of_year=195,  # Mid-summer
+        latitude=lat,
+        base_ambient=20.0
+    )
+    winter_temp = model.calculate_seasonal_adjustment(
+        day_of_year=15,  # Mid-winter
+        latitude=lat,
+        base_ambient=20.0
+    )
+    print(f"Latitude {lat}°: Summer={summer_temp:.1f}°C, Winter={winter_temp:.1f}°C")
+```
+
+## Testing
+
+```bash
+# Run tests (when test suite is created)
+pytest tests/modules/test_module_temperature.py -v
+
+# Run with coverage
+pytest tests/modules/test_module_temperature.py --cov=src.modules.module_temperature
+```
+
+## Contributing
+
+Contributions are welcome! Please ensure:
+1. All new features include comprehensive docstrings
+2. Type hints are provided for all functions
+3. Pydantic models validate all inputs
+4. No placeholder implementations
+5. Code follows PEP 8 style guidelines
 
 ## License
 
-MIT License - see LICENSE file for details.
+See LICENSE file in repository root.
+
+## Authors
+
+PV Circularity Simulator Team
+
+## Version History
+
+- **0.1.0** (2025-11-17): Initial implementation
+  - NOCT calculations
+  - Multiple temperature models
+  - Mounting configuration effects
+  - Temperature coefficient losses
+  - Seasonal and time-of-day variations
+  - Thermal time constant modeling

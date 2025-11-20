@@ -1,35 +1,41 @@
 """
-PV Module Models
+PV Modules Package
 
-Module-level models for degradation, performance, and lifetime prediction.
+This package contains modules for PV system component modeling including:
+- Module temperature calculations
+- NOCT (Nominal Operating Cell Temperature) modeling
+- Thermal effects and mounting configurations
+- Temperature coefficient losses
+
+Author: PV Circularity Simulator Team
 """
 
-from .module_degradation import (
-    ModuleDegradationModel,
-    ModuleType,
-    DegradationMode,
-    LifetimeModelType,
-    EnvironmentalStressFactors,
-    TechnologyDegradationRates,
-    WarrantySpecification,
-    DegradationResult,
-    MonteCarloConfig,
-    create_typical_desert_environment,
-    create_typical_coastal_environment,
-    create_typical_continental_environment,
+from src.modules.module_temperature import (
+    ModuleTemperatureModel,
+    MountingType,
+    TemperatureModelType,
+    ModuleTechnology,
+    NOCTCalculationInput,
+    ModuleTemperatureInput,
+    TemperatureCoefficientInput,
+    ModuleSpecification,
+    TemperatureCalculationResult,
+    get_default_temp_coefficient,
+    estimate_noct_from_mounting,
+    calculate_power_at_temperature,
 )
 
 __all__ = [
-    "ModuleDegradationModel",
-    "ModuleType",
-    "DegradationMode",
-    "LifetimeModelType",
-    "EnvironmentalStressFactors",
-    "TechnologyDegradationRates",
-    "WarrantySpecification",
-    "DegradationResult",
-    "MonteCarloConfig",
-    "create_typical_desert_environment",
-    "create_typical_coastal_environment",
-    "create_typical_continental_environment",
+    "ModuleTemperatureModel",
+    "MountingType",
+    "TemperatureModelType",
+    "ModuleTechnology",
+    "NOCTCalculationInput",
+    "ModuleTemperatureInput",
+    "TemperatureCoefficientInput",
+    "ModuleSpecification",
+    "TemperatureCalculationResult",
+    "get_default_temp_coefficient",
+    "estimate_noct_from_mounting",
+    "calculate_power_at_temperature",
 ]
