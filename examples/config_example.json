@@ -1,0 +1,72 @@
+{
+  "integrations": [
+    {
+      "name": "weather-api",
+      "base_url": "https://api.weather.example.com",
+      "auth": {
+        "auth_type": "api_key",
+        "api_key": "your-api-key-here",
+        "api_key_header": "X-API-Key"
+      },
+      "rate_limit": {
+        "enabled": true,
+        "max_requests": 100,
+        "time_window": 60.0,
+        "burst_size": 120
+      },
+      "retry": {
+        "enabled": true,
+        "max_retries": 3,
+        "initial_delay": 1.0,
+        "max_delay": 60.0,
+        "exponential_base": 2.0,
+        "jitter": true,
+        "retry_on_status_codes": [408, 429, 500, 502, 503, 504]
+      },
+      "timeout": 30.0,
+      "verify_ssl": true,
+      "default_headers": {
+        "User-Agent": "PV-Circularity-Simulator/1.0"
+      }
+    },
+    {
+      "name": "data-provider",
+      "base_url": "https://api.dataprovider.example.com",
+      "auth": {
+        "auth_type": "bearer_token",
+        "token": "your-bearer-token-here"
+      },
+      "rate_limit": {
+        "enabled": true,
+        "max_requests": 50,
+        "time_window": 60.0
+      },
+      "retry": {
+        "enabled": true,
+        "max_retries": 5
+      },
+      "timeout": 60.0,
+      "verify_ssl": true
+    },
+    {
+      "name": "oauth-service",
+      "base_url": "https://api.oauth-service.example.com",
+      "auth": {
+        "auth_type": "oauth2",
+        "client_id": "your-client-id",
+        "client_secret": "your-client-secret",
+        "token_url": "https://auth.example.com/oauth/token"
+      },
+      "rate_limit": {
+        "enabled": true,
+        "max_requests": 200,
+        "time_window": 60.0
+      },
+      "retry": {
+        "enabled": true,
+        "max_retries": 3
+      },
+      "timeout": 45.0
+    }
+  ]
+}

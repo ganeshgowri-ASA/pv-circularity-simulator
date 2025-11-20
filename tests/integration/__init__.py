@@ -1,1 +1,1 @@
-"""Integration tests."""
+"""Tests for integration layer."""
