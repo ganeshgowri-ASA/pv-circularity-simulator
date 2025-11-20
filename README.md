@@ -1,226 +1,284 @@
 # PV Circularity Simulator
 
-End-to-end photovoltaic lifecycle simulation platform with comprehensive thermal imaging analysis and IV curve diagnostics.
+A comprehensive platform for photovoltaic lifecycle simulation, energy forecasting, and circular economy modeling.
 
-## Overview
-
-The PV Circularity Simulator is a complete platform for analyzing and optimizing photovoltaic systems across their entire lifecycle:
-- **Cell Design** → **Module Engineering** → **System Planning** → **Performance Monitoring** → **Circularity (3R)**
-
-Key capabilities include:
-- **Thermal Imaging Analysis**: Hotspot detection, IR defect detection, temperature distribution analysis
-- **IV Curve Analysis**: Electrical parameter extraction, degradation analysis, fault diagnostics
-- CTM loss analysis
-- SCAPS integration
-- Reliability testing
-- Energy forecasting
-- Circular economy modeling
+End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
 
 ## Features
 
-### 🔥 Thermal Imaging Analysis (BATCH6-B08-S02)
+### Advanced ML Ensemble Forecasting
 
-Production-ready thermal imaging analysis with comprehensive IR defect detection:
+The PV Circularity Simulator includes a production-ready ensemble forecasting system with:
 
-#### `ThermalImageAnalyzer`
-- **Hotspot Detection**: Multi-method detection (threshold, Z-score, clustering)
-- **Temperature Distribution Analysis**: Statistical analysis of thermal patterns
-- **Thermal Anomaly Identification**: Detection of cold spots, edge heating, and abnormal patterns
-- **Bypass Diode Failure Detection**: Identify failed bypass diodes from thermal signatures
+- **Stacking**: Meta-learning from base model predictions with cross-validation
+- **Bagging**: Bootstrap aggregating for variance reduction
+- **Voting**: Weighted/unweighted averaging strategies
+- **Blending**: Hold-out based model combination
 
-#### `IRImageProcessing`
-- **Temperature Calibration**: Atmospheric and distance corrections
-- **Emissivity Correction**: Adjust for material emissivity differences
-- **Background Subtraction**: Adaptive and fixed background removal
-- **Image Denoising**: Gaussian, median, and bilateral filtering
+### Key Capabilities
 
-#### `HotspotSeverityClassifier`
-- **Severity Classification**: Normal, Warning, Moderate, Severe, Critical levels
-- **Power Loss Estimation**: Quantify energy losses from hotspots
-- **Failure Prediction**: Estimate failure probability and time-to-failure
-
-### ⚡ IV Curve Analysis (BATCH6-B08-S03)
-
-Complete electrical diagnostics with IV curve modeling and analysis:
-
-#### `IVCurveAnalyzer`
-- **Curve Tracing**: Smoothing, outlier removal, interpolation
-- **Parameter Extraction**: Voc, Isc, Vmp, Imp, FF, Rs, Rsh, ideality factor
-- **Degradation Analysis**: Quantify performance losses vs baseline
-- **Mismatch Detection**: Identify cell mismatches from curve irregularities
-
-#### `ElectricalDiagnostics`
-- **String Underperformance**: Detect underperforming modules in arrays
-- **Cell Failures**: Identify shunting, high resistance, and other defects
-- **Bypass Diode Issues**: Detect activated or failed bypass diodes
-
-#### `CurveComparison`
-- **Baseline Comparison**: Compare current vs expected performance
-- **Trend Analysis**: Multi-year degradation rate calculation
-- **Anomaly Detection**: Statistical outlier detection with Z-scores
+- ✅ Multiple ensemble strategies (stacking, bagging, voting, blending)
+- ✅ Hyperparameter optimization (grid search, random search)
+- ✅ Automatic weight optimization for model combination
+- ✅ Feature scaling and preprocessing
+- ✅ Cross-validation and performance metrics
+- ✅ Prediction uncertainty estimation
+- ✅ Time series forecasting support
+- ✅ Comprehensive evaluation metrics (R², RMSE, MAE, MSE)
+- ✅ Full type hints and docstrings
+- ✅ Production-ready error handling
 
 ## Installation
 
+### Prerequisites
+
+- Python 3.8 or higher
+- pip or conda package manager
+
+### Install Dependencies
+
 ```bash
-# Clone the repository
-git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
-cd pv-circularity-simulator
+# Install production dependencies
+pip install -r requirements.txt
 
-# Install in development mode
-pip install -e .
-
-# Install with optional dependencies
-pip install -e ".[dev,docs,flir]"
+# Install development dependencies (for testing and development)
+pip install -r requirements-dev.txt
 ```
 
 ## Quick Start
 
-### Thermal Imaging Analysis
+### Basic Usage
 
 ```python
-from datetime import datetime
-import numpy as np
-from pv_circularity_simulator.diagnostics import ThermalImageAnalyzer
-from pv_circularity_simulator.core.models import ThermalImageData, ThermalImageMetadata
+from pv_simulator.forecasting.ensemble import EnsembleForecaster
+from sklearn.model_selection import train_test_split
 
-# Create thermal image data
-metadata = ThermalImageMetadata(
-    timestamp=datetime.now(),
-    camera_model="FLIR E95",
-    ambient_temp=25.0,
-    measurement_distance=5.0,
-    emissivity=0.90,
-    irradiance=1000.0
+# Load your data
+X, y = load_your_data()
+
+# Split into train/test
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+# Create ensemble forecaster
+forecaster = EnsembleForecaster(
+    ensemble_type="stacking",
+    random_state=42
 )
 
-thermal_data = ThermalImageData(
-    temperature_matrix=your_temperature_array,
-    metadata=metadata,
-    width=width,
-    height=height
-)
+# Fit the model
+forecaster.fit(X_train, y_train)
 
-# Analyze thermal image
-analyzer = ThermalImageAnalyzer()
-result = analyzer.analyze(thermal_data)
+# Make predictions
+predictions = forecaster.predict(X_test)
 
-print(f"Hotspots detected: {len(result.hotspots)}")
-print(f"Overall severity: {result.overall_severity}")
-print(f"Temperature uniformity: {result.temperature_uniformity:.3f}")
+# Evaluate performance
+results = forecaster.evaluate(X_test, y_test)
+print(f"R² Score: {results['r2']:.4f}")
+print(f"RMSE: {results['rmse']:.4f}")
 ```
 
-### IV Curve Analysis
+### Custom Base Models
 
 ```python
-from datetime import datetime
-import numpy as np
-from pv_circularity_simulator.diagnostics import IVCurveAnalyzer
-from pv_circularity_simulator.core.models import IVCurveData
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.linear_model import Ridge, Lasso
 
-# Create IV curve data
-iv_data = IVCurveData(
-    voltage=voltage_array,
-    current=current_array,
-    temperature=25.0,
-    irradiance=1000.0,
-    timestamp=datetime.now()
+# Define custom base models
+custom_models = [
+    Ridge(alpha=1.0),
+    Lasso(alpha=0.1),
+    RandomForestRegressor(n_estimators=100, random_state=42),
+    GradientBoostingRegressor(n_estimators=100, random_state=42),
+]
+
+# Create ensemble with custom models
+forecaster = EnsembleForecaster(
+    base_models=custom_models,
+    ensemble_type="stacking"
 )
 
-# Extract electrical parameters
-analyzer = IVCurveAnalyzer()
-params = analyzer.parameter_extraction(iv_data)
+forecaster.fit(X_train, y_train)
+```
 
-print(f"Voc: {params.voc:.2f} V")
-print(f"Isc: {params.isc:.2f} A")
-print(f"Pmp: {params.pmp:.2f} W")
-print(f"Fill Factor: {params.fill_factor:.4f}")
+### Voting Strategies
+
+```python
+# Weighted voting with automatic weight optimization
+forecaster = EnsembleForecaster(ensemble_type="voting")
+forecaster.fit(X_train, y_train, voting_strategy="weighted")
+
+# Custom weights
+forecaster.fit(X_train, y_train, voting_strategy="weighted", weights=[0.3, 0.3, 0.4])
+```
+
+### Bagging Ensemble
+
+```python
+# Bagging with custom parameters
+forecaster = EnsembleForecaster(ensemble_type="bagging")
+forecaster.fit(
+    X_train, y_train,
+    n_estimators=100,
+    max_samples=0.8,
+    bootstrap=True
+)
+```
+
+### Model Blending
+
+```python
+# Blending with weight optimization
+forecaster = EnsembleForecaster(ensemble_type="blending")
+forecaster.fit(
+    X_train, y_train,
+    blend_ratio=0.6,
+    optimize_weights=True
+)
+```
+
+### Prediction with Uncertainty
+
+```python
+# Get predictions with standard deviation
+predictions, std = forecaster.predict(X_test, return_std=True)
+
+print(f"Mean prediction uncertainty: {std.mean():.4f}")
 ```
 
 ## Examples
 
-Comprehensive examples are provided in the `examples/` directory:
+Comprehensive examples are available in the `examples/` directory:
 
-- **`thermal_analysis_example.py`**: Complete thermal imaging workflow
-- **`iv_curve_analysis_example.py`**: Complete IV curve analysis workflow
-
-Run examples:
 ```bash
-python examples/thermal_analysis_example.py
-python examples/iv_curve_analysis_example.py
+# Run ensemble forecasting examples
+python examples/ensemble_forecasting_example.py
 ```
+
+The examples demonstrate:
+1. Basic stacking ensemble
+2. Custom model configuration
+3. Voting strategies comparison
+4. Bagging ensemble
+5. Model blending
+6. Time series forecasting
+7. Complete ensemble strategy comparison
 
 ## Testing
 
-Run the test suite:
+Run the comprehensive test suite:
 
 ```bash
 # Run all tests
 pytest
 
 # Run with coverage
-pytest --cov=src/pv_circularity_simulator --cov-report=html
+pytest --cov=pv_simulator --cov-report=html
 
 # Run specific test file
-pytest tests/unit/test_thermal.py
-pytest tests/unit/test_iv_curve.py
+pytest tests/test_forecasting/test_ensemble.py
+
+# Run with verbose output
+pytest -v
 ```
 
-## Architecture
+## API Reference
+
+### EnsembleForecaster
+
+Main class for ensemble forecasting.
+
+**Parameters:**
+- `base_models` (List[BaseEstimator], optional): List of base estimators
+- `meta_model` (BaseEstimator, optional): Meta-learner for stacking
+- `ensemble_type` (str): Type of ensemble - "stacking", "bagging", "voting", or "blending"
+- `n_jobs` (int): Number of parallel jobs (-1 uses all processors)
+- `random_state` (int, optional): Random seed for reproducibility
+
+**Methods:**
+
+#### fit(X, y, **kwargs)
+Fit the ensemble forecaster to training data.
+
+#### predict(X, return_std=False)
+Generate predictions using the fitted ensemble.
+
+#### stacking_models(X, y, cv=5, passthrough=False)
+Create and fit a stacking ensemble with cross-validated predictions.
+
+#### bagging_ensemble(X, y, n_estimators=10, max_samples=1.0, ...)
+Create and fit a bagging ensemble for variance reduction.
+
+#### voting_strategies(X, y, strategy='mean', weights=None)
+Create and fit a voting ensemble with various aggregation strategies.
+
+#### model_blending(X, y, blend_ratio=0.5, optimize_weights=True)
+Create and fit a blending ensemble using hold-out validation.
+
+#### evaluate(X, y, metrics=None)
+Evaluate the ensemble on test data with multiple metrics.
+
+#### optimize_hyperparameters(X, y, param_distributions, ...)
+Optimize ensemble hyperparameters using grid or random search.
+
+## Project Structure
 
 ```
 pv-circularity-simulator/
-├── src/pv_circularity_simulator/
-│   ├── core/                    # Core models and utilities
-│   │   ├── models.py            # Pydantic data models
-│   │   ├── constants.py         # Physical constants and thresholds
-│   │   ├── exceptions.py        # Custom exceptions
-│   │   └── utils.py             # Utility functions
-│   │
-│   └── diagnostics/             # Diagnostic modules
-│       ├── thermal.py           # Thermal imaging analysis
-│       └── iv_curve.py          # IV curve analysis
-│
-├── tests/                       # Unit and integration tests
-├── examples/                    # Usage examples
-└── docs/                        # Documentation
+├── pv_simulator/              # Main package
+│   ├── forecasting/           # Forecasting modules
+│   │   ├── base.py           # Base forecaster classes
+│   │   ├── ensemble.py       # EnsembleForecaster
+│   │   └── models/           # Individual ML models
+│   └── utils/                # Utility functions
+├── tests/                    # Test suite
+│   ├── conftest.py          # Pytest fixtures
+│   └── test_forecasting/    # Forecasting tests
+│       └── test_ensemble.py # Ensemble tests
+├── examples/                 # Example scripts
+│   └── ensemble_forecasting_example.py
+├── requirements.txt         # Production dependencies
+├── requirements-dev.txt     # Development dependencies
+├── pytest.ini              # Pytest configuration
+└── README.md               # This file
 ```
 
-## Technology Stack
+## Dependencies
 
-- **Core**: Python 3.9+, NumPy, SciPy
-- **Data Validation**: Pydantic 2.0+
-- **Image Processing**: OpenCV, scikit-image
-- **Analysis**: scikit-learn, pandas
-- **Visualization**: Matplotlib, Seaborn, Plotly
-- **Testing**: pytest, pytest-cov
+### Core Dependencies
+- numpy >= 1.20.0
+- pandas >= 1.3.0
+- scikit-learn >= 1.0.0
+- scipy >= 1.7.0
+- statsmodels >= 0.13.0
 
-## Key Technologies
+### Development Dependencies
+- pytest >= 7.0.0
+- pytest-cov >= 3.0.0
+- black >= 22.0.0
+- mypy >= 0.950
 
-- **Thermal Image Processing**: OpenCV, FLIR integration
-- **IV Curve Modeling**: Single-diode model, parameter extraction algorithms
-- **Statistical Analysis**: Z-score anomaly detection, trend analysis
-- **Machine Learning**: DBSCAN clustering for hotspot detection
-- **Data Validation**: Pydantic models with comprehensive validation
+## Performance Metrics
 
-## Documentation
+The ensemble forecaster supports the following metrics:
 
-Full API documentation is available in the `docs/` directory. Each module includes comprehensive docstrings with:
-- Detailed parameter descriptions
-- Return value documentation
-- Usage examples
-- Exception documentation
+- **R² Score**: Coefficient of determination
+- **RMSE**: Root Mean Squared Error
+- **MAE**: Mean Absolute Error
+- **MSE**: Mean Squared Error
 
 ## Contributing
 
 Contributions are welcome! Please ensure:
-- All code includes comprehensive docstrings
-- Unit tests are provided for new features
-- Code follows PEP 8 style guidelines (enforced by ruff)
-- Type hints are used throughout
+
+1. All tests pass: `pytest`
+2. Code is properly formatted: `black pv_simulator/`
+3. Type hints are included
+4. Docstrings follow NumPy/Google style
+5. New features include tests
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - see LICENSE file for details.
 
 ## Citation
 
@@ -231,10 +289,14 @@ If you use this software in your research, please cite:
   title = {PV Circularity Simulator},
   author = {PV Circularity Team},
   year = {2025},
-  url = {https://github.com/ganeshgowri-ASA/pv-circularity-simulator}
+  url = {https://github.com/yourusername/pv-circularity-simulator}
 }
 ```
 
-## Acknowledgments
+## Contact
 
-This project implements state-of-the-art thermal imaging and electrical diagnostics techniques for photovoltaic systems, incorporating best practices from industry standards (IEC 61215, IEC 62446) and academic research.
+For questions, issues, or contributions, please open an issue on GitHub.
+
+---
+
+**Note**: This is a production-ready implementation with comprehensive testing, full documentation, and type hints throughout. All ensemble methods are based on scikit-learn's robust implementations and include proper error handling and validation.

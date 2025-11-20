@@ -1,3 +1,6 @@
 """
-Unit tests for PV circularity simulator.
+Test Suite
+==========
+
+Comprehensive tests for the PV circularity simulator.
 """

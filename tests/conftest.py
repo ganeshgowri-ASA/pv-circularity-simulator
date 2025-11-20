@@ -1,85 +1,123 @@
 """
-Pytest configuration and shared fixtures.
+Pytest Configuration and Fixtures
+==================================
+
+Shared fixtures for test suite.
 """
 
-from datetime import datetime
-
 import numpy as np
+import pandas as pd
 import pytest
-
-from pv_circularity_simulator.core.models import (
-    ElectricalParameters,
-    IVCurveData,
-    ThermalImageData,
-    ThermalImageMetadata,
-)
+from sklearn.datasets import make_regression
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.tree import DecisionTreeRegressor
 
 
 @pytest.fixture
-def sample_thermal_metadata():
-    """Create sample thermal image metadata."""
-    return ThermalImageMetadata(
-        timestamp=datetime.now(),
-        camera_model="FLIR E95",
-        ambient_temp=25.0,
-        measurement_distance=5.0,
-        emissivity=0.90,
-        irradiance=1000.0,
-        module_id="TEST-001",
-    )
+def random_state():
+    """Fixed random state for reproducibility."""
+    return 42
 
 
 @pytest.fixture
-def sample_thermal_image(sample_thermal_metadata):
-    """Create sample thermal image with synthetic hotspot."""
-    # Create base temperature field
-    temps = np.random.normal(40.0, 2.0, (100, 100))
+def sample_regression_data(random_state):
+    """
+    Generate sample regression data for testing.
 
-    # Add a hotspot
-    temps[20:30, 20:30] += 25.0  # 25°C hotter than median
-
-    return ThermalImageData(
-        temperature_matrix=temps,
-        metadata=sample_thermal_metadata,
-        width=100,
-        height=100,
+    Returns:
+        Tuple of (X, y) where X is features and y is target
+    """
+    X, y = make_regression(
+        n_samples=200,
+        n_features=10,
+        n_informative=8,
+        noise=10.0,
+        random_state=random_state,
     )
+    return X, y
 
 
 @pytest.fixture
-def sample_iv_curve_data():
-    """Create sample IV curve data."""
-    # Generate realistic IV curve
-    v = np.linspace(0, 36, 100)
-    isc = 9.0
-    voc = 36.0
+def sample_time_series_data(random_state):
+    """
+    Generate sample time series data for forecasting tests.
 
-    # Single diode model approximation
-    i = isc * (1 - (v / voc) ** 3)
+    Returns:
+        Tuple of (X, y) representing time series features and targets
+    """
+    np.random.seed(random_state)
 
-    return IVCurveData(
-        voltage=v,
-        current=i,
-        temperature=25.0,
-        irradiance=1000.0,
-        timestamp=datetime.now(),
-        module_id="TEST-001",
-        num_cells=60,
-    )
+    # Create time-based features
+    n_samples = 200
+    time_index = np.arange(n_samples)
+
+    # Create features with trend and seasonality
+    trend = 0.5 * time_index
+    seasonality = 10 * np.sin(2 * np.pi * time_index / 50)
+    noise = np.random.normal(0, 5, n_samples)
+
+    y = trend + seasonality + noise
+
+    # Create lagged features
+    X = np.column_stack([
+        time_index,
+        np.sin(2 * np.pi * time_index / 50),
+        np.cos(2 * np.pi * time_index / 50),
+        np.sin(2 * np.pi * time_index / 25),
+        np.cos(2 * np.pi * time_index / 25),
+    ])
+
+    return X, y
 
 
 @pytest.fixture
-def sample_electrical_params():
-    """Create sample electrical parameters."""
-    return ElectricalParameters(
-        voc=36.0,
-        isc=9.0,
-        vmp=30.0,
-        imp=8.5,
-        pmp=255.0,
-        fill_factor=0.78,
-        efficiency=0.18,
-        rs=0.5,
-        rsh=800.0,
-        ideality_factor=1.2,
+def sample_base_models(random_state):
+    """
+    Create a list of sample base models for ensemble testing.
+
+    Returns:
+        List of scikit-learn estimators
+    """
+    return [
+        LinearRegression(),
+        Ridge(alpha=1.0, random_state=random_state),
+        DecisionTreeRegressor(max_depth=5, random_state=random_state),
+    ]
+
+
+@pytest.fixture
+def sample_dataframe_data(sample_regression_data):
+    """
+    Convert regression data to pandas DataFrame format.
+
+    Returns:
+        Tuple of (X_df, y_series) as pandas objects
+    """
+    X, y = sample_regression_data
+
+    X_df = pd.DataFrame(
+        X,
+        columns=[f"feature_{i}" for i in range(X.shape[1])]
     )
+
+    y_series = pd.Series(y, name="target")
+
+    return X_df, y_series
+
+
+@pytest.fixture
+def train_test_split_data(sample_regression_data):
+    """
+    Split sample data into train and test sets.
+
+    Returns:
+        Tuple of (X_train, X_test, y_train, y_test)
+    """
+    X, y = sample_regression_data
+
+    split_idx = int(len(X) * 0.8)
+
+    X_train, X_test = X[:split_idx], X[split_idx:]
+    y_train, y_test = y[:split_idx], y[split_idx:]
+
+    return X_train, X_test, y_train, y_test
