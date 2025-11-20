@@ -1,18 +1,16 @@
-# PV Circularity Simulator - Python Dependencies
-
-# Core Framework
-streamlit>=1.28.0
-
-# Data Processing
-pandas>=2.0.0
+# Core dependencies for PV Circularity Simulator
 numpy>=1.24.0
-
-# Visualization (optional, for future enhancements)
-plotly>=5.14.0
+pydantic>=2.0.0
 matplotlib>=3.7.0
+plotly>=5.14.0
+scipy>=1.10.0
+pandas>=2.0.0
 
-# Machine Learning (for forecasting and diagnostics)
-scikit-learn>=1.3.0
+# Testing
+pytest>=7.3.0
+pytest-cov>=4.1.0
 
-# Date/Time handling
-python-dateutil>=2.8.2
+# Development
+black>=23.0.0
+mypy>=1.3.0
+ruff>=0.0.270

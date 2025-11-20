@@ -1,165 +1,236 @@
-# ☀️ PV Circularity Simulator
+# PV Circularity Simulator
 
-End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
+End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R).
 
-## 🚀 Quick Start
+Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
 
-### Prerequisites
-- Python 3.8 or higher
-- pip package manager
+## Features
 
-### Installation & Running
+### ✅ CTM Loss Modeling Engine (IMPLEMENTED)
 
-**Option 1: Using the run script (Recommended)**
+Comprehensive **Cell-to-Module (CTM) Loss Analysis** implementing the Fraunhofer ISE SmartCalc methodology with all **k1-k24 factors**:
+
+- **Optical Losses/Gains (k1-k7)**: Glass reflection, encapsulant effects, shading, absorption
+- **Coupling Effects (k8-k11)**: Cell gaps, mismatch, LID/LETID degradation
+- **Electrical Losses (k12-k15)**: Resistive losses, interconnections, manufacturing damage
+- **Environmental Factors (k21-k24)**: Temperature, irradiance, spectral response, AOI
+
+**Supported Module Architectures**:
+- Standard (60/72 cell)
+- Half-cut cells
+- Quarter-cut cells
+- Shingled cells
+- IBC (Interdigitated Back Contact)
+- Bifacial modules
+
+**Capabilities**:
+- Complete CTM power analysis
+- Loss/gain waterfall visualization
+- Sensitivity analysis
+- Environmental modeling
+- Production-ready with full type hints and validation
+
+📖 **[Full CTM Documentation](docs/CTM_LOSS_MODEL.md)**
+
+### Planned Modules
+
+- **SCAPS Integration**: Cell-level semiconductor modeling
+- **Reliability Testing**: Accelerated aging, degradation models
+- **Energy Forecasting**: System-level performance prediction
+- **Circular Economy**: 3R analysis (Reduce, Reuse, Recycle)
+
+## Quick Start
+
+### Installation
+
 ```bash
-./run.sh
-```
-
-**Option 2: Manual setup**
-```bash
-# Create virtual environment
-python3 -m venv venv
-
-# Activate virtual environment
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
+cd pv-circularity-simulator
 pip install -r requirements.txt
-
-# Run the application
-streamlit run src/main.py
 ```
 
-The application will open in your default web browser at `http://localhost:8501`
+### CTM Loss Model Example
 
-## 📋 Features
+```python
+from src.modules.ctm_loss_model import CTMLossModel, CellParameters, ModuleParameters
 
-### 15 Comprehensive Modules
+# Define cell parameters (5.25W PERC cell)
+cell = CellParameters(
+    power_stc=5.25,
+    voltage_mpp=0.650,
+    current_mpp=8.08,
+    voltage_oc=0.720,
+    current_sc=8.60,
+    efficiency=22.8,
+    width=166,
+    height=166,
+)
 
-#### 🔬 Design & Engineering
-- **Materials Selection**: PV material selection and properties configuration
-- **Cell Design**: Solar cell design with SCAPS integration
-- **Module Design**: PV module configuration and layout
-- **CTM Loss**: Cell-to-module loss analysis
+# Define module (60-cell standard)
+module = ModuleParameters(cells_in_series=60)
 
-#### 🧪 Testing & Validation
-- **IEC Testing**: IEC 61215/61730 compliance testing and reliability
-- **System Design**: Complete PV system configuration and planning
+# Analyze CTM losses
+model = CTMLossModel(cell, module)
+module_power = model.calculate_module_power()
+ctm_ratio = model.get_ctm_ratio()
 
-#### 📊 Performance & Analysis
-- **EYA**: Energy yield assessment with P50/P90 analysis
-- **Performance Monitoring**: Real-time system performance monitoring
-- **Fault Diagnostics**: AI-powered fault detection and diagnosis
+print(f"Module Power: {module_power:.2f} W")
+print(f"CTM Ratio: {ctm_ratio:.4f} ({(ctm_ratio-1)*100:+.2f}%)")
 
-#### 🔮 Forecasting & Planning
-- **Energy Forecasting**: ML-based energy production forecasting
-- **Revamp/Repower**: System upgrade and repowering analysis
+# Generate waterfall visualization
+fig = model.generate_loss_waterfall()
+fig.savefig('ctm_analysis.png')
 
-#### ♻️ Sustainability & Economics
-- **Circularity**: 3R analysis (Reduce, Reuse, Recycle)
-- **Hybrid Systems**: PV + storage and hybrid configurations
-- **Financial Modeling**: Comprehensive financial analysis and ROI
+# Print detailed report
+print(model.generate_report())
+```
 
-## 🏗️ Project Structure
+### Run Demonstrations
+
+```bash
+# Comprehensive CTM demonstrations
+python examples/ctm_demo.py
+```
+
+This generates:
+- Standard module analysis with waterfall chart
+- Half-cut vs. standard comparison
+- Bifacial module rear gain analysis
+- Shingled module advantages
+- Multi-parameter sensitivity analysis
+- Environmental effects (temperature, irradiance, AOI)
+- Architecture comparison across all module types
+
+### Run Tests
+
+```bash
+# Run all tests with coverage
+pytest tests/ -v --cov=src
+
+# Run specific test file
+pytest tests/test_ctm_loss_model.py -v
+```
+
+## Project Structure
 
 ```
 pv-circularity-simulator/
 ├── src/
-│   ├── main.py                 # Main application
-│   ├── modules/                # Application modules
-│   │   ├── dashboard.py
-│   │   ├── materials_selection.py
-│   │   ├── cell_design.py
-│   │   ├── module_design.py
-│   │   ├── ctm_loss.py
-│   │   ├── iec_testing.py
-│   │   ├── system_design.py
-│   │   ├── eya.py
-│   │   ├── performance_monitoring.py
-│   │   ├── fault_diagnostics.py
-│   │   ├── energy_forecasting.py
-│   │   ├── revamp_repower.py
-│   │   ├── circularity.py
-│   │   ├── hybrid_systems.py
-│   │   └── financial_modeling.py
-│   ├── utils/                  # Utility functions
-│   │   └── session_manager.py
-│   └── components/             # Reusable UI components
-├── .streamlit/                 # Streamlit configuration
-│   └── config.toml
-├── projects/                   # Saved project files
-├── requirements.txt            # Python dependencies
-├── run.sh                      # Launch script
+│   ├── __init__.py
+│   └── modules/
+│       ├── __init__.py
+│       └── ctm_loss_model.py      # CTM Loss Modeling Engine (k1-k24)
+├── tests/
+│   ├── __init__.py
+│   └── test_ctm_loss_model.py     # Comprehensive CTM tests
+├── examples/
+│   └── ctm_demo.py                # CTM demonstrations
+├── docs/
+│   └── CTM_LOSS_MODEL.md          # Detailed CTM documentation
+├── requirements.txt
 ├── LICENSE
 └── README.md
 ```
 
-## 💡 Usage Guide
+## CTM Loss Model Highlights
 
-### Creating a New Project
-1. Click "🆕 New" in the sidebar
-2. Enter your project name
-3. Navigate through modules using the sidebar
-4. Save your work with "💾 Save"
+### All k-Factors Implemented
 
-### Loading an Existing Project
-1. Use the file uploader in the sidebar
-2. Select your saved `.json` project file
-3. The application will load all your saved data
+| Category | Factors | Description |
+|----------|---------|-------------|
+| **Optical** | k1-k7 | Glass reflection gain, encapsulant effects, shading, absorption, bifacial |
+| **Coupling** | k8-k11 | Cell gaps, internal/module mismatch, LID/LETID |
+| **Electrical** | k12-k15 | Resistive losses, interconnection, manufacturing damage |
+| **Environmental** | k21-k24 | Temperature, low irradiance, spectral response, AOI |
 
-### Module Navigation
-- Use the sidebar to access different modules
-- Each module is organized for the PV lifecycle workflow
-- Modules are independent but data can be shared across them
+### Advanced Features
 
-### Settings
-- Click "⚙️ Settings" to customize:
-  - Units (Metric/Imperial)
-  - Currency
-  - Language
-  - Display preferences
-  - Theme
+- **Pydantic Models**: Full parameter validation
+- **Type Safety**: Complete type hints throughout
+- **Visualization**: Matplotlib and Plotly waterfall charts
+- **Sensitivity Analysis**: Single and multi-parameter analysis
+- **Module Architectures**: Support for 6 different types
+- **Production Ready**: Comprehensive testing and documentation
 
-## 🔧 Technical Details
+### Validation
 
-### Built With
-- **Streamlit** - Web application framework
-- **Python 3.8+** - Programming language
-- **Pandas & NumPy** - Data processing
-- **Scikit-learn** - Machine learning
+Validated against:
+- Fraunhofer ISE SmartCalc methodology
+- Cell-to-Module.com reference data
+- Industry standard CTM ratios (96-99% for monofacial, 110-130% for bifacial)
 
-### Key Capabilities
-- ✅ Session state management for project persistence
-- ✅ Modular architecture for easy extension
-- ✅ Custom CSS styling for professional UI
-- ✅ Comprehensive error handling
-- ✅ Real-time data visualization
-- ✅ Export/import functionality
+## CTM Example Results
 
-## 📚 Documentation
+**Standard 60-Cell PERC Module** (5.25W cells):
+- Total Cell Power: 315.0 W
+- Module Power: ~303-306 W
+- **CTM Ratio: 96-97%** ✓
+- Main losses: Glass absorption, cell gaps, resistive losses, LID
 
-See the in-app Help panel (❓ Help button) for:
-- Quick Start Guide
-- Module descriptions
-- Resources and links
-- About and version info
+**Half-Cut 120-Cell Module**:
+- **CTM Ratio: 97-98%** ✓
+- Improvement: +0.5-1% vs. standard (reduced I²R losses)
 
-## 🤝 Contributing
+**Bifacial Module** (75% bifaciality, 20% rear irradiance):
+- **CTM Ratio: 115-120%** ✓
+- Gain: +15-20% from rear side generation
 
-This is a private repository. For questions or issues, please contact the development team.
+## Dependencies
 
-## 📄 License
+- **numpy**: Numerical calculations
+- **pydantic**: Data validation
+- **matplotlib**: Visualization
+- **plotly**: Interactive charts
+- **scipy**: Scientific computing
+- **pandas**: Data handling
+- **pytest**: Testing
 
-Copyright © 2024 PV Circularity Team. All rights reserved.
+## Development Status
 
-## 🆘 Support
+- ✅ **CTM Loss Modeling Engine**: Complete with k1-k24 factors
+- 🔄 **SCAPS Integration**: Planned
+- 🔄 **Reliability Testing**: Planned
+- 🔄 **Energy Forecasting**: Planned
+- 🔄 **Circular Economy Models**: Planned
 
-For support and questions:
-- Check the Help panel in the application
-- Review module-specific documentation
-- Contact: [support contact]
+## Contributing
+
+Contributions welcome! Areas of interest:
+- Additional module architectures (e.g., multi-busbar, tandem cells)
+- Integration with field data for validation
+- Machine learning for parameter optimization
+- Real-time performance monitoring integration
+
+## Citation
+
+If you use this simulator in research, please cite:
+
+```bibtex
+@software{pv_circularity_simulator,
+  title = {PV Circularity Simulator: End-to-End PV Lifecycle Simulation},
+  author = {PV Circularity Simulator Development Team},
+  year = {2024},
+  url = {https://github.com/ganeshgowri-ASA/pv-circularity-simulator}
+}
+```
+
+## License
+
+See LICENSE file for details.
+
+## References
+
+1. Fraunhofer ISE, "SmartCalc CTM", https://www.ise.fraunhofer.de
+2. Cell-to-Module.com, CTM Calculator and Database
+3. IEC 61853 series: PV module performance testing standards
+4. Photovoltaic Module Power Rating per IEC 61853-1
+
+## Contact
+
+For questions, issues, or contributions:
+- GitHub Issues: [Create an issue](https://github.com/ganeshgowri-ASA/pv-circularity-simulator/issues)
+- Documentation: [docs/](docs/)
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: 2024
+**Status**: Active Development | **Version**: 0.1.0 | **Last Updated**: 2024
