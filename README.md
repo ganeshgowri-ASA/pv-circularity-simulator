@@ -1,253 +1,266 @@
-# PV Circularity Simulator
+# pv-circularity-simulator
 
-End-to-end PV lifecycle simulation platform with comprehensive weather data management, TMY (Typical Meteorological Year) database, and circular economy modeling.
+End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
 
-## 🌟 Features
+## Overview
 
-### TMY Weather Database & Comprehensive Weather System (Batch 5-B06-S01)
+The PV Circularity Simulator is a comprehensive platform for modeling and analyzing the complete lifecycle of photovoltaic systems, from manufacturing through operation to end-of-life circular economy considerations.
 
-A production-ready TMY data management and weather database system with global coverage, historical data analysis, and satellite integration for accurate energy yield predictions.
+## Features
 
-**Core Components:**
+### Utility Library (`src/pv_simulator/utils/`)
 
-1. **TMYDataManager** - Load, parse, and validate TMY data
-   - Support for TMY2, TMY3, EPW, CSV, and custom formats
-   - Data interpolation for missing values
-   - Comprehensive quality validation
-   - Format conversion utilities
+The project includes a comprehensive utility library with the following modules:
 
-2. **WeatherDatabaseBuilder** - Integrate multiple weather data sources
-   - NREL NSRDB integration (National Solar Radiation Database)
-   - PVGIS integration (European Commission JRC)
-   - Meteonorm parser support
-   - Local weather station import
-   - Satellite data integration (NetCDF, HDF5)
+#### 1. Unit Conversions (`unit_conversions.py`)
+- **Energy conversions**: Wh, kWh, MWh, GWh, J, kJ, MJ, GJ
+- **Power conversions**: W, kW, MW, GW
+- **Area conversions**: m², cm², mm², km², hectares
+- **Mass conversions**: kg, g, mg, ton, lb, oz
+- **Length conversions**: m, cm, mm, km, inch, ft, yard, mile
+- **Temperature conversions**: Celsius, Fahrenheit, Kelvin
+- **Efficiency conversions**: decimal, percent, ppm
+- **Specialized PV calculations**: Energy from power, specific yield
 
-3. **HistoricalWeatherAnalyzer** - Multi-year statistical analysis
-   - Multi-year statistics (mean, P90, P50, P10)
-   - Extreme weather event detection
-   - Climate change trend analysis
-   - Seasonal variability assessment
-   - Inter-annual variability metrics
+#### 2. Data Validation (`data_validation.py`)
+- **Pydantic-based validators** for type safety and data integrity
+- **Basic validators**: positive, non-negative, percentage, efficiency, range
+- **PV-specific models**: `PVModuleSpecs`, `EnergyProductionData`, `MaterialComposition`
+- **Batch validation** and safe validation utilities
+- **Email, date range, and list/dict validators**
 
-4. **GlobalWeatherCoverage** - Worldwide location database
-   - Global coordinate-to-weather mapping
-   - Nearest station finder with distance calculations
-   - Geographic interpolation (inverse distance weighting)
-   - Elevation corrections for weather data
-   - Location search by name or region
+#### 3. File I/O (`file_io.py`)
+- **Multi-format support**: JSON, YAML, CSV
+- **Pandas integration** for efficient data processing
+- **Auto-detection** of file format from extension
+- **Utility functions**: file existence, directory creation, file size, backup
+- **File listing** with glob pattern support
 
-5. **TMYGenerator** - Synthetic TMY creation
-   - Sandia TMY generation method
-   - Representative month selection
-   - Monthly data stitching with smoothing
-   - Comprehensive sanity checks
-   - Export to multiple formats (TMY3, EPW, CSV, JSON)
+#### 4. Calculation Helpers (`calculations.py`)
+- **Statistical functions**: mean, median, standard deviation, variance, percentiles, weighted average
+- **Financial calculations**: NPV, IRR, payback period, LCOE
+- **PV technical calculations**: panel efficiency, temperature derating, performance ratio, capacity factor, degradation
+- **Circular economy**: material recovery rate, CE score, carbon footprint reduction
+- **Math utilities**: clamp, interpolation, significant figures
 
-6. **WeatherDataUI** - Interactive Streamlit interface
-   - Interactive location selector with map
-   - Real-time TMY data visualization
-   - Historical trends charts (irradiance, temperature, wind)
-   - Data quality indicators and completeness metrics
-   - Download TMY files in multiple formats
+#### 5. Formatting Functions (`formatting.py`)
+- **Number formatting**: decimals, percentages, currency, scientific notation, SI units
+- **Date/time formatting**: dates, timestamps, durations
+- **Data structure formatting**: tables, lists, key-value pairs
+- **Report generation**: headers, sections, summary boxes, progress bars
+- **String utilities**: truncation, compact notation
 
-### Additional Planned Modules
+## Installation
 
-- **Cell Design**: Advanced cell modeling and optimization
-- **Module Engineering**: CTM loss analysis and module design
-- **System Planning**: PV system configuration and sizing
-- **Performance Monitoring**: Real-time monitoring and forecasting
-- **Circular Economy**: 3R modeling (Reduce, Reuse, Recycle)
-
-## 🚀 Quick Start
-
-### Installation
+### Using pip
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/pv-circularity-simulator.git
-cd pv-circularity-simulator
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Install in development mode
 pip install -e .
 ```
 
-### Configuration
-
-Create a `.env` file based on `.env.example`:
+### Development installation
 
 ```bash
-cp .env.example .env
+pip install -e ".[dev]"
 ```
 
-Edit `.env` and add your API keys:
+## Usage
 
-```
-NSRDB_API_KEY=your_nrel_api_key_here
-PVGIS_API_KEY=optional_pvgis_key
-```
-
-**Note**: You can use `DEMO_KEY` for NSRDB for testing (rate limited).
-
-### Running the Application
-
-#### Streamlit Web Interface
-
-```bash
-streamlit run ui/app.py
-```
-
-Then open your browser to `http://localhost:8501`
-
-#### Python API Usage
+### Unit Conversions
 
 ```python
-from pv_simulator.services.tmy_manager import TMYDataManager
-from pv_simulator.services.weather_database import WeatherDatabaseBuilder
+from pv_simulator.utils.unit_conversions import convert_energy, convert_power
 
-# Initialize services
-tmy_manager = TMYDataManager()
-weather_db = WeatherDatabaseBuilder()
+# Convert energy units
+energy_kwh = convert_energy(5000, "Wh", "kWh")  # 5.0 kWh
 
-# Fetch TMY data from NREL NSRDB
-tmy_data = weather_db.nrel_nsrdb_integration(
-    latitude=39.7392,
-    longitude=-104.9903
+# Convert power units
+power_kw = convert_power(2000, "W", "kW")  # 2.0 kW
+
+# Calculate specific yield
+from pv_simulator.utils.unit_conversions import calculate_specific_yield
+yield_kwh_kwp = calculate_specific_yield(1000, "kWh", 5, "kW")  # 200.0
+```
+
+### Data Validation
+
+```python
+from pv_simulator.utils.data_validation import PVModuleSpecs, validate_positive
+
+# Validate PV module specifications
+module = PVModuleSpecs(
+    name="Solar Panel 300W",
+    power_rating_w=300,
+    efficiency=0.18,
+    area_m2=1.67,
+    voltage_voc=45.0,
+    current_isc=9.5,
+    temperature_coeff_power=-0.4,
+    warranty_years=25
 )
 
-# Analyze data
-print(f"Annual GHI: {tmy_data.get_annual_irradiation():.1f} kWh/m²")
-print(f"Average Temperature: {tmy_data.get_average_temperature():.1f}°C")
-print(f"Data Quality: {tmy_data.data_quality.value}")
+# Simple validation
+value = validate_positive(5.0)  # Returns 5.0
 ```
 
-## 📊 API Integrations
-
-### NREL NSRDB (National Solar Radiation Database)
-
-High-quality solar radiation data for the Americas:
+### File I/O
 
 ```python
-from pv_simulator.api.nsrdb_client import NSRDBClient
+from pv_simulator.utils.file_io import load_data, save_data
 
-client = NSRDBClient(api_key="your_key")
-tmy_data = client.get_tmy_data(latitude=39.7392, longitude=-104.9903)
+# Auto-detect format from extension
+config = load_data("config.yaml")
+data = load_data("measurements.csv")
+
+# Save data
+save_data({"key": "value"}, "output.json")
+save_data([{"a": 1}, {"a": 2}], "data.csv")
 ```
 
-### PVGIS (Photovoltaic Geographical Information System)
-
-Solar radiation data for Europe, Africa, and Asia:
+### Calculations
 
 ```python
-from pv_simulator.api.pvgis_client import PVGISClient
+from pv_simulator.utils.calculations import (
+    calculate_performance_ratio,
+    calculate_lcoe,
+    calculate_material_recovery_rate
+)
 
-client = PVGISClient()
-tmy_data = client.get_tmy_data(latitude=52.52, longitude=13.40)
+# Performance ratio
+pr = calculate_performance_ratio(8500, 10000)  # 0.85
+
+# Levelized Cost of Energy
+lcoe = calculate_lcoe(10000, 50000, 0.05, 25)
+
+# Material recovery rate for circular economy
+recovery = calculate_material_recovery_rate(85, 100)  # 0.85
 ```
 
-## 🧪 Testing
+### Formatting
+
+```python
+from pv_simulator.utils.formatting import (
+    format_currency,
+    format_si_unit,
+    format_table,
+    format_summary_box
+)
+
+# Format numbers
+cost = format_currency(1234.56)  # "$1,234.56"
+power = format_si_unit(5000, "W")  # "5.00 kW"
+
+# Format data as table
+data = [
+    {"module": "A", "power": 300, "efficiency": 18.5},
+    {"module": "B", "power": 350, "efficiency": 20.0}
+]
+print(format_table(data))
+
+# Create summary box
+metrics = {"Total Energy": "1000 kWh", "Efficiency": "18.5%"}
+print(format_summary_box("System Metrics", metrics))
+```
+
+## Testing
 
 Run the test suite:
 
 ```bash
-# Run all tests
 pytest
-
-# Run with coverage
-pytest --cov=src/pv_simulator --cov-report=html
-
-# Run specific test file
-pytest tests/unit/test_weather_models.py
 ```
 
-## 📁 Project Structure
+Run with coverage:
+
+```bash
+pytest --cov=src/pv_simulator --cov-report=html
+```
+
+## Project Structure
 
 ```
 pv-circularity-simulator/
-├── src/pv_simulator/          # Core library
-│   ├── models/                # Pydantic data models
-│   ├── api/                   # API clients (NSRDB, PVGIS)
-│   ├── services/              # Business logic
-│   ├── config/                # Configuration management
-│   └── utils/                 # Utility functions
-├── ui/                        # Streamlit web interface
-│   ├── app.py                 # Main application
-│   └── components/            # UI components
-├── tests/                     # Test suite
-│   ├── unit/                  # Unit tests
-│   ├── integration/           # Integration tests
-│   └── fixtures/              # Test fixtures
-├── data/                      # Data storage
-│   ├── tmy_cache/            # Cached TMY files
-│   ├── weather/              # Weather data
-│   └── locations/            # Location database
-└── docs/                      # Documentation
+├── src/
+│   └── pv_simulator/
+│       ├── __init__.py
+│       └── utils/
+│           ├── __init__.py
+│           ├── unit_conversions.py
+│           ├── data_validation.py
+│           ├── file_io.py
+│           ├── calculations.py
+│           └── formatting.py
+├── tests/
+│   └── utils/
+│       ├── __init__.py
+│       ├── test_unit_conversions.py
+│       ├── test_data_validation.py
+│       ├── test_file_io.py
+│       ├── test_calculations.py
+│       └── test_formatting.py
+├── pyproject.toml
+├── requirements.txt
+├── README.md
+└── LICENSE
 ```
 
-## 🔧 Development
+## Documentation
+
+All functions include comprehensive docstrings with:
+- Parameter descriptions and types
+- Return value descriptions
+- Raised exceptions
+- Usage examples
+- Type hints for IDE support
+
+## Requirements
+
+- Python >= 3.9
+- pydantic >= 2.0.0
+- pyyaml >= 6.0
+- numpy >= 1.24.0
+- pandas >= 2.0.0
+
+## Development
 
 ### Code Quality
+
+The project uses:
+- **Black** for code formatting
+- **Ruff** for linting
+- **MyPy** for type checking
+- **Pytest** for testing
+
+### Running Quality Checks
 
 ```bash
 # Format code
 black src/ tests/
 
-# Lint
+# Lint code
 ruff check src/ tests/
 
-# Type checking
+# Type check
 mypy src/
 ```
 
-### Adding New Features
+## Contributing
 
-1. Create feature branch: `git checkout -b feature/your-feature`
-2. Implement with tests
-3. Run test suite: `pytest`
-4. Format code: `black .`
-5. Submit pull request
+Contributions are welcome! Please ensure:
+1. All tests pass
+2. Code is formatted with Black
+3. Type hints are included
+4. Docstrings are comprehensive
+5. New functionality includes tests
 
-## 📖 Documentation
+## License
 
-Comprehensive documentation is available in the `docs/` directory:
+MIT License - See LICENSE file for details
 
-- [API Documentation](docs/api.md)
-- [Architecture Overview](docs/architecture.md)
-- [Weather Integration Guide](docs/weather_integration.md)
+## Author
 
-## 🤝 Contributing
+PV Simulator Team
 
-Contributions are welcome! Please:
+## Version
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- NREL for the NSRDB database
-- European Commission JRC for PVGIS
-- The open-source Python community
-
-## 📧 Contact
-
-For questions or support, please open an issue on GitHub.
-
----
-
-**Version**: 0.1.0
-**Status**: Active Development
-**Last Updated**: 2025-11-17
+0.1.0 - Initial release with comprehensive utility library
