@@ -1,1 +1,1 @@
-"""Example scripts and sample data generators for PV circularity simulator."""
+"""Example scripts for SCAPS wrapper usage."""

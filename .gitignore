@@ -206,15 +206,13 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# Project-specific
-logs/
-*.log
-data/
-*.db
-*.sqlite
-
-# Docker volumes
-docker-compose.override.yml
-
-# Mosquitto password file
-config/mosquitto/passwd
+# SCAPS Wrapper specific
+.scaps_cache/
+.test_cache/
+.example_cache/
+.advanced_cache/
+test_sim/
+example_simulations/
+advanced_simulations/
+example_outputs/
+test_export.*

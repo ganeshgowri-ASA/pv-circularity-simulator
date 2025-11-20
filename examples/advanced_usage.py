@@ -1,263 +1,307 @@
 """
-Advanced usage examples for PV Circularity Visualization Library.
+Advanced usage examples for SCAPS wrapper.
 
-This script demonstrates advanced features including interactive plots,
-custom components, dashboards, and specialized PV visualizations.
+This script demonstrates:
+1. Batch processing
+2. Temperature coefficient calculation
+3. Efficiency optimization
+4. Custom device creation
 """
 
-import pandas as pd
-import numpy as np
 from pathlib import Path
-from pv_circularity.visualization import VisualizationLib
-from pv_circularity.visualization.components import (
-    IVCurveVisualizer,
-    EfficiencyHeatmap,
-    DegradationAnalyzer,
-    SankeyFlowDiagram,
+
+from src.modules import (
+    CellArchitecture,
+    CellTemplates,
+    Contact,
+    ContactType,
+    DeviceParams,
+    DopingProfile,
+    DopingType,
+    InterfaceProperties,
+    Layer,
+    MaterialProperties,
+    MaterialType,
+    OpticalProperties,
+    SCAPSInterface,
+    SimulationSettings,
 )
 
 
-def main() -> None:
-    """Run advanced usage examples."""
-    print("PV Circularity Visualization Library - Advanced Examples")
+def example_batch_processing(scaps: SCAPSInterface):
+    """Demonstrate batch processing with parametric sweeps."""
+    print("\n" + "=" * 70)
+    print("Example 1: Batch Processing")
     print("=" * 70)
 
-    output_dir = Path("output/advanced")
-    output_dir.mkdir(parents=True, exist_ok=True)
+    print("\nRunning batch simulation: Temperature sweep (280K - 340K)")
 
-    viz = VisualizationLib(default_theme='solar')
+    # Create batch of simulations
+    simulations = []
+    temperatures = range(280, 341, 10)
 
-    # Example 1: Interactive Time Series with Range Selector
-    print("\n1. Creating Interactive Time Series...")
-    df_interactive = pd.DataFrame({
-        'timestamp': pd.date_range('2024-01-01', periods=365, freq='H'),
-        'power': 500 + 300 * np.sin(np.linspace(0, 50*np.pi, 365)) + np.random.randn(365) * 50,
-    })
+    for temp in temperatures:
+        params = CellTemplates.create_perc_cell()
+        params_dict = params.model_dump()
+        params_dict['settings']['temperature'] = float(temp)
+        simulations.append(params_dict)
 
-    fig_interactive = viz.interactive.create_interactive_timeseries(
-        df_interactive,
-        x='timestamp',
-        y='power',
-        title='Interactive PV Power Output (Hourly)',
-        enable_rangeslider=True,
-        enable_rangeselector=True
+    # Run batch
+    results = scaps.execute_scaps_batch(simulations, max_workers=4)
+
+    # Display results
+    print(f"\n{'Temp (K)':<12} {'Voc (V)':<12} {'Jsc (mA/cm²)':<15} {'FF':<10} {'Eff (%)'}")
+    print("-" * 70)
+    for temp, result in zip(temperatures, results):
+        print(f"{temp:<12} {result.voc:<12.4f} {result.jsc:<15.4f} "
+              f"{result.ff:<10.4f} {result.efficiency*100:.2f}")
+
+
+def example_temperature_coefficients(scaps: SCAPSInterface):
+    """Demonstrate temperature coefficient calculation."""
+    print("\n" + "=" * 70)
+    print("Example 2: Temperature Coefficients")
+    print("=" * 70)
+
+    print("\nCalculating temperature coefficients for PERC cell...")
+
+    perc = CellTemplates.create_perc_cell()
+
+    coefficients = scaps.calculate_temperature_coefficients(
+        params=perc,
+        temp_range=(273.0, 343.0),
+        temp_step=5.0
     )
 
-    viz.export(fig_interactive, output_dir / 'interactive_timeseries.html')
-    print(f"   ✓ Saved: {output_dir / 'interactive_timeseries.html'}")
+    print("\nTemperature Coefficients:")
+    print(f"  TC Voc:  {coefficients['temperature_coefficient_voc']*1000:.3f} mV/K")
+    print(f"  TC Jsc:  {coefficients['temperature_coefficient_jsc']:.5f} mA/cm²/K")
+    print(f"  TC Eff:  {coefficients['temperature_coefficient_efficiency']*100:.5f} %/K")
 
-    # Example 2: I-V Curve Visualization
-    print("\n2. Creating I-V Curve Visualization...")
-    iv_viz = IVCurveVisualizer()
+    print("\nTemperature-dependent performance:")
+    print(f"{'Temp (K)':<12} {'Voc (V)':<12} {'Jsc (mA/cm²)':<15} {'Eff (%)'}")
+    print("-" * 60)
+    for t, v, j, e in zip(
+        coefficients['temperatures'][:5],
+        coefficients['voc_values'][:5],
+        coefficients['jsc_values'][:5],
+        coefficients['efficiency_values'][:5]
+    ):
+        print(f"{t:<12.1f} {v:<12.4f} {j:<15.4f} {e*100:.2f}")
+    print("...")
 
-    # Generate sample I-V data
-    voltage = np.linspace(0, 40, 100)
-    isc = 8.5  # Short-circuit current
-    voc = 40.0  # Open-circuit voltage
-    vmp = 32.5  # Voltage at max power
-    imp = 7.8  # Current at max power
 
-    # Simplified I-V curve model
-    current = isc * (1 - np.exp((voltage - voc) / 5))
+def example_optimization(scaps: SCAPSInterface):
+    """Demonstrate efficiency optimization."""
+    print("\n" + "=" * 70)
+    print("Example 3: Efficiency Optimization")
+    print("=" * 70)
 
-    fig_iv = iv_viz.plot_iv_curve(
-        voltage=voltage,
-        current=current,
-        title='PV Module I-V Characteristic Curve',
-        voc=voc,
-        isc=isc,
-        vmp=vmp,
-        imp=imp,
-        include_power=True
-    )
+    print("\nOptimizing PERC cell parameters...")
+    print("Parameters to optimize:")
+    print("  - Emitter doping concentration")
+    print("  - BSF doping concentration")
+    print("  - Emitter thickness")
 
-    viz.export(fig_iv, output_dir / 'iv_curve.png', width=1200, height=800)
-    print(f"   ✓ Saved: {output_dir / 'iv_curve.png'}")
+    base_params = CellTemplates.create_perc_cell()
 
-    # Example 3: I-V Curve Comparison
-    print("\n3. Creating I-V Curve Comparison...")
-    curves = {
-        'Standard (25°C, 1000 W/m²)': (
-            voltage,
-            isc * (1 - np.exp((voltage - voc) / 5))
-        ),
-        'High Temp (45°C, 1000 W/m²)': (
-            voltage,
-            (isc - 0.5) * (1 - np.exp((voltage - (voc - 4)) / 5))
-        ),
-        'Low Irradiance (25°C, 500 W/m²)': (
-            voltage,
-            (isc * 0.5) * (1 - np.exp((voltage - (voc - 2)) / 5))
-        ),
+    # Define optimization bounds
+    optimization_params = {
+        'layers.0.doping.concentration': (5e18, 5e19),  # Emitter doping
+        'layers.2.doping.concentration': (1e18, 1e19),  # BSF doping
+        'layers.0.thickness': (300.0, 800.0),  # Emitter thickness (nm)
     }
 
-    fig_iv_compare = iv_viz.compare_iv_curves(
-        curves,
-        title='I-V Curves Under Different Conditions'
+    print("\nRunning optimization (this may take a while)...")
+
+    opt_params, best_results = scaps.optimize_efficiency(
+        base_params=base_params,
+        optimization_params=optimization_params,
+        max_iterations=20  # Reduced for example
     )
 
-    viz.export(fig_iv_compare, output_dir / 'iv_comparison.png')
-    print(f"   ✓ Saved: {output_dir / 'iv_comparison.png'}")
+    print("\nOptimization Results:")
+    print(f"  Original efficiency:  {scaps.run_simulation(base_params).efficiency*100:.2f}%")
+    print(f"  Optimized efficiency: {best_results.efficiency*100:.2f}%")
+    print(f"  Improvement:          {(best_results.efficiency - scaps.run_simulation(base_params).efficiency)*100:.2f}%")
 
-    # Example 4: Efficiency Heatmap
-    print("\n4. Creating Efficiency Heatmap...")
-    eff_viz = EfficiencyHeatmap()
+    print("\nOptimized parameters:")
+    print(f"  Emitter doping:  {opt_params.layers[0].doping.concentration:.2e} cm⁻³")
+    print(f"  BSF doping:      {opt_params.layers[2].doping.concentration:.2e} cm⁻³")
+    print(f"  Emitter thickness: {opt_params.layers[0].thickness:.1f} nm")
 
-    temperatures = [10, 20, 30, 40, 50, 60, 70]
-    irradiances = [200, 400, 600, 800, 1000]
 
-    # Simulate efficiency data
-    efficiency_matrix = np.zeros((len(irradiances), len(temperatures)))
-    for i, irr in enumerate(irradiances):
-        for j, temp in enumerate(temperatures):
-            base_eff = 20.0
-            temp_coeff = -0.4  # %/°C
-            irr_factor = 1 - (1000 - irr) * 0.0001
-            efficiency_matrix[i, j] = base_eff + temp_coeff * (temp - 25) * irr_factor
+def example_custom_device(scaps: SCAPSInterface):
+    """Demonstrate custom device creation."""
+    print("\n" + "=" * 70)
+    print("Example 4: Custom Device Creation")
+    print("=" * 70)
 
-    fig_eff_heatmap = eff_viz.create_2d_efficiency_map(
-        x_values=temperatures,
-        y_values=irradiances,
-        efficiency_matrix=efficiency_matrix,
-        x_label='Temperature (°C)',
-        y_label='Irradiance (W/m²)',
-        title='PV Module Efficiency Map',
-        show_values=True
+    print("\nCreating custom bifacial solar cell...")
+
+    # Silicon properties
+    si_props = MaterialProperties(
+        material=MaterialType.SILICON,
+        bandgap=1.12,
+        electron_affinity=4.05,
+        dielectric_constant=11.7,
+        electron_mobility=1400.0,
+        hole_mobility=450.0,
+        nc=2.8e19,
+        nv=1.04e19,
+        electron_lifetime=2e-3,
+        hole_lifetime=2e-3,
+        auger_electron=2.8e-31,
+        auger_hole=9.9e-32,
     )
 
-    viz.export(fig_eff_heatmap, output_dir / 'efficiency_heatmap.png')
-    print(f"   ✓ Saved: {output_dir / 'efficiency_heatmap.png'}")
-
-    # Example 5: Degradation Analysis
-    print("\n5. Creating Degradation Analysis...")
-    deg_analyzer = DegradationAnalyzer()
-
-    years = np.arange(0, 25)
-    # Simulate degradation with some noise
-    pr = 100 - 0.5 * years + np.random.randn(25) * 0.5
-
-    fig_degradation = deg_analyzer.plot_degradation_trend(
-        time_years=years,
-        performance_ratio=pr,
-        title='PV System 25-Year Degradation Analysis',
-        calculate_rate=True,
-        add_forecast=True,
-        forecast_years=10
-    )
-
-    viz.export(fig_degradation, output_dir / 'degradation_analysis.png')
-    print(f"   ✓ Saved: {output_dir / 'degradation_analysis.png'}")
-
-    # Example 6: Material Flow Sankey Diagram
-    print("\n6. Creating Material Flow Sankey Diagram...")
-    sankey = SankeyFlowDiagram()
-
-    sources = [
-        'Manufacturing', 'Manufacturing', 'Manufacturing',
-        'Installation', 'Installation',
-        'Operation', 'Operation',
-        'Collection', 'Collection', 'Collection',
-        'Recycling'
+    # Create symmetric structure
+    layers = [
+        # Front FSF (n+)
+        Layer(
+            name="Front FSF",
+            thickness=300.0,
+            material_properties=si_props.model_copy(update={'electron_lifetime': 1e-6}),
+            doping=DopingProfile(
+                doping_type=DopingType.N_TYPE,
+                concentration=1e20,
+                uniform=False,
+                profile_type="gaussian",
+                characteristic_length=80.0
+            )
+        ),
+        # Base (n-type for bifacial)
+        Layer(
+            name="n-type base",
+            thickness=160000.0,
+            material_properties=si_props,
+            doping=DopingProfile(
+                doping_type=DopingType.N_TYPE,
+                concentration=1e15,
+                uniform=True
+            )
+        ),
+        # Rear FSF (n+)
+        Layer(
+            name="Rear FSF",
+            thickness=300.0,
+            material_properties=si_props.model_copy(update={'electron_lifetime': 1e-6}),
+            doping=DopingProfile(
+                doping_type=DopingType.N_TYPE,
+                concentration=1e20,
+                uniform=False,
+                profile_type="gaussian",
+                characteristic_length=80.0
+            )
+        ),
     ]
-    targets = [
-        'Installation', 'Production Loss', 'Quality Control Reject',
-        'Operation', 'Installation Loss',
-        'Collection', 'Operating Loss',
-        'Recycling', 'Refurbishment', 'Disposal',
-        'New Materials'
+
+    # Interfaces
+    interfaces = [
+        InterfaceProperties(
+            name="front-base",
+            layer1_index=0,
+            layer2_index=1,
+            sn=1e2,
+            sp=1e2,
+        ),
+        InterfaceProperties(
+            name="base-rear",
+            layer1_index=1,
+            layer2_index=2,
+            sn=1e2,
+            sp=1e2,
+        ),
     ]
-    values = [
-        950, 30, 20,  # Manufacturing
-        900, 50,      # Installation
-        850, 50,      # Operation
-        700, 100, 50, # Collection
-        600           # Recycling
-    ]
 
-    fig_sankey = sankey.create_material_flow(
-        sources=sources,
-        targets=targets,
-        values=values,
-        title='PV Module Material Flow (kg)'
+    # Symmetric contacts
+    front_contact = Contact(
+        contact_type=ContactType.FRONT,
+        work_function=4.3,
+        surface_recombination_electron=1e5,
+        surface_recombination_hole=1e5,
+        series_resistance=0.3,
+        shunt_resistance=1e10,
     )
 
-    viz.export(fig_sankey, output_dir / 'material_flow.html')
-    print(f"   ✓ Saved: {output_dir / 'material_flow.html'}")
-
-    # Example 7: Energy Balance Diagram
-    print("\n7. Creating Energy Balance Diagram...")
-    losses = {
-        'Thermal Loss': 150,
-        'Optical Loss': 50,
-        'Electrical Loss': 80,
-        'Soiling Loss': 20,
-    }
-
-    fig_energy = sankey.create_energy_balance(
-        input_energy=1000,
-        output_useful=700,
-        losses=losses,
-        title='PV System Energy Balance (W)'
+    back_contact = Contact(
+        contact_type=ContactType.BACK,
+        work_function=4.3,
+        surface_recombination_electron=1e5,
+        surface_recombination_hole=1e5,
+        series_resistance=0.3,
+        shunt_resistance=1e10,
     )
 
-    viz.export(fig_energy, output_dir / 'energy_balance.html')
-    print(f"   ✓ Saved: {output_dir / 'energy_balance.html'}")
-
-    # Example 8: PV Performance Dashboard
-    print("\n8. Creating PV Performance Dashboard...")
-    df_dashboard = pd.DataFrame({
-        'timestamp': pd.date_range('2024-01-01', periods=200, freq='H'),
-        'power': 500 + 300 * np.sin(np.linspace(0, 20*np.pi, 200)) + np.random.randn(200) * 50,
-        'irradiance': 400 + 500 * np.sin(np.linspace(0, 20*np.pi, 200)) + np.random.randn(200) * 30,
-        'temperature': 20 + 15 * np.sin(np.linspace(0, 20*np.pi, 200)) + np.random.randn(200) * 3,
-    })
-
-    fig_dashboard = viz.create_pv_performance_dashboard(
-        df_dashboard,
-        timestamp_col='timestamp',
-        power_col='power',
-        irradiance_col='irradiance',
-        temperature_col='temperature',
-        title='Comprehensive PV System Monitoring Dashboard'
+    # Optics for bifacial
+    optics = OpticalProperties(
+        arc_enabled=True,
+        arc_thickness=75.0,
+        arc_refractive_index=2.0,
+        illumination_spectrum="AM1.5G",
+        light_intensity=1000.0,
+        front_reflection=0.03,
+        back_reflection=0.05,  # Low reflection for bifacial
     )
 
-    viz.export(fig_dashboard, output_dir / 'performance_dashboard.png', width=1600, height=1200)
-    print(f"   ✓ Saved: {output_dir / 'performance_dashboard.png'}")
-
-    # Example 9: Circularity Analysis
-    print("\n9. Creating Circularity Analysis...")
-    df_circularity = pd.DataFrame({
-        'stage': ['Raw Materials', 'Manufacturing', 'Use Phase', 'Collection', 'Recycling'],
-        'material_flow': [1000, 950, 900, 800, 700]
-    })
-
-    fig_circularity = viz.create_circularity_analysis(
-        df_circularity,
-        categories='stage',
-        values='material_flow',
-        title='PV Lifecycle Material Flow Analysis'
+    # Create device
+    bifacial_device = DeviceParams(
+        architecture=CellArchitecture.PERT,
+        device_name="Bifacial n-type Cell",
+        description="Symmetric bifacial design with front and rear FSF",
+        layers=layers,
+        interfaces=interfaces,
+        front_contact=front_contact,
+        back_contact=back_contact,
+        optics=optics,
+        settings=SimulationSettings(
+            temperature=300.0,
+            voltage_min=-0.1,
+            voltage_max=0.8,
+            voltage_step=0.01,
+        )
     )
 
-    viz.export(fig_circularity, output_dir / 'circularity_analysis.png')
-    print(f"   ✓ Saved: {output_dir / 'circularity_analysis.png'}")
+    # Run simulation
+    print("\nRunning simulation...")
+    results = scaps.run_simulation(bifacial_device)
 
-    # Example 10: Multi-format Export
-    print("\n10. Demonstrating Multi-format Export...")
-    df_export = pd.DataFrame({
-        'category': ['A', 'B', 'C'],
-        'value': [10, 20, 15]
-    })
+    print("\nCustom Bifacial Cell Results:")
+    print(f"  Voc:        {results.voc:.4f} V")
+    print(f"  Jsc:        {results.jsc:.4f} mA/cm²")
+    print(f"  Fill Factor: {results.ff:.4f}")
+    print(f"  Efficiency:  {results.efficiency*100:.2f}%")
+    print(f"  Pmax:       {results.pmax:.4f} mW/cm²")
 
-    fig_export = viz.templates.bar_chart(df_export, 'category', 'value')
+    # Export
+    output_file = Path("./example_outputs/bifacial_custom.json")
+    output_file.parent.mkdir(exist_ok=True)
+    scaps.export_results(results, output_file, format="json")
+    print(f"\n  Results exported to: {output_file}")
 
-    # Export to multiple formats
-    for format in ['png', 'svg', 'html', 'json']:
-        viz.export(fig_export, output_dir / f'multi_export.{format}')
-        print(f"   ✓ Saved: {output_dir / f'multi_export.{format}'}")
+
+def main():
+    """Run advanced examples."""
+    print("=" * 70)
+    print("SCAPS-1D Python Wrapper - Advanced Usage Examples")
+    print("=" * 70)
+
+    # Initialize SCAPS interface
+    scaps = SCAPSInterface(
+        working_directory=Path("./advanced_simulations"),
+        cache_directory=Path("./.advanced_cache"),
+        enable_cache=True
+    )
+
+    # Run examples
+    example_batch_processing(scaps)
+    example_temperature_coefficients(scaps)
+    example_optimization(scaps)
+    example_custom_device(scaps)
 
     print("\n" + "=" * 70)
-    print("✓ All advanced examples completed successfully!")
-    print(f"✓ Output files saved to: {output_dir.absolute()}")
+    print("All advanced examples completed successfully!")
+    print("=" * 70)
 
 
 if __name__ == "__main__":

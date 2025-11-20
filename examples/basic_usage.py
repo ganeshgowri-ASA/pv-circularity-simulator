@@ -1,310 +1,109 @@
 """
-Basic usage examples for the Integration Layer & API Connectors.
+Basic usage examples for SCAPS wrapper.
 
-This script demonstrates how to use the IntegrationManager to connect
-to external APIs with authentication, rate limiting, and retry logic.
+This script demonstrates:
+1. Creating standard cell templates
+2. Running simulations
+3. Analyzing results
+4. Exporting data
 """
 
-import asyncio
-from pv_circularity_simulator.integration import (
-    IntegrationManager,
-    IntegrationConfig,
-    AuthConfig,
-    AuthType,
-    RateLimitConfig,
-    RetryConfig,
-    APIRequest,
-    HTTPMethod,
-)
+from pathlib import Path
 
-
-def example_basic_api_call():
-    """
-    Example: Making a basic API call without authentication.
-    """
-    print("\n=== Example 1: Basic API Call ===\n")
-
-    # Create IntegrationManager
-    manager = IntegrationManager()
-
-    # Configure integration
-    config = IntegrationConfig(
-        name="jsonplaceholder",
-        base_url="https://jsonplaceholder.typicode.com",
-        auth=AuthConfig(auth_type=AuthType.NONE),
-        timeout=10.0
-    )
-
-    # Register integration
-    manager.register_integration(config)
-
-    # Get connector
-    connector = manager.api_connectors("jsonplaceholder")
-
-    # Make request using convenience method
-    response = connector.get("/posts/1")
-
-    print(f"Status: {response.status_code}")
-    print(f"Success: {response.success}")
-    print(f"Response Time: {response.elapsed_time:.3f}s")
-    if response.json_data:
-        print(f"Title: {response.json_data.get('title', 'N/A')}")
-
-
-def example_api_key_authentication():
-    """
-    Example: Using API key authentication.
-    """
-    print("\n=== Example 2: API Key Authentication ===\n")
-
-    manager = IntegrationManager()
-
-    config = IntegrationConfig(
-        name="weather-api",
-        base_url="https://api.weather.example.com",
-        auth=AuthConfig(
-            auth_type=AuthType.API_KEY,
-            api_key="your-api-key-here",
-            api_key_header="X-API-Key"
-        )
-    )
-
-    manager.register_integration(config)
-
-    # Note: This will fail without a real API key and endpoint
-    print("Configuration created with API key authentication")
-    print(f"Auth type: {config.auth.auth_type}")
-
-
-def example_rate_limiting():
-    """
-    Example: Using rate limiting.
-    """
-    print("\n=== Example 3: Rate Limiting ===\n")
-
-    manager = IntegrationManager()
-
-    config = IntegrationConfig(
-        name="rate-limited-api",
-        base_url="https://api.example.com",
-        rate_limit=RateLimitConfig(
-            enabled=True,
-            max_requests=10,  # 10 requests
-            time_window=60.0,  # per 60 seconds
-            burst_size=15  # allow bursts up to 15
-        )
-    )
-
-    manager.register_integration(config)
-
-    # Get rate limiter stats
-    rate_limiter = manager.rate_limiting("rate-limited-api")
-    stats = rate_limiter.get_stats()
-
-    print(f"Rate Limiter Enabled: {stats['enabled']}")
-    print(f"Max Tokens: {stats['max_tokens']}")
-    print(f"Available Tokens: {stats['available_tokens']}")
-    print(f"Refill Rate: {stats['refill_rate']:.2f} tokens/second")
-
-
-def example_retry_logic():
-    """
-    Example: Configuring retry logic with exponential backoff.
-    """
-    print("\n=== Example 4: Retry Logic ===\n")
-
-    manager = IntegrationManager()
-
-    config = IntegrationConfig(
-        name="unreliable-api",
-        base_url="https://api.unreliable.example.com",
-        retry=RetryConfig(
-            enabled=True,
-            max_retries=3,
-            initial_delay=1.0,
-            max_delay=30.0,
-            exponential_base=2.0,
-            jitter=True,
-            retry_on_status_codes=[408, 429, 500, 502, 503, 504]
-        )
-    )
-
-    manager.register_integration(config)
-
-    # Get retry handler stats
-    retry_handler = manager.error_retry_logic("unreliable-api")
-    stats = retry_handler.get_stats()
-
-    print(f"Retry Enabled: {stats['enabled']}")
-    print(f"Max Retries: {stats['max_retries']}")
-    print(f"Initial Delay: {stats['initial_delay']}s")
-    print(f"Exponential Base: {stats['exponential_base']}")
-    print(f"Retry Status Codes: {stats['retry_status_codes']}")
-
-
-def example_custom_request():
-    """
-    Example: Making a custom POST request with data.
-    """
-    print("\n=== Example 5: Custom POST Request ===\n")
-
-    manager = IntegrationManager()
-
-    config = IntegrationConfig(
-        name="jsonplaceholder",
-        base_url="https://jsonplaceholder.typicode.com"
-    )
-
-    manager.register_integration(config)
-
-    # Create custom request
-    request = APIRequest(
-        method=HTTPMethod.POST,
-        endpoint="/posts",
-        json={
-            "title": "Test Post",
-            "body": "This is a test post",
-            "userId": 1
-        }
-    )
-
-    # Make request
-    connector = manager.api_connectors("jsonplaceholder")
-    response = connector.request(request)
-
-    print(f"Status: {response.status_code}")
-    print(f"Success: {response.success}")
-    if response.json_data:
-        print(f"Created Post ID: {response.json_data.get('id', 'N/A')}")
-
-
-async def example_async_requests():
-    """
-    Example: Making asynchronous API requests.
-    """
-    print("\n=== Example 6: Async Requests ===\n")
-
-    manager = IntegrationManager()
-
-    config = IntegrationConfig(
-        name="jsonplaceholder",
-        base_url="https://jsonplaceholder.typicode.com"
-    )
-
-    manager.register_integration(config)
-    connector = manager.api_connectors("jsonplaceholder")
-
-    # Make multiple async requests concurrently
-    tasks = [
-        connector.get_async(f"/posts/{i}")
-        for i in range(1, 6)
-    ]
-
-    responses = await asyncio.gather(*tasks)
-
-    print(f"Fetched {len(responses)} posts concurrently")
-    for i, response in enumerate(responses, 1):
-        if response.success and response.json_data:
-            print(f"  Post {i}: {response.json_data.get('title', 'N/A')[:50]}...")
-
-
-def example_monitoring_metrics():
-    """
-    Example: Monitoring integration metrics.
-    """
-    print("\n=== Example 7: Monitoring Metrics ===\n")
-
-    manager = IntegrationManager()
-
-    config = IntegrationConfig(
-        name="jsonplaceholder",
-        base_url="https://jsonplaceholder.typicode.com"
-    )
-
-    manager.register_integration(config)
-    connector = manager.api_connectors("jsonplaceholder")
-
-    # Make several requests
-    for i in range(1, 6):
-        connector.get(f"/posts/{i}")
-
-    # Get metrics
-    metrics = manager.get_metrics("jsonplaceholder")
-
-    print(f"Integration: {metrics.integration_name}")
-    print(f"Total Requests: {metrics.total_requests}")
-    print(f"Successful: {metrics.successful_requests}")
-    print(f"Failed: {metrics.failed_requests}")
-    print(f"Avg Response Time: {metrics.average_response_time:.3f}s")
-    print(f"Retry Attempts: {metrics.retry_attempts}")
-
-
-def example_multiple_integrations():
-    """
-    Example: Managing multiple API integrations.
-    """
-    print("\n=== Example 8: Multiple Integrations ===\n")
-
-    manager = IntegrationManager()
-
-    # Register multiple integrations
-    configs = [
-        IntegrationConfig(
-            name="api-1",
-            base_url="https://api1.example.com",
-            auth=AuthConfig(auth_type=AuthType.API_KEY, api_key="key1")
-        ),
-        IntegrationConfig(
-            name="api-2",
-            base_url="https://api2.example.com",
-            auth=AuthConfig(auth_type=AuthType.BEARER_TOKEN, token="token2")
-        ),
-        IntegrationConfig(
-            name="api-3",
-            base_url="https://api3.example.com",
-            auth=AuthConfig(auth_type=AuthType.NONE)
-        ),
-    ]
-
-    for config in configs:
-        manager.register_integration(config)
-
-    # List all integrations
-    print(f"Registered Integrations: {manager.list_integrations()}")
-
-    # Get overall status
-    status = manager.get_status()
-    print(f"\nTotal Integrations: {status['total_integrations']}")
-    for name, info in status['integrations'].items():
-        print(f"\n{name}:")
-        print(f"  Base URL: {info['base_url']}")
-        print(f"  Auth Type: {info['auth_type']}")
+from src.modules import CellTemplates, SCAPSInterface
 
 
 def main():
-    """Run all examples."""
-    print("=" * 60)
-    print("Integration Layer & API Connectors - Usage Examples")
-    print("=" * 60)
+    """Run basic SCAPS wrapper examples."""
+    print("=" * 70)
+    print("SCAPS-1D Python Wrapper - Basic Usage Examples")
+    print("=" * 70)
 
-    # Synchronous examples
-    example_basic_api_call()
-    example_api_key_authentication()
-    example_rate_limiting()
-    example_retry_logic()
-    example_custom_request()
-    example_monitoring_metrics()
-    example_multiple_integrations()
+    # Create SCAPS interface
+    print("\n1. Initializing SCAPS interface...")
+    scaps = SCAPSInterface(
+        working_directory=Path("./example_simulations"),
+        cache_directory=Path("./.example_cache"),
+        enable_cache=True
+    )
+    print("   ✓ Interface initialized")
 
-    # Asynchronous example
-    print("\n" + "=" * 60)
-    print("Running async examples...")
-    print("=" * 60)
-    asyncio.run(example_async_requests())
+    # Example 1: PERC cell
+    print("\n2. Simulating PERC cell...")
+    perc = CellTemplates.create_perc_cell()
+    perc_results = scaps.run_simulation(perc)
 
-    print("\n" + "=" * 60)
-    print("Examples completed!")
-    print("=" * 60)
+    print(f"\n   PERC Results:")
+    print(f"   - Voc:        {perc_results.voc:.4f} V")
+    print(f"   - Jsc:        {perc_results.jsc:.4f} mA/cm²")
+    print(f"   - Fill Factor: {perc_results.ff:.4f}")
+    print(f"   - Efficiency:  {perc_results.efficiency*100:.2f}%")
+    print(f"   - Pmax:       {perc_results.pmax:.4f} mW/cm²")
+
+    # Example 2: TOPCon cell
+    print("\n3. Simulating TOPCon cell...")
+    topcon = CellTemplates.create_topcon_cell()
+    topcon_results = scaps.run_simulation(topcon)
+
+    print(f"\n   TOPCon Results:")
+    print(f"   - Voc:        {topcon_results.voc:.4f} V")
+    print(f"   - Jsc:        {topcon_results.jsc:.4f} mA/cm²")
+    print(f"   - Fill Factor: {topcon_results.ff:.4f}")
+    print(f"   - Efficiency:  {topcon_results.efficiency*100:.2f}%")
+    print(f"   - Pmax:       {topcon_results.pmax:.4f} mW/cm²")
+
+    # Example 3: HJT cell
+    print("\n4. Simulating HJT cell...")
+    hjt = CellTemplates.create_hjt_cell()
+    hjt_results = scaps.run_simulation(hjt)
+
+    print(f"\n   HJT Results:")
+    print(f"   - Voc:        {hjt_results.voc:.4f} V")
+    print(f"   - Jsc:        {hjt_results.jsc:.4f} mA/cm²")
+    print(f"   - Fill Factor: {hjt_results.ff:.4f}")
+    print(f"   - Efficiency:  {hjt_results.efficiency*100:.2f}%")
+    print(f"   - Pmax:       {hjt_results.pmax:.4f} mW/cm²")
+
+    # Example 4: Architecture comparison
+    print("\n5. Architecture Comparison:")
+    print(f"\n   {'Architecture':<15} {'Voc (V)':<10} {'Jsc (mA/cm²)':<15} {'FF':<8} {'Eff (%)':<10}")
+    print(f"   {'-'*68}")
+    print(f"   {'PERC':<15} {perc_results.voc:<10.4f} {perc_results.jsc:<15.4f} "
+          f"{perc_results.ff:<8.4f} {perc_results.efficiency*100:<10.2f}")
+    print(f"   {'TOPCon':<15} {topcon_results.voc:<10.4f} {topcon_results.jsc:<15.4f} "
+          f"{topcon_results.ff:<8.4f} {topcon_results.efficiency*100:<10.2f}")
+    print(f"   {'HJT':<15} {hjt_results.voc:<10.4f} {hjt_results.jsc:<15.4f} "
+          f"{hjt_results.ff:<8.4f} {hjt_results.efficiency*100:<10.2f}")
+
+    # Example 5: Export results
+    print("\n6. Exporting results...")
+    output_dir = Path("./example_outputs")
+    output_dir.mkdir(exist_ok=True)
+
+    scaps.export_results(perc_results, output_dir / "perc_results.json", format="json")
+    scaps.export_results(perc_results, output_dir / "perc_results.csv", format="csv")
+
+    print(f"   ✓ Results exported to {output_dir}")
+
+    # Example 6: Parametric sweep
+    print("\n7. Running parametric sweep (emitter doping)...")
+    doping_levels = [1e18, 5e18, 1e19, 5e19, 1e20]
+    sweep_results = []
+
+    for doping in doping_levels:
+        params = CellTemplates.create_perc_cell(emitter_doping=doping)
+        result = scaps.run_simulation(params)
+        sweep_results.append((doping, result))
+
+    print(f"\n   {'Doping (cm⁻³)':<20} {'Efficiency (%)':<15} {'Voc (V)':<10} {'Jsc (mA/cm²)'}")
+    print(f"   {'-'*68}")
+    for doping, result in sweep_results:
+        print(f"   {doping:<20.2e} {result.efficiency*100:<15.2f} "
+              f"{result.voc:<10.4f} {result.jsc:.4f}")
+
+    print("\n" + "=" * 70)
+    print("Examples completed successfully!")
+    print("=" * 70)
 
 
 if __name__ == "__main__":
