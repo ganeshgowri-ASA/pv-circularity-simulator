@@ -1,107 +1,25 @@
-[build-system]
-requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "pv-circularity-simulator"
 version = "0.1.0"
-description = "End-to-end PV lifecycle simulation platform with thermal imaging and IV curve analysis"
-readme = "README.md"
+description = "End-to-End PV Lifecycle Simulation Platform"
+authors = [{name = "Your Name"}]
 requires-python = ">=3.9"
-license = {text = "MIT"}
-authors = [
-    {name = "PV Circularity Team"}
-]
-keywords = ["photovoltaic", "solar", "circularity", "thermal-imaging", "iv-curve", "diagnostics"]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Physics",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-]
-
 dependencies = [
-    # Core data handling and validation
-    "pydantic>=2.0.0",
-    "numpy>=1.24.0",
-    "scipy>=1.10.0",
+    "streamlit>=1.28.0",
     "pandas>=2.0.0",
-
-    # Image processing and computer vision
-    "opencv-python>=4.8.0",
-    "scikit-image>=0.21.0",
-    "pillow>=10.0.0",
-
-    # Visualization and plotting
-    "matplotlib>=3.7.0",
-    "seaborn>=0.12.0",
-    "plotly>=5.14.0",
-
-    # Scientific computing and machine learning
-    "scikit-learn>=1.3.0",
-
-    # Utilities
-    "python-dotenv>=1.0.0",
+    "numpy>=1.24.0",
+    "pydantic>=2.0.0",
     "pyyaml>=6.0",
+    "matplotlib>=3.7.0",
+    "plotly>=5.14.0",
+    "scipy>=1.10.0",
+    "dataclasses-json>=0.6.0",
+    "typing-extensions>=4.7.0",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "pytest-mock>=3.11.0",
-    "black>=23.0.0",
-    "ruff>=0.0.280",
-    "mypy>=1.5.0",
-    "isort>=5.12.0",
-]
-docs = [
-    "sphinx>=7.0.0",
-    "sphinx-rtd-theme>=1.3.0",
-    "myst-parser>=2.0.0",
-]
-flir = [
-    # Optional FLIR camera integration
-    "flirpy>=0.3.0",
-]
-
-[project.urls]
-Homepage = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
-Documentation = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator#readme"
-Repository = "https://github.com/ganeshgowri-ASA/pv-circularity-simulator"
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_backend"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = "test_*.py"
-addopts = "--cov=src/pv_circularity_simulator --cov-report=html --cov-report=term-missing"
-
-[tool.black]
-line-length = 100
-target-version = ['py39', 'py310', 'py311']
-include = '\.pyi?$'
-
-[tool.isort]
-profile = "black"
-line_length = 100
-
-[tool.ruff]
-line-length = 100
-target-version = "py39"
-select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "T10", "EM", "ISC", "ICN", "PIE", "PT", "RSE", "RET", "SIM", "ARG", "PTH", "PD", "NPY"]
-ignore = ["E501"]  # Line too long (handled by black)
-
-[tool.mypy]
-python_version = "3.9"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false
-ignore_missing_imports = true
+packages = ["src"]
