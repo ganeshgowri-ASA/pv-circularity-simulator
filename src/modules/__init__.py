@@ -1,52 +1,35 @@
 """
-PV Module Engineering Package
+PV Module Models
 
-This package provides comprehensive tools for PV module design, configuration,
-and analysis.
+Module-level models for degradation, performance, and lifetime prediction.
 """
 
-from .module_builder import (
-    # Enums
-    CellType,
-    LayoutType,
-    ConnectionType,
-    ValidationLevel,
-
-    # Models
-    CellDesign,
-    ModuleLayout,
-    ModuleConfig,
-    ModuleSpecs,
-    ValidationIssue,
-    ValidationReport,
-    OptimalLayout,
-
-    # Main class
-    ModuleConfigBuilder,
-
-    # Convenience functions
-    create_standard_module,
+from .module_degradation import (
+    ModuleDegradationModel,
+    ModuleType,
+    DegradationMode,
+    LifetimeModelType,
+    EnvironmentalStressFactors,
+    TechnologyDegradationRates,
+    WarrantySpecification,
+    DegradationResult,
+    MonteCarloConfig,
+    create_typical_desert_environment,
+    create_typical_coastal_environment,
+    create_typical_continental_environment,
 )
 
 __all__ = [
-    # Enums
-    'CellType',
-    'LayoutType',
-    'ConnectionType',
-    'ValidationLevel',
-
-    # Models
-    'CellDesign',
-    'ModuleLayout',
-    'ModuleConfig',
-    'ModuleSpecs',
-    'ValidationIssue',
-    'ValidationReport',
-    'OptimalLayout',
-
-    # Main class
-    'ModuleConfigBuilder',
-
-    # Convenience functions
-    'create_standard_module',
+    "ModuleDegradationModel",
+    "ModuleType",
+    "DegradationMode",
+    "LifetimeModelType",
+    "EnvironmentalStressFactors",
+    "TechnologyDegradationRates",
+    "WarrantySpecification",
+    "DegradationResult",
+    "MonteCarloConfig",
+    "create_typical_desert_environment",
+    "create_typical_coastal_environment",
+    "create_typical_continental_environment",
 ]
