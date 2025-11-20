@@ -1,63 +1,76 @@
 # PV Circularity Simulator
 
-End-to-end PV lifecycle simulation platform with advanced time-series forecasting, machine learning models, and circular economy analysis.
+End-to-end PV lifecycle simulation platform with comprehensive weather data management, TMY (Typical Meteorological Year) database, and circular economy modeling.
 
-## Features
+## 🌟 Features
 
-### 🔮 Time-Series Forecasting System
+### TMY Weather Database & Comprehensive Weather System (Batch 5-B06-S01)
 
-#### Statistical Models (BATCH7-B09-S02)
-- **ARIMA Model**: AutoRegressive Integrated Moving Average for trend-based forecasting
-- **SARIMA Model**: Seasonal ARIMA for data with seasonal patterns
-- **Exponential Smoothing**: Simple, double, and triple exponential smoothing
-- **State Space Models**: Flexible framework for level, trend, and seasonal components
-- **Statistical Analyzer**:
-  - Seasonality decomposition
-  - Trend analysis
-  - Autocorrelation analysis
-  - Stationarity testing
+A production-ready TMY data management and weather database system with global coverage, historical data analysis, and satellite integration for accurate energy yield predictions.
 
-#### Machine Learning Models (BATCH7-B09-S01)
-- **Prophet**: Facebook's forecasting model for multiple seasonality
-- **XGBoost**: Gradient boosting with engineered features
-- **LightGBM**: Fast gradient boosting alternative
-- **LSTM Neural Networks**: Deep learning for long-term dependencies
-- **Ensemble Methods**: Combine multiple models for robust predictions
+**Core Components:**
 
-#### Feature Engineering
-- **Lag Features**: Past values for temporal dependencies
-- **Rolling Features**: Moving averages, std, min, max
-- **Temporal Features**: Hour, day, week, month, year with cyclical encoding
-- **Weather Features**: Temperature, irradiance, wind speed, humidity integration
+1. **TMYDataManager** - Load, parse, and validate TMY data
+   - Support for TMY2, TMY3, EPW, CSV, and custom formats
+   - Data interpolation for missing values
+   - Comprehensive quality validation
+   - Format conversion utilities
 
-#### Model Training & Validation (BATCH7-B09-S05)
-- **Hyperparameter Tuning**: Automated optimization with Optuna
-- **Cross-Validation**: Time-series specific CV strategies
-- **Model Selection**: Automated comparison and selection
-- **Metrics Calculator**: MAE, RMSE, MAPE, R², SMAPE
-- **Forecast vs Actual**: Comprehensive comparison tools
+2. **WeatherDatabaseBuilder** - Integrate multiple weather data sources
+   - NREL NSRDB integration (National Solar Radiation Database)
+   - PVGIS integration (European Commission JRC)
+   - Meteonorm parser support
+   - Local weather station import
+   - Satellite data integration (NetCDF, HDF5)
 
-#### Seasonal Analysis (BATCH7-B09-S03)
-- **Seasonal Analyzer**: Detect and extract seasonal patterns
-- **Long-term Forecaster**: Multi-year predictions with uncertainty
-- **Year-over-Year Comparison**: Growth trends and pattern analysis
-- **Multi-scenario Forecasting**: Base, optimistic, pessimistic scenarios
+3. **HistoricalWeatherAnalyzer** - Multi-year statistical analysis
+   - Multi-year statistics (mean, P90, P50, P10)
+   - Extreme weather event detection
+   - Climate change trend analysis
+   - Seasonal variability assessment
+   - Inter-annual variability metrics
 
-#### Interactive Dashboards (BATCH7-B09-S04)
-- **Forecast Dashboard**: Streamlit-based interactive UI
-- **Interactive Charts**: Plotly visualizations with zoom, pan, hover
-- **Confidence Intervals**: Multiple confidence levels visualization
-- **Scenario Analysis**: Compare multiple forecast scenarios
-- **Residual Analysis**: Diagnostic plots for model validation
+4. **GlobalWeatherCoverage** - Worldwide location database
+   - Global coordinate-to-weather mapping
+   - Nearest station finder with distance calculations
+   - Geographic interpolation (inverse distance weighting)
+   - Elevation corrections for weather data
+   - Location search by name or region
 
-## Installation
+5. **TMYGenerator** - Synthetic TMY creation
+   - Sandia TMY generation method
+   - Representative month selection
+   - Monthly data stitching with smoothing
+   - Comprehensive sanity checks
+   - Export to multiple formats (TMY3, EPW, CSV, JSON)
 
-### Using pip
+6. **WeatherDataUI** - Interactive Streamlit interface
+   - Interactive location selector with map
+   - Real-time TMY data visualization
+   - Historical trends charts (irradiance, temperature, wind)
+   - Data quality indicators and completeness metrics
+   - Download TMY files in multiple formats
+
+### Additional Planned Modules
+
+- **Cell Design**: Advanced cell modeling and optimization
+- **Module Engineering**: CTM loss analysis and module design
+- **System Planning**: PV system configuration and sizing
+- **Performance Monitoring**: Real-time monitoring and forecasting
+- **Circular Economy**: 3R modeling (Reduce, Reuse, Recycle)
+
+## 🚀 Quick Start
+
+### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
+git clone https://github.com/your-org/pv-circularity-simulator.git
 cd pv-circularity-simulator
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -66,207 +79,82 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-### Using pip with optional dependencies
+### Configuration
+
+Create a `.env` file based on `.env.example`:
 
 ```bash
-# Install with all features
-pip install -e ".[all]"
-
-# Or install specific components
-pip install -e ".[forecasting]"  # Statistical and ML forecasting
-pip install -e ".[deep-learning]"  # LSTM and neural networks
-pip install -e ".[visualization]"  # Dashboards and plotting
-pip install -e ".[dev]"  # Development tools
+cp .env.example .env
 ```
 
-## Quick Start
+Edit `.env` and add your API keys:
 
-### Basic Forecasting
-
-```python
-from datetime import datetime, timedelta
-from pv_simulator.core.schemas import TimeSeriesData, TimeSeriesFrequency
-from pv_simulator.forecasting.statistical import ARIMAModel
-
-# Create time series data
-timestamps = [datetime(2023, 1, 1) + timedelta(days=i) for i in range(365)]
-values = [100 + i * 0.5 for i in range(365)]  # Your actual data here
-
-data = TimeSeriesData(
-    timestamps=timestamps,
-    values=values,
-    frequency=TimeSeriesFrequency.DAILY,
-    name="pv_energy_kwh"
-)
-
-# Fit ARIMA model
-model = ARIMAModel(order=(2, 1, 2))
-model.fit(data)
-
-# Generate 30-day forecast
-forecast = model.predict(horizon=30, confidence_level=0.95)
-
-print(f"Forecasted values: {forecast.predictions}")
-print(f"Lower bound: {forecast.lower_bound}")
-print(f"Upper bound: {forecast.upper_bound}")
+```
+NSRDB_API_KEY=your_nrel_api_key_here
+PVGIS_API_KEY=optional_pvgis_key
 ```
 
-### Prophet Forecasting
+**Note**: You can use `DEMO_KEY` for NSRDB for testing (rate limited).
 
-```python
-from pv_simulator.forecasting.ml_forecaster import ProphetForecaster
+### Running the Application
 
-# Initialize Prophet model
-model = ProphetForecaster(
-    seasonality_mode="additive",
-    yearly_seasonality=True,
-    weekly_seasonality=True
-)
-
-# Fit and predict
-model.fit(data)
-forecast = model.predict(horizon=90)
-```
-
-### Feature Engineering
-
-```python
-from pv_simulator.forecasting.feature_engineering import FeatureEngineering
-from pv_simulator.core.schemas import FeatureConfig
-
-# Configure feature engineering
-config = FeatureConfig(
-    lag_features=True,
-    lag_periods=[1, 7, 30],
-    rolling_features=True,
-    rolling_windows=[7, 14, 30],
-    temporal_features=True,
-    cyclical_encoding=True
-)
-
-# Create features
-fe = FeatureEngineering(config)
-features_df = fe.create_all_features(data)
-```
-
-### Model Training with Hyperparameter Tuning
-
-```python
-from pv_simulator.forecasting.model_training import ModelTraining
-
-# Initialize trainer
-trainer = ModelTraining()
-
-# Automated model selection
-best_model, best_params, metrics = trainer.model_selection(
-    data=data,
-    horizon=30,
-    metric="rmse"
-)
-
-print(f"Best model: {best_model.__name__}")
-print(f"RMSE: {metrics.rmse:.2f}")
-print(f"MAE: {metrics.mae:.2f}")
-```
-
-### Seasonal Analysis
-
-```python
-from pv_simulator.forecasting.seasonal import SeasonalAnalyzer
-
-analyzer = SeasonalAnalyzer()
-
-# Detect seasonality
-seasonality = analyzer.detect_seasonality(data)
-print(f"Dominant period: {seasonality['dominant_period']}")
-
-# Year-over-year comparison
-yoy = analyzer.year_over_year_comparison(data)
-print(f"Average growth: {yoy.average_growth:.2%}")
-print(f"Trend: {yoy.trend}")
-```
-
-### Long-term Forecasting
-
-```python
-from pv_simulator.forecasting.seasonal import LongTermForecaster
-
-# Initialize forecaster
-forecaster = LongTermForecaster()
-forecaster.fit(data)
-
-# Generate 3-year forecast
-forecast = forecaster.predict(horizon=365*3, scenario="base")
-
-# Multi-scenario forecast
-scenarios = forecaster.multi_scenario_forecast(
-    horizon=365*5,
-    scenarios=["base", "optimistic", "pessimistic"]
-)
-```
-
-### Interactive Dashboard
-
-```python
-from pv_simulator.dashboards.forecast_dashboard import ForecastDashboard
-
-# Create dashboard
-dashboard = ForecastDashboard("PV Energy Forecast")
-
-# Build Streamlit dashboard (in a .py file)
-dashboard.build_streamlit_dashboard(
-    actual=historical_data,
-    forecast=forecast_result,
-    metrics=metrics
-)
-
-# Or create individual charts
-fig = dashboard.interactive_charts(historical_data, forecast_result)
-fig.show()
-```
-
-## Examples
-
-Run the example script to see all features in action:
+#### Streamlit Web Interface
 
 ```bash
-python scripts/example_forecast.py
+streamlit run ui/app.py
 ```
 
-This demonstrates:
-1. Statistical analysis (decomposition, trend, autocorrelation)
-2. ARIMA forecasting
-3. Prophet forecasting
-4. Automated model selection
-5. Seasonal pattern analysis
-6. Long-term multi-year forecasting
+Then open your browser to `http://localhost:8501`
 
-## Project Structure
+#### Python API Usage
 
-```
-pv-circularity-simulator/
-├── src/pv_simulator/
-│   ├── core/                      # Core models and schemas
-│   │   ├── models.py              # Base forecaster classes
-│   │   └── schemas.py             # Pydantic data models
-│   ├── forecasting/               # Forecasting module
-│   │   ├── statistical.py         # ARIMA, SARIMA, etc.
-│   │   ├── ml_forecaster.py       # Prophet, XGBoost, LSTM
-│   │   ├── feature_engineering.py # Feature creation
-│   │   ├── model_training.py      # Training & tuning
-│   │   ├── metrics.py             # Evaluation metrics
-│   │   └── seasonal.py            # Seasonal analysis
-│   └── dashboards/                # Visualization
-│       └── forecast_dashboard.py  # Streamlit dashboard
-├── tests/                         # Test suite
-├── scripts/                       # Example scripts
-├── docs/                          # Documentation
-└── notebooks/                     # Jupyter notebooks
+```python
+from pv_simulator.services.tmy_manager import TMYDataManager
+from pv_simulator.services.weather_database import WeatherDatabaseBuilder
+
+# Initialize services
+tmy_manager = TMYDataManager()
+weather_db = WeatherDatabaseBuilder()
+
+# Fetch TMY data from NREL NSRDB
+tmy_data = weather_db.nrel_nsrdb_integration(
+    latitude=39.7392,
+    longitude=-104.9903
+)
+
+# Analyze data
+print(f"Annual GHI: {tmy_data.get_annual_irradiation():.1f} kWh/m²")
+print(f"Average Temperature: {tmy_data.get_average_temperature():.1f}°C")
+print(f"Data Quality: {tmy_data.data_quality.value}")
 ```
 
-## Testing
+## 📊 API Integrations
 
-Run tests with pytest:
+### NREL NSRDB (National Solar Radiation Database)
+
+High-quality solar radiation data for the Americas:
+
+```python
+from pv_simulator.api.nsrdb_client import NSRDBClient
+
+client = NSRDBClient(api_key="your_key")
+tmy_data = client.get_tmy_data(latitude=39.7392, longitude=-104.9903)
+```
+
+### PVGIS (Photovoltaic Geographical Information System)
+
+Solar radiation data for Europe, Africa, and Asia:
+
+```python
+from pv_simulator.api.pvgis_client import PVGISClient
+
+client = PVGISClient()
+tmy_data = client.get_tmy_data(latitude=52.52, longitude=13.40)
+```
+
+## 🧪 Testing
+
+Run the test suite:
 
 ```bash
 # Run all tests
@@ -276,71 +164,90 @@ pytest
 pytest --cov=src/pv_simulator --cov-report=html
 
 # Run specific test file
-pytest tests/test_forecasting/test_statistical.py
+pytest tests/unit/test_weather_models.py
 ```
 
-## Documentation
+## 📁 Project Structure
 
-### Core Concepts
+```
+pv-circularity-simulator/
+├── src/pv_simulator/          # Core library
+│   ├── models/                # Pydantic data models
+│   ├── api/                   # API clients (NSRDB, PVGIS)
+│   ├── services/              # Business logic
+│   ├── config/                # Configuration management
+│   └── utils/                 # Utility functions
+├── ui/                        # Streamlit web interface
+│   ├── app.py                 # Main application
+│   └── components/            # UI components
+├── tests/                     # Test suite
+│   ├── unit/                  # Unit tests
+│   ├── integration/           # Integration tests
+│   └── fixtures/              # Test fixtures
+├── data/                      # Data storage
+│   ├── tmy_cache/            # Cached TMY files
+│   ├── weather/              # Weather data
+│   └── locations/            # Location database
+└── docs/                      # Documentation
+```
 
-- **TimeSeriesData**: Pydantic model for time series with validation
-- **ForecastResult**: Standardized forecast output with confidence intervals
-- **ModelMetrics**: Comprehensive evaluation metrics
-- **BaseForecaster**: Abstract base class for all forecasting models
+## 🔧 Development
 
-### Model Types
+### Code Quality
 
-All models inherit from `BaseForecaster` and implement:
-- `fit(data)`: Train the model
-- `predict(horizon)`: Generate forecasts
-- `evaluate(actual, predicted)`: Calculate metrics
+```bash
+# Format code
+black src/ tests/
 
-### Metrics
+# Lint
+ruff check src/ tests/
 
-- **MAE**: Mean Absolute Error
-- **RMSE**: Root Mean Squared Error
-- **MAPE**: Mean Absolute Percentage Error
-- **SMAPE**: Symmetric Mean Absolute Percentage Error
-- **R²**: Coefficient of determination
+# Type checking
+mypy src/
+```
 
-## Contributing
+### Adding New Features
+
+1. Create feature branch: `git checkout -b feature/your-feature`
+2. Implement with tests
+3. Run test suite: `pytest`
+4. Format code: `black .`
+5. Submit pull request
+
+## 📖 Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- [API Documentation](docs/api.md)
+- [Architecture Overview](docs/architecture.md)
+- [Weather Integration Guide](docs/weather_integration.md)
+
+## 🤝 Contributing
 
 Contributions are welcome! Please:
 
 1. Fork the repository
 2. Create a feature branch
-3. Add tests for new features
+3. Add tests for new functionality
 4. Ensure all tests pass
 5. Submit a pull request
 
-## License
+## 📄 License
 
-MIT License - see LICENSE file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Citation
+## 🙏 Acknowledgments
 
-If you use this software in your research, please cite:
+- NREL for the NSRDB database
+- European Commission JRC for PVGIS
+- The open-source Python community
 
-```bibtex
-@software{pv_circularity_simulator,
-  title = {PV Circularity Simulator},
-  author = {PV Circularity Team},
-  year = {2024},
-  url = {https://github.com/ganeshgowri-ASA/pv-circularity-simulator}
-}
-```
+## 📧 Contact
 
-## Acknowledgments
+For questions or support, please open an issue on GitHub.
 
-Built with:
-- [statsmodels](https://www.statsmodels.org/) - Statistical models
-- [Prophet](https://facebook.github.io/prophet/) - Time series forecasting
-- [XGBoost](https://xgboost.readthedocs.io/) - Gradient boosting
-- [TensorFlow](https://www.tensorflow.org/) - Deep learning
-- [Streamlit](https://streamlit.io/) - Interactive dashboards
-- [Plotly](https://plotly.com/) - Visualization
-- [Pydantic](https://pydantic-docs.helpmanual.io/) - Data validation
+---
 
-## Contact
-
-For questions and support, please open an issue on GitHub.
+**Version**: 0.1.0
+**Status**: Active Development
+**Last Updated**: 2025-11-17

@@ -1,1 +1,3 @@
-"""Reusable UI components for PV simulator."""
+"""Streamlit UI components."""
+
+__all__ = []

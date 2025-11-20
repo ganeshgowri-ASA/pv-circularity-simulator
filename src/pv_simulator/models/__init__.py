@@ -1,27 +1,25 @@
-"""Pydantic models for PV simulation data structures."""
+"""Pydantic data models for PV Simulator."""
 
-from pv_simulator.models.thermal import (
-    TemperatureConditions,
-    ThermalParameters,
-    TemperatureCoefficients,
-    ThermalModelOutput,
-    MountingConfiguration,
-    HeatTransferCoefficients,
-)
-from pv_simulator.models.noct import (
-    NOCTSpecification,
-    NOCTTestConditions,
-    ModuleNOCTData,
+from pv_simulator.models.weather import (
+    DataQuality,
+    DataSource,
+    ExtremeWeatherEvent,
+    GlobalLocation,
+    HistoricalWeatherStats,
+    TemporalResolution,
+    TMYData,
+    TMYFormat,
+    WeatherDataPoint,
 )
 
 __all__ = [
-    "TemperatureConditions",
-    "ThermalParameters",
-    "TemperatureCoefficients",
-    "ThermalModelOutput",
-    "MountingConfiguration",
-    "HeatTransferCoefficients",
-    "NOCTSpecification",
-    "NOCTTestConditions",
-    "ModuleNOCTData",
+    "WeatherDataPoint",
+    "TMYData",
+    "DataSource",
+    "TemporalResolution",
+    "TMYFormat",
+    "DataQuality",
+    "GlobalLocation",
+    "ExtremeWeatherEvent",
+    "HistoricalWeatherStats",
 ]

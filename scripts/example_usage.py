@@ -1,199 +1,151 @@
+#!/usr/bin/env python3
 """
-Example usage of PV Circularity Simulator monitoring system.
+Example usage of PV Simulator TMY Weather Database.
 
-This script demonstrates how to use the real-time monitoring, SCADA integration,
-and data logging capabilities.
+This script demonstrates how to use the TMY data management system
+to fetch and analyze weather data.
 """
 
-import asyncio
+import sys
 from pathlib import Path
 
-from pv_circularity.core import get_logger, setup_logging
-from pv_circularity.models.scada import (
-    SCADADevice,
-    ModbusConfig,
-    ProtocolType,
-    DeviceType,
-)
-from pv_circularity.monitoring import (
-    DataLoggerIntegrator,
-    SCADAConnector,
-    DataAggregator,
-    RealTimeMonitor,
-    PerformanceMetrics,
-    AlertEngine,
-)
+# Add src to path
+src_path = Path(__file__).parent.parent / "src"
+sys.path.insert(0, str(src_path))
 
-# Setup logging
-setup_logging(log_level="INFO", log_format="console")
-logger = get_logger(__name__)
+from pv_simulator.api.nsrdb_client import NSRDBClient
+from pv_simulator.api.pvgis_client import PVGISClient
+from pv_simulator.config.settings import settings
+from pv_simulator.services.global_coverage import GlobalWeatherCoverage
+from pv_simulator.services.tmy_manager import TMYDataManager
+from pv_simulator.services.weather_database import WeatherDatabaseBuilder
 
 
-async def main():
-    """Main example function demonstrating the monitoring system."""
+def example_nsrdb_usage() -> None:
+    """Example: Fetch TMY data from NREL NSRDB."""
+    print("=" * 60)
+    print("Example 1: Fetching TMY data from NREL NSRDB")
+    print("=" * 60)
 
-    logger.info("Starting PV Circularity Simulator example")
+    # Initialize weather database builder
+    weather_db = WeatherDatabaseBuilder()
 
-    # Example 1: Configure SCADA devices
-    logger.info("=== Example 1: Configure SCADA Devices ===")
+    # Fetch TMY data for Denver, CO
+    print("\nFetching TMY data for Denver, CO...")
+    try:
+        tmy_data = weather_db.nrel_nsrdb_integration(
+            latitude=39.7392, longitude=-104.9903, year=None  # None = TMY data
+        )
 
-    # Create a Modbus TCP device
-    modbus_device = SCADADevice(
-        device_id="INV001",
-        name="Main Inverter",
-        device_type=DeviceType.INVERTER,
-        protocol_type=ProtocolType.MODBUS_TCP,
-        modbus_config=ModbusConfig(
-            host="192.168.1.100",
-            port=502,
-            slave_id=1,
-            register_map={
-                "ac_power": {
-                    "address": 30775,
-                    "count": 2,
-                    "type": "input",
-                    "scale": 1.0,
-                    "unit": "W",
-                },
-                "dc_voltage": {
-                    "address": 30771,
-                    "count": 1,
-                    "type": "input",
-                    "scale": 0.1,
-                    "unit": "V",
-                },
-            },
-        ),
-        enabled=True,
-        poll_interval_seconds=5,
-        site_id="SITE001",
-    )
+        print(f"\n✓ Successfully fetched TMY data!")
+        print(f"  Location: {tmy_data.location.name}")
+        print(f"  Data source: {tmy_data.data_source.value}")
+        print(f"  Data points: {len(tmy_data.hourly_data)}")
+        print(f"  Quality: {tmy_data.data_quality.value}")
+        print(f"  Completeness: {tmy_data.completeness_percentage:.1f}%")
+        print(f"  Annual GHI: {tmy_data.get_annual_irradiation():.1f} kWh/m²")
+        print(f"  Average Temperature: {tmy_data.get_average_temperature():.1f}°C")
 
-    devices = [modbus_device]
+    except Exception as e:
+        print(f"\n✗ Error: {e}")
+        print("  Note: You may need to set NSRDB_API_KEY in .env file")
 
-    # Example 2: Initialize Data Logger Integrator
-    logger.info("=== Example 2: Data Logger Integrator ===")
 
-    integrator = DataLoggerIntegrator(devices)
-    # Note: In real usage, you would call await integrator.initialize()
-    # to connect to actual devices
+def example_pvgis_usage() -> None:
+    """Example: Fetch TMY data from PVGIS."""
+    print("\n" + "=" * 60)
+    print("Example 2: Fetching TMY data from PVGIS")
+    print("=" * 60)
 
-    logger.info(f"Integrator initialized with {len(devices)} devices")
+    weather_db = WeatherDatabaseBuilder()
 
-    # Example 3: SCADA Connector
-    logger.info("=== Example 3: SCADA Connector ===")
+    # Fetch TMY data for Berlin, Germany
+    print("\nFetching TMY data for Berlin, Germany...")
+    try:
+        tmy_data = weather_db.pvgis_data_fetcher(latitude=52.52, longitude=13.40)
 
-    connector = SCADAConnector(devices)
-    # In real usage:
-    # await connector.connect()
-    # data = await connector.read_all_devices()
+        print(f"\n✓ Successfully fetched TMY data!")
+        print(f"  Location: {tmy_data.location.name}")
+        print(f"  Data source: {tmy_data.data_source.value}")
+        print(f"  Data points: {len(tmy_data.hourly_data)}")
+        print(f"  Annual GHI: {tmy_data.get_annual_irradiation():.1f} kWh/m²")
 
-    logger.info("SCADA connector created")
+    except Exception as e:
+        print(f"\n✗ Error: {e}")
 
-    # Example 4: Data Aggregator
-    logger.info("=== Example 4: Data Aggregator ===")
 
-    aggregator = DataAggregator()
+def example_location_search() -> None:
+    """Example: Search for locations in database."""
+    print("\n" + "=" * 60)
+    print("Example 3: Searching location database")
+    print("=" * 60)
 
-    # Example data aggregation
-    logger.info("Data aggregator ready for multi-site aggregation")
+    coverage = GlobalWeatherCoverage()
 
-    # Example 5: Real-Time Monitor
-    logger.info("=== Example 5: Real-Time Monitor ===")
+    # Search by name
+    print("\nSearching for 'Denver'...")
+    results = coverage.search_by_name("Denver")
 
-    monitor = RealTimeMonitor(devices, update_interval=5)
-
-    # In real usage:
-    # await monitor.start_monitoring()
-    # async for data_batch in monitor.live_data_stream():
-    #     logger.info(f"Received {len(data_batch)} data points")
-
-    logger.info("Real-time monitor configured")
-
-    # Example 6: Performance Metrics
-    logger.info("=== Example 6: Performance Metrics ===")
-
-    metrics = PerformanceMetrics()
-
-    # Calculate instantaneous PR
-    pr = await metrics.instantaneous_pr(
-        actual_power=85.5,
-        rated_power=100.0,
-        irradiance=850,
-        reference_irradiance=1000,
-    )
-    logger.info(f"Instantaneous Performance Ratio: {pr:.2%}")
-
-    # Calculate capacity factor
-    cf = await metrics.capacity_factor(
-        actual_energy=5000,
-        rated_power=1000,
-        period_hours=24,
-    )
-    logger.info(f"Capacity Factor: {cf:.2%}")
-
-    # Calculate specific yield
-    sy = await metrics.specific_yield(
-        actual_energy=5000,
-        rated_power=1000,
-    )
-    logger.info(f"Specific Yield: {sy:.2f} kWh/kWp")
-
-    # Example 7: Alert Engine
-    logger.info("=== Example 7: Alert Engine ===")
-
-    alert_engine = AlertEngine(underperformance_threshold=15.0)
-
-    # Subscribe to alerts
-    def on_alert(alert):
-        logger.warning(f"ALERT: {alert.message} (Severity: {alert.severity})")
-
-    alert_engine.subscribe_alerts(on_alert)
-
-    # In real usage:
-    # await alert_engine.start()
-    # ... monitoring will trigger alerts automatically
-    # await alert_engine.stop()
-
-    logger.info("Alert engine configured")
-
-    # Example 8: Underperformance Detection
-    logger.info("=== Example 8: Underperformance Detection ===")
-
-    alert = await alert_engine.underperformance_detection(
-        site_id="SITE001",
-        device_id="INV001",
-        actual_power=80,
-        expected_power=100,
-    )
-
-    if alert:
-        logger.warning(f"Underperformance alert: {alert.message}")
+    if results:
+        print(f"\n✓ Found {len(results)} locations:")
+        for loc in results:
+            print(
+                f"  - {loc.name}, {loc.country} "
+                f"({loc.latitude:.2f}, {loc.longitude:.2f})"
+            )
     else:
-        logger.info("No underperformance detected")
+        print("  No locations found")
 
-    # Example 9: CSV Import
-    logger.info("=== Example 9: CSV File Import ===")
+    # Find nearest station
+    print("\nFinding nearest station to coordinates (40.0, -105.0)...")
+    nearest = coverage.nearest_station_finder(latitude=40.0, longitude=-105.0, num_stations=3)
 
-    from pv_circularity.monitoring.data_logger import CSVFileImporter
+    if nearest:
+        print(f"\n✓ Found {len(nearest)} nearby stations:")
+        for loc, distance in nearest:
+            print(
+                f"  - {loc.name}, {loc.country} "
+                f"({loc.latitude:.2f}, {loc.longitude:.2f}) "
+                f"- {distance:.1f} km away"
+            )
 
-    # Note: This would require an actual CSV file to exist
-    logger.info("CSV importer can import historical data from files")
 
-    # Example usage (commented as file may not exist):
-    # csv_importer = CSVFileImporter(
-    #     file_path="data/inverter_data.csv",
-    #     device_id="INV001",
-    #     timestamp_column="timestamp",
-    #     value_columns={
-    #         "ac_power": "AC Power (kW)",
-    #         "dc_voltage": "DC Voltage (V)",
-    #     },
-    # )
-    # data_points = await csv_importer.import_data()
+def example_tmy_file_parsing() -> None:
+    """Example: Parse TMY file from disk."""
+    print("\n" + "=" * 60)
+    print("Example 4: Parsing TMY files")
+    print("=" * 60)
 
-    logger.info("PV Circularity Simulator example completed successfully!")
+    tmy_manager = TMYDataManager()
+
+    print("\nTMY file parsing example:")
+    print("  Supported formats: TMY2, TMY3, EPW, CSV, JSON")
+    print("  Use: tmy_data = tmy_manager.load_tmy_data('path/to/file.csv')")
+    print("\nFor actual file parsing, provide a valid TMY file path.")
+
+
+def main() -> None:
+    """Run all examples."""
+    print("\n")
+    print("*" * 60)
+    print("PV Simulator - TMY Weather Database Examples")
+    print("*" * 60)
+
+    print(f"\nConfiguration:")
+    print(f"  NSRDB API Key: {settings.nsrdb_api_key[:10]}...")
+    print(f"  TMY Cache Dir: {settings.tmy_cache_dir}")
+    print(f"  Weather Data Dir: {settings.weather_data_dir}")
+
+    # Run examples
+    example_nsrdb_usage()
+    example_pvgis_usage()
+    example_location_search()
+    example_tmy_file_parsing()
+
+    print("\n" + "*" * 60)
+    print("Examples completed!")
+    print("*" * 60 + "\n")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

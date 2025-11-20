@@ -1,1 +1,1 @@
-"""Unit tests for PV Circularity Simulator."""
+"""Unit tests for PV Simulator."""

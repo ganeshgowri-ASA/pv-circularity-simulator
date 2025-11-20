@@ -1,1 +1,3 @@
-"""Streamlit UI components for PV circularity simulator."""
+"""Streamlit UI components for PV Simulator."""
+
+__all__ = []
