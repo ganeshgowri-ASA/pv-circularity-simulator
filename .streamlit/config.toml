@@ -1,45 +1,19 @@
-# Streamlit Configuration for PV Circularity Dashboard
-# Documentation: https://docs.streamlit.io/library/advanced-features/configuration
-
 [theme]
-primaryColor = "#4CAF50"  # Green for circularity theme
-backgroundColor = "#FFFFFF"
+primaryColor = "#2E7D32"
+backgroundColor = "#FAFAFA"
 secondaryBackgroundColor = "#F0F2F6"
-textColor = "#262730"
+textColor = "#212121"
 font = "sans serif"
 
 [server]
-# Port to run the application on
+headless = true
 port = 8501
-# Enable CORS for development
 enableCORS = false
-# Enable XSRF protection
 enableXsrfProtection = true
-# Max upload size (MB)
-maxUploadSize = 200
 
 [browser]
-# Gather usage stats (set to false for privacy)
 gatherUsageStats = false
-# Server address
-serverAddress = "localhost"
-# Server port
-serverPort = 8501
 
 [runner]
-# Magic commands enabled
 magicEnabled = true
-# Rerun on file changes (development)
 fastReruns = true
-
-[client]
-# Show error details
-showErrorDetails = true
-# Toolbar mode
-toolbarMode = "auto"
-
-[logger]
-# Logging level
-level = "info"
-# Message format
-messageFormat = "%(asctime)s %(levelname)s: %(message)s"

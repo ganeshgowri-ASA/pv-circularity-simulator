@@ -1,187 +1,165 @@
-# PV Circularity Simulator
+# ☀️ PV Circularity Simulator
 
 End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
 
-## Features
+## 🚀 Quick Start
 
-- **Cell Design Simulation**: Model photovoltaic cell performance and characteristics
-- **Module Engineering**: Cell-to-module (CTM) analysis and loss calculations
-- **System Planning**: Design and optimize PV system configurations
-- **Performance Monitoring**: Real-time monitoring with anomaly detection
-- **Circular Economy**: 3R (Reduce, Reuse, Recycle) lifecycle modeling
-- **SCAPS Integration**: Advanced semiconductor device simulation
-- **Reliability Testing**: IEC standard compliance and accelerated testing
-- **Energy Forecasting**: AI-enhanced weather-based predictions
-- **Production-Ready Configuration Management**: Comprehensive configuration system
+### Prerequisites
+- Python 3.8 or higher
+- pip package manager
 
-## Installation
+### Installation & Running
 
+**Option 1: Using the run script (Recommended)**
 ```bash
-# Clone the repository
-git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
-cd pv-circularity-simulator
+./run.sh
+```
+
+**Option 2: Manual setup**
+```bash
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Install the package
-pip install -e .
+# Run the application
+streamlit run src/main.py
 ```
 
-## Configuration Management
+The application will open in your default web browser at `http://localhost:8501`
 
-The simulator includes a comprehensive, production-ready configuration management system with:
+## 📋 Features
 
-- **Multiple Formats**: YAML and JSON support
-- **Environment Variables**: Override any configuration via environment variables
-- **Validation**: Schema-based validation with type checking and constraints
-- **Multi-Environment**: Separate configs for development, staging, and production
-- **Thread-Safe**: Safe for concurrent access
+### 15 Comprehensive Modules
 
-### Quick Start
+#### 🔬 Design & Engineering
+- **Materials Selection**: PV material selection and properties configuration
+- **Cell Design**: Solar cell design with SCAPS integration
+- **Module Design**: PV module configuration and layout
+- **CTM Loss**: Cell-to-module loss analysis
 
-```python
-from pv_circularity_simulator.config import ConfigurationManager
+#### 🧪 Testing & Validation
+- **IEC Testing**: IEC 61215/61730 compliance testing and reliability
+- **System Design**: Complete PV system configuration and planning
 
-# Load configuration
-config = ConfigurationManager()
-config.load_configuration('config/app.yaml')
+#### 📊 Performance & Analysis
+- **EYA**: Energy yield assessment with P50/P90 analysis
+- **Performance Monitoring**: Real-time system performance monitoring
+- **Fault Diagnostics**: AI-powered fault detection and diagnosis
 
-# Get values
-db_host = config.get('database.host')
-api_port = config.get('api.port', default=8080)
+#### 🔮 Forecasting & Planning
+- **Energy Forecasting**: ML-based energy production forecasting
+- **Revamp/Repower**: System upgrade and repowering analysis
 
-# Set values
-config.set('api.workers', 8)
+#### ♻️ Sustainability & Economics
+- **Circularity**: 3R analysis (Reduce, Reuse, Recycle)
+- **Hybrid Systems**: PV + storage and hybrid configurations
+- **Financial Modeling**: Comprehensive financial analysis and ROI
 
-# Save configuration
-config.save_configuration()
-```
-
-### Environment Variables
-
-Override configuration using environment variables with the `APP_` prefix:
-
-```bash
-export APP_DATABASE_HOST=prod-db.example.com
-export APP_DATABASE_PORT=5432
-export APP_API_DEBUG=false
-```
-
-See [config/README.md](config/README.md) for comprehensive documentation.
-
-## Project Structure
+## 🏗️ Project Structure
 
 ```
 pv-circularity-simulator/
 ├── src/
-│   └── pv_circularity_simulator/
-│       ├── config/              # Configuration management system
-│       │   ├── configuration_manager.py
-│       │   ├── validators.py
-│       │   └── exceptions.py
-│       └── __init__.py
-├── config/
-│   ├── examples/                # Example configuration files
-│   │   ├── app_config.yaml
-│   │   ├── app_config.json
-│   │   └── config_schema.yaml
-│   └── README.md                # Configuration documentation
-├── tests/                       # Test suite
-│   └── test_configuration_manager.py
-├── examples/                    # Usage examples
-│   └── configuration_usage.py
-├── requirements.txt             # Python dependencies
-└── setup.py                     # Package setup
+│   ├── main.py                 # Main application
+│   ├── modules/                # Application modules
+│   │   ├── dashboard.py
+│   │   ├── materials_selection.py
+│   │   ├── cell_design.py
+│   │   ├── module_design.py
+│   │   ├── ctm_loss.py
+│   │   ├── iec_testing.py
+│   │   ├── system_design.py
+│   │   ├── eya.py
+│   │   ├── performance_monitoring.py
+│   │   ├── fault_diagnostics.py
+│   │   ├── energy_forecasting.py
+│   │   ├── revamp_repower.py
+│   │   ├── circularity.py
+│   │   ├── hybrid_systems.py
+│   │   └── financial_modeling.py
+│   ├── utils/                  # Utility functions
+│   │   └── session_manager.py
+│   └── components/             # Reusable UI components
+├── .streamlit/                 # Streamlit configuration
+│   └── config.toml
+├── projects/                   # Saved project files
+├── requirements.txt            # Python dependencies
+├── run.sh                      # Launch script
+├── LICENSE
+└── README.md
 ```
 
-## Usage Examples
+## 💡 Usage Guide
 
-### Basic Configuration
+### Creating a New Project
+1. Click "🆕 New" in the sidebar
+2. Enter your project name
+3. Navigate through modules using the sidebar
+4. Save your work with "💾 Save"
 
-```python
-from pv_circularity_simulator.config import settings_loader
+### Loading an Existing Project
+1. Use the file uploader in the sidebar
+2. Select your saved `.json` project file
+3. The application will load all your saved data
 
-# Load with environment-specific settings
-config = settings_loader(
-    'config/app.yaml',
-    environment='production',
-    apply_env_overrides=True
-)
-```
+### Module Navigation
+- Use the sidebar to access different modules
+- Each module is organized for the PV lifecycle workflow
+- Modules are independent but data can be shared across them
 
-### Validation
+### Settings
+- Click "⚙️ Settings" to customize:
+  - Units (Metric/Imperial)
+  - Currency
+  - Language
+  - Display preferences
+  - Theme
 
-```python
-from pv_circularity_simulator.config import ConfigurationManager
+## 🔧 Technical Details
 
-schema = {
-    "database": {
-        "port": {"type": int, "min": 1, "max": 65535},
-    }
-}
+### Built With
+- **Streamlit** - Web application framework
+- **Python 3.8+** - Programming language
+- **Pandas & NumPy** - Data processing
+- **Scikit-learn** - Machine learning
 
-config = ConfigurationManager(schema=schema)
-config.load_configuration('config/app.yaml')
-config.validate()  # Raises error if invalid
-```
+### Key Capabilities
+- ✅ Session state management for project persistence
+- ✅ Modular architecture for easy extension
+- ✅ Custom CSS styling for professional UI
+- ✅ Comprehensive error handling
+- ✅ Real-time data visualization
+- ✅ Export/import functionality
 
-See [examples/configuration_usage.py](examples/configuration_usage.py) for more examples.
+## 📚 Documentation
 
-## Testing
+See the in-app Help panel (❓ Help button) for:
+- Quick Start Guide
+- Module descriptions
+- Resources and links
+- About and version info
 
-Run the test suite:
+## 🤝 Contributing
 
-```bash
-# Run all tests
-pytest tests/ -v
+This is a private repository. For questions or issues, please contact the development team.
 
-# Run with coverage
-pytest tests/ --cov=pv_circularity_simulator --cov-report=html
-```
+## 📄 License
 
-## Documentation
+Copyright © 2024 PV Circularity Team. All rights reserved.
 
-- [Configuration Management Guide](config/README.md)
-- [API Reference](docs/api_reference.md) (coming soon)
-- [User Guide](docs/user_guide.md) (coming soon)
+## 🆘 Support
 
-## Development
+For support and questions:
+- Check the Help panel in the application
+- Review module-specific documentation
+- Contact: [support contact]
 
-### Setting Up Development Environment
+---
 
-```bash
-# Install development dependencies
-pip install -e ".[dev]"
-
-# Copy environment template
-cp .env.example .env
-# Edit .env with your settings
-```
-
-### Code Quality
-
-```bash
-# Format code
-black src/ tests/
-
-# Lint
-flake8 src/ tests/
-
-# Type checking
-mypy src/
-```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Built for photovoltaic lifecycle simulation and circular economy analysis
-- Supports research in sustainable energy systems
-- Integrates industry-standard simulation tools (SCAPS)
+**Version**: 1.0.0
+**Last Updated**: 2024
