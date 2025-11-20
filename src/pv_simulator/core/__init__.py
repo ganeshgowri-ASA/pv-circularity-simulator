@@ -1,9 +1,18 @@
-"""
-Core module for shared models, exceptions, and utilities.
-"""
+"""Core module containing base classes, exceptions, and common types."""
 
-from pv_simulator.core.models import BaseSimulatorModel
+from pv_simulator.core.base import BaseAnalyzer, AnalysisResult
+from pv_simulator.core.exceptions import (
+    PVSimulatorError,
+    FinancialAnalysisError,
+    InvalidCashFlowError,
+    ConvergenceError,
+)
 
 __all__ = [
-    "BaseSimulatorModel",
+    "BaseAnalyzer",
+    "AnalysisResult",
+    "PVSimulatorError",
+    "FinancialAnalysisError",
+    "InvalidCashFlowError",
+    "ConvergenceError",
 ]

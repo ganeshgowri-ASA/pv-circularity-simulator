@@ -1,123 +1,88 @@
-"""
-Pytest Configuration and Fixtures
-==================================
+"""Pytest configuration and shared fixtures for tests."""
 
-Shared fixtures for test suite.
-"""
-
-import numpy as np
-import pandas as pd
 import pytest
-from sklearn.datasets import make_regression
-from sklearn.linear_model import LinearRegression, Ridge
-from sklearn.tree import DecisionTreeRegressor
+
+from pv_simulator.financial.models import (
+    CashFlowInput,
+    CashFlowProjection,
+    DiscountRateConfig,
+)
 
 
 @pytest.fixture
-def random_state():
-    """Fixed random state for reproducibility."""
-    return 42
-
-
-@pytest.fixture
-def sample_regression_data(random_state):
-    """
-    Generate sample regression data for testing.
-
-    Returns:
-        Tuple of (X, y) where X is features and y is target
-    """
-    X, y = make_regression(
-        n_samples=200,
-        n_features=10,
-        n_informative=8,
-        noise=10.0,
-        random_state=random_state,
-    )
-    return X, y
-
-
-@pytest.fixture
-def sample_time_series_data(random_state):
-    """
-    Generate sample time series data for forecasting tests.
-
-    Returns:
-        Tuple of (X, y) representing time series features and targets
-    """
-    np.random.seed(random_state)
-
-    # Create time-based features
-    n_samples = 200
-    time_index = np.arange(n_samples)
-
-    # Create features with trend and seasonality
-    trend = 0.5 * time_index
-    seasonality = 10 * np.sin(2 * np.pi * time_index / 50)
-    noise = np.random.normal(0, 5, n_samples)
-
-    y = trend + seasonality + noise
-
-    # Create lagged features
-    X = np.column_stack([
-        time_index,
-        np.sin(2 * np.pi * time_index / 50),
-        np.cos(2 * np.pi * time_index / 50),
-        np.sin(2 * np.pi * time_index / 25),
-        np.cos(2 * np.pi * time_index / 25),
-    ])
-
-    return X, y
-
-
-@pytest.fixture
-def sample_base_models(random_state):
-    """
-    Create a list of sample base models for ensemble testing.
-
-    Returns:
-        List of scikit-learn estimators
-    """
-    return [
-        LinearRegression(),
-        Ridge(alpha=1.0, random_state=random_state),
-        DecisionTreeRegressor(max_depth=5, random_state=random_state),
-    ]
-
-
-@pytest.fixture
-def sample_dataframe_data(sample_regression_data):
-    """
-    Convert regression data to pandas DataFrame format.
-
-    Returns:
-        Tuple of (X_df, y_series) as pandas objects
-    """
-    X, y = sample_regression_data
-
-    X_df = pd.DataFrame(
-        X,
-        columns=[f"feature_{i}" for i in range(X.shape[1])]
+def simple_cash_flow_input() -> CashFlowInput:
+    """Simple cash flow input for basic testing."""
+    return CashFlowInput(
+        initial_investment=100000.0,
+        cash_flows=[20000.0, 25000.0, 30000.0, 35000.0, 40000.0],
+        discount_rate=0.10,
+        project_name="Test Project"
     )
 
-    y_series = pd.Series(y, name="target")
 
-    return X_df, y_series
+@pytest.fixture
+def negative_npv_cash_flow() -> CashFlowInput:
+    """Cash flow input that results in negative NPV."""
+    return CashFlowInput(
+        initial_investment=100000.0,
+        cash_flows=[5000.0, 5000.0, 5000.0, 5000.0, 5000.0],
+        discount_rate=0.10,
+        project_name="Negative NPV Project"
+    )
 
 
 @pytest.fixture
-def train_test_split_data(sample_regression_data):
-    """
-    Split sample data into train and test sets.
+def high_return_cash_flow() -> CashFlowInput:
+    """Cash flow input with high returns."""
+    return CashFlowInput(
+        initial_investment=50000.0,
+        cash_flows=[25000.0, 30000.0, 35000.0, 40000.0, 45000.0],
+        discount_rate=0.08,
+        project_name="High Return Project"
+    )
 
-    Returns:
-        Tuple of (X_train, X_test, y_train, y_test)
-    """
-    X, y = sample_regression_data
 
-    split_idx = int(len(X) * 0.8)
+@pytest.fixture
+def discount_rate_config() -> DiscountRateConfig:
+    """Standard discount rate configuration for sensitivity analysis."""
+    return DiscountRateConfig(
+        base_rate=0.10,
+        min_rate=0.05,
+        max_rate=0.20,
+        step_size=0.01
+    )
 
-    X_train, X_test = X[:split_idx], X[split_idx:]
-    y_train, y_test = y[:split_idx], y[split_idx:]
 
-    return X_train, X_test, y_train, y_test
+@pytest.fixture
+def cash_flow_projection() -> CashFlowProjection:
+    """Cash flow projection for modeling tests."""
+    return CashFlowProjection(
+        periods=[1, 2, 3, 4, 5],
+        revenues=[50000.0, 55000.0, 60000.0, 65000.0, 70000.0],
+        operating_costs=[20000.0, 21000.0, 22000.0, 23000.0, 24000.0],
+        capital_expenditures=[5000.0, 0.0, 0.0, 0.0, 10000.0],
+        initial_investment=100000.0,
+        terminal_value=50000.0
+    )
+
+
+@pytest.fixture
+def pv_project_cash_flow() -> CashFlowInput:
+    """Realistic PV solar project cash flow."""
+    return CashFlowInput(
+        initial_investment=500000.0,  # $500k installation
+        cash_flows=[
+            80000.0,   # Year 1: Energy sales
+            82000.0,   # Year 2: Slight increase
+            84000.0,   # Year 3
+            86000.0,   # Year 4
+            88000.0,   # Year 5
+            90000.0,   # Year 6
+            92000.0,   # Year 7
+            94000.0,   # Year 8
+            96000.0,   # Year 9
+            98000.0,   # Year 10: Last year
+        ],
+        discount_rate=0.08,
+        project_name="PV Solar Installation"
+    )
