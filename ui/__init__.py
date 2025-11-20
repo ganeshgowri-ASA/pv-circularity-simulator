@@ -1,3 +1,1 @@
-"""Streamlit UI components for PV system validation."""
-
-__version__ = "0.1.0"
+"""Streamlit UI components for PV circularity simulator."""

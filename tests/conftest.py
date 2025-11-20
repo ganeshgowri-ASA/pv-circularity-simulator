@@ -1,123 +1,83 @@
-"""
-Pytest configuration and shared fixtures for PV Circularity Simulator tests.
-
-This module provides common test fixtures and configuration used across
-all test modules.
-"""
+"""Pytest configuration and shared fixtures for testing."""
 
 import pytest
-from typing import List
+import sys
+from pathlib import Path
 
-from src.pv_simulator.core.models import (
-    InvestmentInput,
-    CashFlow,
-    SensitivityInput,
+# Add src to path
+src_path = Path(__file__).parent.parent / "src"
+sys.path.insert(0, str(src_path))
+
+from pv_simulator.models.thermal import (
+    TemperatureConditions,
+    ThermalParameters,
+    MountingConfiguration,
+    TemperatureCoefficients,
 )
-from src.pv_simulator.core.enums import CurrencyType, SensitivityParameter
+from pv_simulator.models.noct import (
+    NOCTSpecification,
+    NOCTTestConditions,
+    ModuleNOCTData,
+)
 
 
 @pytest.fixture
-def basic_investment_input():
-    """Basic investment scenario for testing."""
-    return InvestmentInput(
-        initial_investment=100000,
-        annual_revenue=25000,
-        annual_costs=5000,
-        discount_rate=0.10,
-        project_lifetime=25,
-        currency=CurrencyType.USD,
-        tax_rate=0.0,
-        salvage_value=0.0,
-        inflation_rate=0.0,
+def standard_conditions():
+    """Standard test conditions fixture."""
+    return TemperatureConditions(
+        ambient_temp=25.0,
+        irradiance=1000.0,
+        wind_speed=3.0,
     )
 
 
 @pytest.fixture
-def complex_investment_input():
-    """Complex investment scenario with tax, salvage value, and inflation."""
-    return InvestmentInput(
-        initial_investment=500000,
-        annual_revenue=120000,
-        annual_costs=30000,
-        discount_rate=0.08,
-        project_lifetime=30,
-        currency=CurrencyType.EUR,
-        tax_rate=0.21,
-        salvage_value=50000,
-        inflation_rate=0.02,
+def thermal_parameters():
+    """Standard thermal parameters fixture."""
+    return ThermalParameters()
+
+
+@pytest.fixture
+def mounting_config():
+    """Standard mounting configuration fixture."""
+    return MountingConfiguration(mounting_type="open_rack")
+
+
+@pytest.fixture
+def temp_coefficients():
+    """Standard temperature coefficients fixture."""
+    return TemperatureCoefficients(
+        power=-0.0040,
+        voc=-0.0030,
+        isc=0.0005,
     )
 
 
 @pytest.fixture
-def simple_cash_flows() -> List[CashFlow]:
-    """Simple cash flow scenario for testing."""
-    return [
-        CashFlow(
-            year=0,
-            inflow=0,
-            outflow=100000,
-            net_flow=-100000,
-            cumulative_flow=-100000,
-            discounted_flow=-100000,
-        ),
-        CashFlow(
-            year=1,
-            inflow=25000,
-            outflow=5000,
-            net_flow=20000,
-            cumulative_flow=-80000,
-            discounted_flow=18181.82,
-        ),
-        CashFlow(
-            year=2,
-            inflow=25000,
-            outflow=5000,
-            net_flow=20000,
-            cumulative_flow=-60000,
-            discounted_flow=16528.93,
-        ),
-        CashFlow(
-            year=3,
-            inflow=25000,
-            outflow=5000,
-            net_flow=20000,
-            cumulative_flow=-40000,
-            discounted_flow=15026.30,
-        ),
-        CashFlow(
-            year=4,
-            inflow=25000,
-            outflow=5000,
-            net_flow=20000,
-            cumulative_flow=-20000,
-            discounted_flow=13660.27,
-        ),
-        CashFlow(
-            year=5,
-            inflow=25000,
-            outflow=5000,
-            net_flow=20000,
-            cumulative_flow=0,
-            discounted_flow=12418.43,
-        ),
-    ]
-
-
-@pytest.fixture
-def sensitivity_input_discount_rate():
-    """Sensitivity input for discount rate analysis."""
-    return SensitivityInput(
-        parameter=SensitivityParameter.DISCOUNT_RATE,
-        base_value=0.10,
-        variation_range=[-20, -10, 0, 10, 20],
+def noct_specification():
+    """Standard NOCT specification fixture."""
+    return NOCTSpecification(
+        noct_celsius=45.0,
+        test_conditions=NOCTTestConditions(),
     )
 
 
 @pytest.fixture
-def sensitivity_input_revenue():
-    """Sensitivity input for revenue analysis."""
-    return SensitivityInput(
-        parameter=SensitivityParameter.ANNUAL_REVENUE,
-        base_value=25000,
-        variation_range=[-30, -15, 0, 15, 30],
+def sample_module_noct_data(noct_specification):
+    """Sample B03 module NOCT data fixture."""
+    return ModuleNOCTData(
+        module_id="B03-00001",
+        manufacturer="TestManufacturer",
+        model_name="TestModule",
+        technology="mono_si",
+        noct_spec=noct_specification,
+        temp_coeff_power=-0.0040,
+        temp_coeff_voc=-0.0030,
+        temp_coeff_isc=0.0005,
+        rated_power_stc=400.0,
+        efficiency_stc=20.0,
+        module_area=2.0,
+        cell_count=72,
+        b03_verified=True,
+        data_source="test_fixture",
     )

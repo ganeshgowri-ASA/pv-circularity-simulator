@@ -1,0 +1,21 @@
+module_id,manufacturer,model_name,technology,noct_celsius,temp_coeff_power,temp_coeff_voc,temp_coeff_isc,rated_power_stc,efficiency_stc,module_area,cell_count,heat_capacity,absorptivity,emissivity,b03_verified,data_source,test_date,notes
+B03-00001,SunPower,Maxeon 3,mono_si,42.0,-0.0029,-0.00265,0.00053,400,22.6,1.812,96,11500,0.91,0.84,TRUE,B03_lab_measurement,2024-01-15,High efficiency monocrystalline module
+B03-00002,JinkoSolar,Tiger Pro 72HC,mono_si,44.5,-0.0034,-0.00280,0.00050,455,20.8,2.187,144,11200,0.90,0.85,TRUE,B03_lab_measurement,2024-01-20,Half-cut cell technology
+B03-00003,LONGi,Hi-MO 5,mono_si,43.0,-0.0033,-0.00275,0.00051,450,21.2,2.125,132,11300,0.90,0.85,TRUE,B03_lab_measurement,2024-02-01,Gallium-doped monocrystalline
+B03-00004,Trina Solar,Vertex S,mono_si,45.0,-0.0036,-0.00285,0.00049,405,20.5,1.983,120,11000,0.89,0.86,TRUE,B03_lab_measurement,2024-02-10,210mm wafer technology
+B03-00005,Canadian Solar,HiKu6,mono_si,44.0,-0.0035,-0.00278,0.00050,435,21.0,2.074,120,11100,0.90,0.85,TRUE,B03_lab_measurement,2024-02-15,PERC technology
+B03-00006,First Solar,Series 6,cdte,46.0,-0.0025,-0.00230,0.00040,445,18.5,2.406,N/A,9500,0.88,0.90,TRUE,B03_lab_measurement,2024-03-01,CdTe thin film technology
+B03-00007,REC Solar,Alpha Pure-R,mono_si,43.5,-0.0031,-0.00270,0.00052,405,21.7,1.870,120,11400,0.91,0.84,TRUE,B03_lab_measurement,2024-03-10,Heterojunction technology
+B03-00008,Meyer Burger,White,hjt,41.5,-0.0028,-0.00255,0.00055,400,22.0,1.818,108,12000,0.92,0.83,TRUE,B03_lab_measurement,2024-03-20,Heterojunction with white backsheet
+B03-00009,Hanwha Q CELLS,Q.PEAK DUO ML-G10+,mono_si,44.8,-0.0037,-0.00288,0.00048,425,20.3,2.096,132,11000,0.89,0.86,TRUE,B03_lab_measurement,2024-04-01,Q.ANTUM DUO Z technology
+B03-00010,JA Solar,DeepBlue 3.0,bifacial,43.0,-0.0034,-0.00275,0.00051,440,21.3,2.067,144,11200,0.90,0.85,TRUE,B03_lab_measurement,2024-04-15,Bifacial PERC module
+B03-00011,Risen Energy,Titan S,mono_si,45.5,-0.0038,-0.00290,0.00047,430,20.1,2.140,120,10900,0.89,0.86,TRUE,B03_lab_measurement,2024-05-01,High temperature coefficient
+B03-00012,Maxeon Solar,Maxeon 6,mono_si,41.0,-0.0027,-0.00260,0.00054,430,23.5,1.830,96,11800,0.92,0.83,TRUE,B03_lab_measurement,2024-05-10,Premium efficiency module
+B03-00013,Jolywood,Niwa,bifacial,42.5,-0.0032,-0.00272,0.00051,445,21.8,2.041,120,11300,0.91,0.84,TRUE,B03_lab_measurement,2024-05-20,N-type bifacial module
+B03-00014,Phono Solar,Twin Plus,bifacial,44.2,-0.0035,-0.00280,0.00050,410,20.6,1.992,120,11100,0.90,0.85,TRUE,B03_lab_measurement,2024-06-01,Bifacial half-cut technology
+B03-00015,Aiko Solar,A-MAX,mono_si,42.8,-0.0033,-0.00273,0.00051,455,22.1,2.060,120,11400,0.91,0.84,TRUE,B03_lab_measurement,2024-06-15,Back contact technology
+B03-00016,GCL,GCL-M3,mono_si,45.2,-0.0036,-0.00286,0.00049,400,19.8,2.020,120,10800,0.89,0.86,TRUE,B03_lab_measurement,2024-07-01,Standard monocrystalline
+B03-00017,Astronergy,ASTRO 5,mono_si,44.5,-0.0034,-0.00279,0.00050,440,20.9,2.105,144,11100,0.90,0.85,TRUE,B03_lab_measurement,2024-07-15,Half-cut PERC technology
+B03-00018,Seraphim,SIV-N,mono_si,43.8,-0.0033,-0.00276,0.00051,425,21.1,2.015,120,11200,0.90,0.85,TRUE,B03_lab_measurement,2024-08-01,N-type TOPCon technology
+B03-00019,Heckert Solar,NeMo 2.0,mono_si,44.0,-0.0035,-0.00281,0.00050,385,20.4,1.887,120,11000,0.90,0.85,TRUE,B03_lab_measurement,2024-08-15,High quality German module
+B03-00020,Tongwei Solar,TW-S,perovskite,40.0,-0.0024,-0.00220,0.00060,380,24.5,1.550,N/A,8500,0.93,0.88,TRUE,B03_lab_measurement,2024-09-01,Perovskite-silicon tandem (experimental)

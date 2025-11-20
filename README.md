@@ -1,354 +1,276 @@
-# 🌞 PV Circularity Simulator
+# ☀️ PV Circularity Simulator
 
-End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
+**End-to-end PV lifecycle simulation platform with advanced thermal modeling**
 
-## 🆕 BATCH4-B05-S05: System Design UI & Interactive Configurator
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.31+-FF4B4B.svg)](https://streamlit.io)
 
-A comprehensive system design interface integrating all B05 modules (PVsyst, mounting, shade analysis, optimization) with interactive configurator, 3D visualization, and real-time design validation.
+## 🎯 Overview
 
-### ✨ Features
+The PV Circularity Simulator is a comprehensive platform for modeling photovoltaic systems throughout their lifecycle, from cell design to circular economy analysis. The platform features advanced thermal modeling capabilities with multiple industry-standard temperature prediction models and integration with the B03 NOCT database.
 
-#### Core Components
+### Key Features
 
-1. **SystemDesignDashboard** - Main dashboard with comprehensive configuration panels
-   - `create_main_layout()` - Multi-tab interface with site, modules, inverters, mounting, optimization
-   - `module_selection_panel()` - Interactive module database with filtering and configuration
-   - `inverter_configuration()` - Inverter selection with MPPT configuration
-   - `mounting_structure_selector()` - Mounting type, tilt, azimuth, tracking configuration
-   - `optimization_controls()` - System optimization with multi-objective functions
+- 🌡️ **Advanced Thermal Modeling**
+  - Multiple temperature models (Sandia, PVsyst, Faiman, NOCT-based)
+  - Heat transfer physics calculations
+  - Wind speed and mounting configuration effects
+  - Thermal time constant analysis
 
-2. **InteractiveConfigurator** - Drag-drop layout with real-time validation
-   - `drag_drop_layout()` - Interactive array layout designer (automatic & manual modes)
-   - `real_time_validation()` - Live validation against design constraints
-   - `design_constraints_check()` - Electrical, structural, and regulatory compliance
-   - `auto_optimization_trigger()` - Automatic optimization suggestions
-   - `design_comparison_view()` - Multi-design comparison interface
+- 📊 **Interactive Dashboards**
+  - Real-time temperature predictions
+  - Cooling analysis and optimization
+  - Heat transfer coefficient breakdowns
+  - Time series analysis
 
-3. **Visualization3D** - Advanced 3D rendering and analysis
-   - `render_system_3d()` - Complete 3D system visualization with Plotly
-   - `animated_sun_path()` - Dynamic sun path calculation and display
-   - `shade_visualization()` - Real-time shade analysis and visualization
-   - `terrain_overlay()` - Terrain integration in 3D view
-   - `interactive_camera_controls()` - Multi-view camera controls (isometric, top, front, side)
+- 🗄️ **B03 NOCT Database**
+  - 20+ verified module specifications
+  - Multiple technologies (mono-Si, CdTe, HJT, bifacial, perovskite)
+  - Real-world thermal performance data
 
-4. **DesignValidation** - Comprehensive NEC compliance and validation
-   - `check_nec_compliance()` - NEC 2023 Article 690 validation
-   - `validate_string_sizing()` - String voltage and MPPT range validation
-   - `check_voltage_limits()` - Temperature-corrected voltage limit checks
-   - `verify_current_limits()` - Current rating and safety factor validation
-   - `flag_design_issues()` - Best practice violations and optimization opportunities
+- 🔬 **Production-Ready Code**
+  - Full type hints and Pydantic models
+  - Comprehensive docstrings
+  - Extensive test coverage
+  - pvlib integration
 
-5. **PerformancePreview** - Energy and financial analysis
-   - `annual_energy_estimate()` - Monthly and annual energy production
-   - `pr_calculation()` - Performance ratio with detailed loss breakdown
-   - `shading_loss_summary()` - Comprehensive shading loss analysis
-   - `financial_preview()` - LCOE, NPV, IRR, payback period calculations
-   - `export_design_report()` - Professional PDF/Excel/JSON reports
+## 🚀 Quick Start
 
-6. **SystemDesignUI** - Streamlit multi-page application
-   - 🏠 Home - Welcome and quick start guide
-   - 📍 Site Configuration - Location and environmental parameters
-   - 🔲 Module Selection - Interactive module database and configuration
-   - ⚡ Inverters - Inverter selection and MPPT configuration
-   - 📐 Layout Designer - Drag-drop array layout with optimization
-   - 🏗️ Mounting - Structure configuration (fixed, tracking, rooftop)
-   - 🎯 Optimization - Multi-objective optimization controls
-   - ✅ Validation - NEC compliance and design validation
-   - 📊 Performance - Energy, PR, and financial analysis
-   - 🎨 3D Visualization - Interactive 3D rendering with sun path
-   - 📈 Results & Export - Comprehensive reports (PDF, Excel, JSON)
-
-### 🚀 Quick Start
-
-#### Installation
+### Installation
 
 ```bash
 # Clone the repository
 git clone https://github.com/your-org/pv-circularity-simulator.git
 cd pv-circularity-simulator
 
-# Run the startup script (creates venv, installs dependencies, launches app)
-./RUN.sh
-```
-
-#### Manual Installation
-
-```bash
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the Streamlit application
-streamlit run ui/system_design_app.py
+# Or using Poetry
+poetry install
 ```
 
-### 📁 Project Structure
+### Running the Application
+
+```bash
+# Launch Streamlit app
+streamlit run ui/app.py
+```
+
+Navigate to `http://localhost:8501` in your browser.
+
+## 📖 Documentation
+
+### Temperature Modeling
+
+The simulator provides four main temperature prediction models:
+
+#### 1. Sandia Model (King et al. 2004)
+
+Empirical model based on outdoor testing:
+
+```python
+from pv_simulator.core.cell_temperature import CellTemperatureModel
+from pv_simulator.models.thermal import TemperatureConditions, MountingConfiguration
+
+conditions = TemperatureConditions(
+    ambient_temp=25.0,
+    irradiance=1000.0,
+    wind_speed=3.0
+)
+mounting = MountingConfiguration(mounting_type="open_rack")
+
+model = CellTemperatureModel(conditions=conditions, mounting=mounting)
+result = model.sandia_model()
+
+print(f"Cell Temperature: {result.cell_temperature:.1f}°C")
+```
+
+#### 2. PVsyst Model
+
+Heat loss factor based model:
+
+```python
+result = model.pvsyst_model(u_c=29.0, u_v=0.0)
+```
+
+#### 3. Faiman Model
+
+Two-parameter heat transfer model:
+
+```python
+result = model.faiman_model(u0=25.0, u1=6.84)
+```
+
+#### 4. NOCT-based Model
+
+Simple NOCT-based temperature estimation:
+
+```python
+result = model.noct_based(noct=45.0)
+```
+
+### Using B03 NOCT Database
+
+```python
+from pv_simulator.data.loaders import load_b03_noct_database
+
+# Load database
+loader = load_b03_noct_database()
+
+# Get module by ID
+module = loader.get_module_by_id("B03-00001")
+print(f"NOCT: {module.noct_spec.noct_celsius}°C")
+print(f"Power: {module.rated_power_stc}W")
+
+# Search by manufacturer
+modules = loader.get_modules_by_manufacturer("SunPower")
+
+# Get statistics
+stats = loader.get_statistics()
+print(f"Total modules: {stats['total_modules']}")
+```
+
+### Heat Transfer Analysis
+
+```python
+from pv_simulator.core.cell_temperature import ModuleTemperatureCalculator
+
+calculator = ModuleTemperatureCalculator(conditions=conditions, mounting=mounting)
+
+# Calculate heat transfer coefficients
+coeffs = calculator.heat_transfer_coefficients()
+print(f"Front convective: {coeffs.convective_front:.2f} W/(m²·K)")
+
+# Analyze wind speed effects
+wind_effects = calculator.wind_speed_effects()
+
+# Compare mounting configurations
+mount_comparison = calculator.mounting_configuration_effects()
+
+# Calculate thermal time constants
+tau = calculator.thermal_time_constants(wind_speed=3.0)
+print(f"Heating time constant: {tau['tau_heating_minutes']:.1f} minutes")
+```
+
+## 🏗️ Project Structure
 
 ```
 pv-circularity-simulator/
-├── src/
-│   ├── models/
-│   │   └── pv_components.py           # Pydantic data models
-│   └── b05_system_design/
-│       ├── dashboard/
-│       │   └── system_design_dashboard.py
-│       ├── configurator/
-│       │   └── interactive_configurator.py
-│       ├── visualization/
-│       │   └── visualization_3d.py
-│       ├── validation/
-│       │   └── design_validation.py
-│       └── performance/
-│           └── performance_preview.py
-├── ui/
-│   └── system_design_app.py           # Main Streamlit application
-├── tests/
-│   └── b05_system_design/             # Unit tests
-├── docs/                              # Documentation
-├── requirements.txt                   # Python dependencies
-├── pyproject.toml                     # Project configuration
-├── RUN.sh                            # Startup script
-└── README.md                         # This file
+├── src/pv_simulator/          # Core library
+│   ├── models/                # Pydantic data models
+│   │   ├── thermal.py        # Thermal modeling models
+│   │   └── noct.py           # NOCT specifications
+│   ├── core/                  # Core simulation logic
+│   │   └── cell_temperature.py  # Temperature modeling
+│   ├── data/                  # Data management
+│   │   └── loaders.py        # NOCT data loaders
+│   └── utils/                 # Utility functions
+│       ├── constants.py      # Physical constants
+│       └── helpers.py        # Helper functions
+├── ui/                        # Streamlit interface
+│   ├── app.py                # Main application
+│   ├── pages/                # Dashboard pages
+│   │   └── 1_🌡️_Thermal_Modeling.py
+│   └── components/           # Reusable components
+│       └── thermal_viz.py   # Visualization components
+├── data/                      # Data files
+│   └── raw/noct/
+│       └── b03_noct_data.csv  # B03 NOCT database
+├── tests/                     # Test suite
+│   ├── test_models/          # Model tests
+│   └── test_core/            # Core logic tests
+└── examples/                  # Usage examples
 ```
 
-### 🎯 Usage Examples
-
-#### 1. Basic System Design Workflow
-
-```python
-from src.models.pv_components import PVModule, Inverter, SystemDesign, SiteLocation
-from src.b05_system_design.dashboard.system_design_dashboard import SystemDesignDashboard
-
-# Initialize dashboard
-dashboard = SystemDesignDashboard()
-
-# Configure site
-site = SiteLocation(
-    name="My Solar Site",
-    latitude=37.7749,
-    longitude=-122.4194,
-    elevation=10.0,
-    albedo=0.2
-)
-
-# Select module (from database)
-module = dashboard.module_database["Trina Solar TSM-DEG21C.20"]
-
-# Create string configuration
-string_config = StringConfiguration(
-    modules_per_string=20,
-    num_strings=10,
-    module=module
-)
-
-# Select inverter
-inverter = dashboard.inverter_database["SMA Sunny Tripower CORE1 110"]
-
-# Create system design
-design = SystemDesign(
-    design_id="design_001",
-    design_name="My PV System",
-    site=site,
-    modules=[string_config],
-    inverters=[inverter],
-    mounting=mounting_config,
-    dc_ac_ratio=1.25
-)
-```
-
-#### 2. Design Validation
-
-```python
-from src.b05_system_design.validation.design_validation import DesignValidation
-
-# Initialize validator
-validator = DesignValidation(nec_version="2023")
-
-# Run comprehensive validation
-validation_result = validator.validate_complete_design(design)
-
-if validation_result.is_valid:
-    print("✅ Design is valid!")
-else:
-    print(f"❌ Found {validation_result.error_count} errors")
-    for error in validation_result.errors:
-        print(f"  - {error}")
-```
-
-#### 3. Performance Analysis
-
-```python
-from src.b05_system_design.performance.performance_preview import PerformancePreview
-
-# Initialize performance analyzer
-performance = PerformancePreview()
-
-# Calculate energy estimate
-energy = performance.annual_energy_estimate(design, site)
-print(f"Annual Energy: {energy.annual_energy:,.0f} kWh")
-print(f"Specific Yield: {energy.specific_yield:.0f} kWh/kWp")
-print(f"Capacity Factor: {energy.capacity_factor:.1f}%")
-
-# Calculate performance ratio
-pr = performance.pr_calculation(design, site)
-print(f"Performance Ratio: {pr.pr_value:.3f}")
-
-# Financial analysis
-financial = performance.financial_preview(design, site)
-print(f"LCOE: ${financial.lcoe:.3f}/kWh")
-print(f"Payback Period: {financial.payback_period:.1f} years")
-print(f"NPV: ${financial.npv:,.0f}")
-```
-
-#### 4. 3D Visualization
-
-```python
-from src.b05_system_design.visualization.visualization_3d import Visualization3D
-
-# Initialize 3D visualizer
-viz = Visualization3D()
-
-# Render 3D system
-fig = viz.render_system_3d(
-    layout=array_layout,
-    mounting=mounting_config,
-    site=site
-)
-
-# Calculate sun path
-sun_path = viz.animated_sun_path(site, datetime.now(), num_points=48)
-
-# Perform shade analysis
-shaded_layout = viz.shade_visualization(array_layout, site, datetime.now())
-```
-
-### 🔧 Technical Requirements
-
-- **Python**: >=3.9
-- **Core Libraries**:
-  - `streamlit` - Web application framework
-  - `plotly` - Interactive 3D visualization
-  - `pydantic` - Data validation and modeling
-  - `pandas` - Data manipulation
-  - `numpy` - Numerical computing
-  - `scipy` - Scientific computing
-- **Optional**:
-  - `pvlib-python` - Advanced solar calculations
-  - `pyvista` - Advanced 3D rendering
-
-### 📊 Data Models
-
-All components use Pydantic models for type safety and validation:
-
-- **PVModule** - Complete module specifications (electrical, physical, thermal)
-- **Inverter** - Inverter characteristics (power, voltage, MPPT, efficiency)
-- **MountingStructure** - Mounting configuration (type, tilt, azimuth, tracking)
-- **StringConfiguration** - String design (modules per string, parallel strings)
-- **SiteLocation** - Geographic and environmental parameters
-- **SystemDesign** - Complete system design with all components
-- **ValidationResult** - Validation outcomes and issues
-- **EnergyEstimate** - Energy production calculations
-- **PerformanceRatio** - PR calculations with loss breakdown
-- **FinancialMetrics** - Cost and revenue analysis
-
-### ✅ Validation Features
-
-#### NEC 2023 Compliance Checks
-
-- **NEC 690.7** - Maximum voltage calculations (temperature-corrected)
-- **NEC 690.8** - Circuit sizing and current (1.25× safety factor)
-- **NEC 690.9** - Overcurrent protection requirements
-- **NEC 690.12** - Rapid shutdown compliance
-- **NEC 690.13** - Disconnecting means verification
-- **NEC 690.35** - Three-phase balance checking
-
-#### Design Validation
-
-- String voltage within MPPT range
-- Temperature-corrected voltage limits
-- Current rating compliance
-- DC/AC ratio optimization
-- Module orientation analysis
-- System loss assessment
-
-### 📈 Performance Metrics
-
-- **Annual Energy Production** - kWh/year with monthly breakdown
-- **Specific Yield** - kWh/kWp/year
-- **Capacity Factor** - Percentage of theoretical maximum
-- **Performance Ratio** - Industry-standard PR calculation
-- **Loss Analysis** - Detailed waterfall of all system losses
-- **Shading Analysis** - Near, far, and row-to-row shading
-- **Financial Metrics** - LCOE, NPV, IRR, payback period
-
-### 🎨 Visualization Features
-
-- **3D System Rendering** - Interactive Plotly 3D visualization
-- **Sun Path Animation** - Annual and daily sun path display
-- **Shade Analysis** - Real-time shading calculation and display
-- **Camera Controls** - Isometric, top, front, side views
-- **Layout Visualization** - 2D array layout with module positioning
-- **Loss Waterfall** - Interactive loss breakdown chart
-- **Monthly Production** - Bar charts of monthly energy
-
-### 📄 Export Formats
-
-- **Excel** - Multi-sheet workbook with summary, monthly data, losses, components
-- **JSON** - Complete design data in JSON format
-- **PDF** - Professional design report (requires additional configuration)
-
-### 🧪 Testing
+## 🧪 Testing
 
 ```bash
 # Run all tests
 pytest
 
-# Run specific test module
-pytest tests/b05_system_design/test_validation.py
-
 # Run with coverage
-pytest --cov=src --cov-report=html
+pytest --cov=pv_simulator --cov-report=html
+
+# Run specific test file
+pytest tests/test_core/test_cell_temperature.py
 ```
 
-### 📚 Documentation
+## 📊 B03 NOCT Database
 
-Full documentation available at: [https://pv-circularity-simulator.readthedocs.io](https://pv-circularity-simulator.readthedocs.io)
+The simulator includes a comprehensive database of 20+ PV modules with verified NOCT data:
 
-Build documentation locally:
+| Technology | Count | NOCT Range | Efficiency Range |
+|-----------|-------|------------|------------------|
+| Mono-Si | 15 | 41-45.5°C | 19.8-23.5% |
+| Bifacial | 3 | 42.5-44.2°C | 20.6-21.8% |
+| HJT | 2 | 41-43.5°C | 21.7-22.0% |
+| CdTe | 1 | 46.0°C | 18.5% |
+| Perovskite | 1 | 40.0°C | 24.5% |
 
-```bash
-cd docs
-pip install -r requirements.txt
-make html
+## 🔧 Technical Details
+
+### Temperature Models
+
+**Sandia Model:**
+```
+T_module = T_ambient + (E/E0) * exp(a + b*ws) + ΔT
 ```
 
-### 🤝 Contributing
+**PVsyst Model:**
+```
+T_cell = T_ambient + (E / (u_c + u_v * ws)) * (1 - η)
+```
 
-Contributions are welcome! Please read our contributing guidelines and submit pull requests.
+**Faiman Model:**
+```
+T_module = T_ambient + (E * α) / (u0 + u1 * ws)
+```
 
-### 📝 License
+**NOCT-based:**
+```
+T_cell = T_ambient + (NOCT - 20) * (E / 800) * wind_correction
+```
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Heat Transfer Calculations
 
-### 🙏 Acknowledgments
+- Convective heat transfer (forced and natural convection)
+- Radiative heat transfer (sky and ground exchange)
+- Mounting configuration effects
+- Thermal time constants (heating/cooling response)
 
-- **NEC 2023** - National Electrical Code for compliance standards
-- **NREL** - National Renewable Energy Laboratory for solar data
-- **Streamlit** - For the excellent web framework
-- **Plotly** - For interactive visualization capabilities
+## 📚 References
 
-### 📞 Support
+1. **King, D. L., et al. (2004).** "Sandia Photovoltaic Array Performance Model." SAND2004-3535.
+2. **Faiman, D. (2008).** "Assessing the outdoor operating temperature of photovoltaic modules." Progress in Photovoltaics, 16(4), 307-315.
+3. **Mermoud, A. (2012).** "PVsyst User's Manual."
+4. **IEC 61215** - Terrestrial photovoltaic (PV) modules - Design qualification and type approval
 
-For issues, questions, or contributions:
-- GitHub Issues: [https://github.com/your-org/pv-circularity-simulator/issues](https://github.com/your-org/pv-circularity-simulator/issues)
-- Email: support@pv-circularity.com
-- Documentation: [https://pv-circularity-simulator.readthedocs.io](https://pv-circularity-simulator.readthedocs.io)
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- pvlib-python for photovoltaic modeling tools
+- Streamlit for the interactive dashboard framework
+- The PV research community for thermal modeling methodologies
+
+## 📧 Contact
+
+For questions, issues, or suggestions, please open an issue on GitHub.
 
 ---
 
-**Status**: Production-ready ✅
-**Version**: 1.0.0
-**Last Updated**: November 2025
+**Built with ❤️ for the solar energy community**
