@@ -1,0 +1,197 @@
+{
+  "testing_standards": {
+    "IEC_61215": {
+      "name": "Crystalline Silicon Terrestrial PV Modules - Design Qualification and Type Approval",
+      "scope": "Design qualification and type approval for crystalline silicon modules",
+      "tests": [
+        "Visual inspection",
+        "Maximum power determination",
+        "Insulation test",
+        "Temperature coefficient measurement",
+        "NOCT measurement",
+        "Performance at low irradiance",
+        "Outdoor exposure test",
+        "Hot-spot endurance test",
+        "UV preconditioning test",
+        "Thermal cycling test",
+        "Humidity-freeze test",
+        "Damp-heat test",
+        "Robustness of terminations test",
+        "Wet leakage current test",
+        "Mechanical load test",
+        "Hail test",
+        "Bypass diode thermal test"
+      ]
+    },
+    "IEC_61730": {
+      "name": "PV Module Safety Qualification",
+      "scope": "Safety qualification for PV modules",
+      "parts": {
+        "part_1": "Requirements for construction",
+        "part_2": "Requirements for testing"
+      }
+    },
+    "IEC_62804": {
+      "name": "PV Modules - Test Methods for Detection of Potential-Induced Degradation",
+      "scope": "Test methods for PID detection",
+      "test_conditions": {
+        "voltage": "±1000V or ±1500V",
+        "temperature": "60°C or 85°C",
+        "humidity": "85% RH",
+        "duration": "96 hours or longer"
+      }
+    },
+    "IEC_61853": {
+      "name": "PV Module Performance Testing and Energy Rating",
+      "scope": "Performance testing and energy rating",
+      "parts": {
+        "part_1": "Irradiance and temperature performance",
+        "part_2": "Spectral responsivity, incidence angle and module temperature",
+        "part_3": "Energy rating of PV modules",
+        "part_4": "Standard reference climatic profiles"
+      }
+    }
+  },
+  "performance_guarantees": {
+    "tier_1_manufacturer": {
+      "power_tolerance": {
+        "positive": 5,
+        "negative": 0,
+        "unit": "W"
+      },
+      "linear_performance_warranty": {
+        "year_1": 98.0,
+        "year_10": 90.0,
+        "year_25": 84.8,
+        "degradation_rate_annual": 0.55
+      },
+      "product_warranty_years": 12
+    },
+    "standard_manufacturer": {
+      "power_tolerance": {
+        "positive": 3,
+        "negative": 3,
+        "unit": "W"
+      },
+      "linear_performance_warranty": {
+        "year_1": 97.0,
+        "year_10": 90.0,
+        "year_25": 80.0,
+        "degradation_rate_annual": 0.70
+      },
+      "product_warranty_years": 10
+    }
+  },
+  "environmental_standards": {
+    "WEEE": {
+      "name": "Waste Electrical and Electronic Equipment Directive",
+      "scope": "EU directive on e-waste management",
+      "requirements": {
+        "collection_rate": 85,
+        "recovery_rate": 80,
+        "recycling_rate": 80,
+        "unit": "percent"
+      }
+    },
+    "RoHS": {
+      "name": "Restriction of Hazardous Substances",
+      "scope": "Limits on hazardous materials in electrical equipment",
+      "restricted_substances": [
+        "Lead (Pb)",
+        "Mercury (Hg)",
+        "Cadmium (Cd)",
+        "Hexavalent chromium (Cr6+)",
+        "Polybrominated biphenyls (PBB)",
+        "Polybrominated diphenyl ethers (PBDE)",
+        "Bis(2-ethylhexyl) phthalate (DEHP)",
+        "Butyl benzyl phthalate (BBP)",
+        "Dibutyl phthalate (DBP)",
+        "Diisobutyl phthalate (DIBP)"
+      ]
+    },
+    "ISO_14001": {
+      "name": "Environmental Management Systems",
+      "scope": "Framework for environmental management",
+      "focus_areas": [
+        "Environmental policy",
+        "Planning",
+        "Implementation and operation",
+        "Checking and corrective action",
+        "Management review"
+      ]
+    }
+  },
+  "grid_codes": {
+    "IEEE_1547": {
+      "name": "Standard for Interconnection and Interoperability of Distributed Energy Resources",
+      "scope": "North American grid interconnection standard",
+      "requirements": {
+        "voltage_range": "88% to 110% of nominal",
+        "frequency_range": "59.3 to 60.5 Hz",
+        "power_factor": "0.9 lagging to 0.9 leading"
+      }
+    },
+    "VDE_AR_N_4105": {
+      "name": "German Grid Code for Low Voltage",
+      "scope": "German low voltage grid interconnection",
+      "requirements": {
+        "voltage_range": "80% to 115% of nominal",
+        "frequency_range": "47.5 to 51.5 Hz",
+        "power_factor": "0.95 lagging to 0.95 leading"
+      }
+    }
+  },
+  "circularity_standards": {
+    "PV_CYCLE": {
+      "name": "PV CYCLE Recycling Standard",
+      "scope": "European PV module recycling program",
+      "targets": {
+        "collection_rate": 85,
+        "recovery_rate": 85,
+        "recycling_rate": 80,
+        "unit": "percent"
+      }
+    },
+    "Cradle_to_Cradle": {
+      "name": "Cradle to Cradle Certified",
+      "scope": "Product sustainability certification",
+      "levels": [
+        "Basic",
+        "Bronze",
+        "Silver",
+        "Gold",
+        "Platinum"
+      ],
+      "categories": [
+        "Material health",
+        "Material reutilization",
+        "Renewable energy and carbon management",
+        "Water stewardship",
+        "Social fairness"
+      ]
+    }
+  },
+  "performance_metrics": {
+    "performance_ratio": {
+      "excellent": 85,
+      "good": 80,
+      "average": 75,
+      "poor": 70,
+      "unit": "percent"
+    },
+    "capacity_factor": {
+      "utility_scale_high": 25,
+      "utility_scale_average": 20,
+      "rooftop_high": 18,
+      "rooftop_average": 15,
+      "unit": "percent"
+    },
+    "degradation_rate": {
+      "excellent": 0.40,
+      "good": 0.50,
+      "average": 0.70,
+      "warranty_typical": 0.55,
+      "unit": "percent_per_year"
+    }
+  }
+}

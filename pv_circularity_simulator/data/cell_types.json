@@ -1,0 +1,196 @@
+{
+  "cell_technologies": [
+    {
+      "id": "mono_perc",
+      "name": "Monocrystalline PERC",
+      "efficiency_range": {
+        "min": 20.0,
+        "max": 23.5,
+        "typical": 21.5
+      },
+      "temperature_coefficient": {
+        "pmax": -0.35,
+        "voc": -0.28,
+        "isc": 0.05
+      },
+      "cost_per_wp": 0.25,
+      "carbon_footprint_kg_co2e_per_wp": 0.45,
+      "recyclability_score": 85,
+      "properties": {
+        "cell_thickness_um": 160,
+        "bifaciality_factor": 0.70,
+        "degradation_rate_per_year": 0.45,
+        "lid_susceptibility": "medium",
+        "pid_resistance": "good"
+      }
+    },
+    {
+      "id": "poly",
+      "name": "Polycrystalline",
+      "efficiency_range": {
+        "min": 16.5,
+        "max": 19.0,
+        "typical": 17.5
+      },
+      "temperature_coefficient": {
+        "pmax": -0.40,
+        "voc": -0.31,
+        "isc": 0.05
+      },
+      "cost_per_wp": 0.20,
+      "carbon_footprint_kg_co2e_per_wp": 0.40,
+      "recyclability_score": 85,
+      "properties": {
+        "cell_thickness_um": 180,
+        "bifaciality_factor": 0.0,
+        "degradation_rate_per_year": 0.60,
+        "lid_susceptibility": "high",
+        "pid_resistance": "medium"
+      }
+    },
+    {
+      "id": "topcon",
+      "name": "TOPCon",
+      "efficiency_range": {
+        "min": 22.0,
+        "max": 25.0,
+        "typical": 23.5
+      },
+      "temperature_coefficient": {
+        "pmax": -0.30,
+        "voc": -0.25,
+        "isc": 0.05
+      },
+      "cost_per_wp": 0.28,
+      "carbon_footprint_kg_co2e_per_wp": 0.50,
+      "recyclability_score": 85,
+      "properties": {
+        "cell_thickness_um": 140,
+        "bifaciality_factor": 0.75,
+        "degradation_rate_per_year": 0.40,
+        "lid_susceptibility": "low",
+        "pid_resistance": "excellent"
+      }
+    },
+    {
+      "id": "hjt",
+      "name": "Heterojunction (HJT)",
+      "efficiency_range": {
+        "min": 23.0,
+        "max": 26.0,
+        "typical": 24.5
+      },
+      "temperature_coefficient": {
+        "pmax": -0.25,
+        "voc": -0.22,
+        "isc": 0.03
+      },
+      "cost_per_wp": 0.35,
+      "carbon_footprint_kg_co2e_per_wp": 0.55,
+      "recyclability_score": 80,
+      "properties": {
+        "cell_thickness_um": 120,
+        "bifaciality_factor": 0.90,
+        "degradation_rate_per_year": 0.25,
+        "lid_susceptibility": "none",
+        "pid_resistance": "excellent"
+      }
+    },
+    {
+      "id": "ibc",
+      "name": "Interdigitated Back Contact (IBC)",
+      "efficiency_range": {
+        "min": 23.5,
+        "max": 26.5,
+        "typical": 25.0
+      },
+      "temperature_coefficient": {
+        "pmax": -0.28,
+        "voc": -0.26,
+        "isc": 0.04
+      },
+      "cost_per_wp": 0.40,
+      "carbon_footprint_kg_co2e_per_wp": 0.60,
+      "recyclability_score": 80,
+      "properties": {
+        "cell_thickness_um": 150,
+        "bifaciality_factor": 0.0,
+        "degradation_rate_per_year": 0.30,
+        "lid_susceptibility": "low",
+        "pid_resistance": "excellent"
+      }
+    },
+    {
+      "id": "perovskite",
+      "name": "Perovskite (Tandem)",
+      "efficiency_range": {
+        "min": 25.0,
+        "max": 30.0,
+        "typical": 27.0
+      },
+      "temperature_coefficient": {
+        "pmax": -0.20,
+        "voc": -0.18,
+        "isc": 0.02
+      },
+      "cost_per_wp": 0.45,
+      "carbon_footprint_kg_co2e_per_wp": 0.35,
+      "recyclability_score": 60,
+      "properties": {
+        "cell_thickness_um": 100,
+        "bifaciality_factor": 0.0,
+        "degradation_rate_per_year": 0.80,
+        "lid_susceptibility": "high",
+        "pid_resistance": "under_development",
+        "stability": "developing"
+      }
+    }
+  ],
+  "cell_sizes": [
+    {
+      "name": "M6",
+      "dimensions_mm": {
+        "width": 166,
+        "height": 166
+      },
+      "area_m2": 0.027556,
+      "typical_cells_per_module": [60, 120]
+    },
+    {
+      "name": "M10",
+      "dimensions_mm": {
+        "width": 182,
+        "height": 182
+      },
+      "area_m2": 0.033124,
+      "typical_cells_per_module": [60, 120, 132]
+    },
+    {
+      "name": "M12",
+      "dimensions_mm": {
+        "width": 210,
+        "height": 210
+      },
+      "area_m2": 0.0441,
+      "typical_cells_per_module": [60, 120, 144]
+    },
+    {
+      "name": "G1 (156mm)",
+      "dimensions_mm": {
+        "width": 156,
+        "height": 156
+      },
+      "area_m2": 0.024336,
+      "typical_cells_per_module": [60, 72]
+    },
+    {
+      "name": "G12 (210mm)",
+      "dimensions_mm": {
+        "width": 210,
+        "height": 210
+      },
+      "area_m2": 0.0441,
+      "typical_cells_per_module": [120, 132, 144]
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "materials": [
+    {
+      "id": "glass_low_iron",
+      "name": "Low-Iron Tempered Glass",
+      "type": "glass",
+      "thickness_mm": 3.2,
+      "manufacturer": "Generic",
+      "cost_per_sqm": 15.0,
+      "recyclability_score": 95,
+      "carbon_footprint_kg_co2e": 12.5,
+      "properties": {
+        "transmittance": 0.91,
+        "impact_resistance": "high",
+        "weight_kg_per_sqm": 8.0
+      }
+    },
+    {
+      "id": "glass_ar_coated",
+      "name": "Anti-Reflective Coated Glass",
+      "type": "glass",
+      "thickness_mm": 3.2,
+      "manufacturer": "Generic",
+      "cost_per_sqm": 22.0,
+      "recyclability_score": 90,
+      "carbon_footprint_kg_co2e": 14.0,
+      "properties": {
+        "transmittance": 0.96,
+        "impact_resistance": "high",
+        "weight_kg_per_sqm": 8.0
+      }
+    },
+    {
+      "id": "encapsulant_eva",
+      "name": "EVA Encapsulant",
+      "type": "eva",
+      "thickness_mm": 0.45,
+      "manufacturer": "Generic",
+      "cost_per_sqm": 8.0,
+      "recyclability_score": 30,
+      "carbon_footprint_kg_co2e": 3.5,
+      "properties": {
+        "yellowing_resistance": "medium",
+        "moisture_barrier": "medium",
+        "weight_kg_per_sqm": 0.45
+      }
+    },
+    {
+      "id": "encapsulant_poe",
+      "name": "POE Encapsulant",
+      "type": "poe",
+      "thickness_mm": 0.45,
+      "manufacturer": "Generic",
+      "cost_per_sqm": 12.0,
+      "recyclability_score": 35,
+      "carbon_footprint_kg_co2e": 4.2,
+      "properties": {
+        "yellowing_resistance": "high",
+        "moisture_barrier": "high",
+        "weight_kg_per_sqm": 0.42
+      }
+    },
+    {
+      "id": "backsheet_tpt",
+      "name": "TPT Backsheet",
+      "type": "backsheet",
+      "thickness_mm": 0.35,
+      "manufacturer": "Generic",
+      "cost_per_sqm": 10.0,
+      "recyclability_score": 20,
+      "carbon_footprint_kg_co2e": 5.0,
+      "properties": {
+        "moisture_barrier": "high",
+        "uv_resistance": "high",
+        "weight_kg_per_sqm": 0.35
+      }
+    },
+    {
+      "id": "backsheet_tpe",
+      "name": "TPE Backsheet",
+      "type": "backsheet",
+      "thickness_mm": 0.35,
+      "manufacturer": "Generic",
+      "cost_per_sqm": 12.0,
+      "recyclability_score": 25,
+      "carbon_footprint_kg_co2e": 4.5,
+      "properties": {
+        "moisture_barrier": "high",
+        "uv_resistance": "very_high",
+        "weight_kg_per_sqm": 0.35
+      }
+    },
+    {
+      "id": "frame_aluminum",
+      "name": "Aluminum Frame",
+      "type": "frame",
+      "manufacturer": "Generic",
+      "cost_per_module": 12.0,
+      "recyclability_score": 100,
+      "carbon_footprint_kg_co2e": 8.0,
+      "properties": {
+        "weight_kg": 2.2,
+        "material": "aluminum_6063",
+        "anodized": true
+      }
+    },
+    {
+      "id": "junction_box_standard",
+      "name": "Standard Junction Box",
+      "type": "junction_box",
+      "manufacturer": "Generic",
+      "cost_per_unit": 3.5,
+      "recyclability_score": 70,
+      "carbon_footprint_kg_co2e": 0.8,
+      "properties": {
+        "ip_rating": "IP67",
+        "diodes": 3,
+        "weight_kg": 0.15
+      }
+    },
+    {
+      "id": "junction_box_smart",
+      "name": "Smart Junction Box with Optimizer",
+      "type": "junction_box",
+      "manufacturer": "Generic",
+      "cost_per_unit": 25.0,
+      "recyclability_score": 60,
+      "carbon_footprint_kg_co2e": 1.5,
+      "properties": {
+        "ip_rating": "IP68",
+        "diodes": 3,
+        "optimizer": true,
+        "weight_kg": 0.25
+      }
+    },
+    {
+      "id": "ribbon_copper",
+      "name": "Copper Ribbon",
+      "type": "ribbon",
+      "manufacturer": "Generic",
+      "cost_per_kg": 12.0,
+      "recyclability_score": 95,
+      "carbon_footprint_kg_co2e": 4.5,
+      "properties": {
+        "conductivity": "high",
+        "tin_plated": true
+      }
+    }
+  ]
+}

@@ -1,287 +1,252 @@
 # PV Circularity Simulator
 
-End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
+A comprehensive web application for simulating the complete lifecycle of photovoltaic (PV) systems, from design through operation to end-of-life circularity strategies.
 
-## Features
+## Overview
 
-### Incentives & Tax Credit Modeling (v0.1.0)
+The PV Circularity Simulator bridges the gap between traditional PV system design tools and circular economy principles, enabling stakeholders to make data-driven decisions that optimize both performance and sustainability.
 
-Production-ready tax incentive modeling for solar PV systems with comprehensive support for:
+### Key Features
 
-- **Investment Tax Credit (ITC)**: Federal tax credit calculations with bonus adders
-  - Base ITC (typically 30% for solar)
-  - Domestic content bonus (+10%)
-  - Energy community bonus (+10%)
-  - Basis reductions for grants and subsidies
+- **Design Optimization**: Data-driven material selection and module design with circularity considerations
+- **Performance Simulation**: Accurate energy yield and performance predictions (EYA/HYA)
+- **Operational Monitoring**: Real-time performance tracking and fault diagnostics
+- **Circular Economy**: Integrated reduce-reuse-recycle (3R) analysis
+- **Financial Analysis**: Comprehensive LCOE, NPV, IRR, and payback calculations
 
-- **Production Tax Credit (PTC)**: Multi-year production credit modeling
-  - Per-kWh credit calculations over 10-year period
-  - Inflation adjustments
-  - Production degradation modeling
-  - Bonus multipliers (up to 5x)
-  - Net Present Value (NPV) analysis
+## Modules
 
-- **MACRS Depreciation**: Complete depreciation schedule calculations
-  - MACRS 5-year schedule (standard for solar)
-  - MACRS 7-year schedule
-  - ITC basis adjustment (50% reduction)
-  - Bonus depreciation (up to 100%)
-  - Straight-line and declining balance methods
+### 1. 📊 Dashboard
+Central hub for project management and workflow navigation.
 
-- **Tax Equity Partnership Modeling**: Partnership flip structure analysis
-  - Pre-flip and post-flip allocation modeling
-  - IRR calculations for investor and sponsor
-  - NPV analysis with customizable discount rates
-  - Annual cash flow and tax benefit allocation
-  - Flip year determination based on target returns
+### 2. 🔬 Material Selection
+Select and compare PV materials based on performance, cost, and recyclability.
+
+### 3. ⚡ Module Design
+Design PV module specifications including cell configuration and electrical parameters.
+
+### 4. 📉 CTM Loss Analysis
+Analyze Cell-to-Module losses using detailed k-factor model (k1-k15, k21-k24).
+
+### 5. 🏗️ System Design
+Design complete PV system configuration including site, array, and inverter.
+
+### 6. ☀️ EYA Simulation
+Energy Yield Assessment for pre-construction production estimation.
+
+### 7. 📈 Performance Monitoring
+Real-time operational performance tracking and analysis.
+
+### 8. 🔍 Fault Diagnostics
+Automated fault detection and classification using multiple diagnostic methods.
+
+### 9. 📅 HYA Simulation
+Historical Yield Analysis for post-construction performance validation.
+
+### 10. 🔮 Energy Forecasting
+Short-term and long-term energy production forecasting.
+
+### 11. 🔄 Revamp & Repower
+System upgrade planning and ROI analysis.
+
+### 12. ♻️ Circularity (3R)
+Comprehensive circular economy analysis: Reduce, Reuse, Recycle.
 
 ## Installation
 
+### Prerequisites
+
+- Python 3.8 or higher
+- pip package manager
+
+### Setup
+
+1. Clone the repository:
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/pv-circularity-simulator.git
+git clone https://github.com/your-org/pv-circularity-simulator.git
 cd pv-circularity-simulator
-
-# Install in development mode
-pip install -e .
-
-# Or install with development dependencies
-pip install -e ".[dev]"
 ```
 
-## Quick Start
-
-### Basic ITC Calculation
-
-```python
-from datetime import date
-from pv_simulator import IncentiveModeler
-from pv_simulator.models import SystemConfiguration, ITCConfiguration
-
-# Define your solar system
-system = SystemConfiguration(
-    system_size_kw=100.0,
-    installation_cost_total=250_000.0,
-    installation_date=date(2024, 1, 15),
-    location_state="CA",
-    expected_annual_production_kwh=150_000.0,
-)
-
-# Configure ITC calculation
-itc_config = ITCConfiguration(
-    system_config=system,
-    itc_rate=0.30,  # 30% ITC
-    apply_bonus=True,
-    meets_domestic_content=True,  # +10% bonus
-)
-
-# Calculate ITC
-modeler = IncentiveModeler()
-result = modeler.itc_calculation(itc_config)
-
-print(f"Total ITC Credit: ${result.total_itc_amount:,.2f}")
-print(f"Effective Rate: {result.effective_rate:.1%}")
-```
-
-### PTC Analysis
-
-```python
-from pv_simulator.models import PTCConfiguration
-
-# Configure PTC
-ptc_config = PTCConfiguration(
-    system_config=system,
-    ptc_rate_per_kwh=0.0275,
-    credit_period_years=10,
-    inflation_adjustment=True,
-    production_degradation_rate=0.005,
-)
-
-# Calculate PTC over 10 years
-result = modeler.ptc_computation(ptc_config)
-
-print(f"Total PTC (Nominal): ${result.total_ptc_lifetime:,.2f}")
-print(f"NPV (6% discount): ${result.present_value_ptc:,.2f}")
-```
-
-### Depreciation Schedule
-
-```python
-from pv_simulator.models import DepreciationMethod
-
-# Calculate depreciation (with ITC basis adjustment)
-asset_basis = 250_000.0 - (0.5 * 75_000.0)  # Cost - 50% of ITC
-
-result = modeler.depreciation_schedule(
-    asset_basis=asset_basis,
-    method=DepreciationMethod.MACRS_5,
-    bonus_depreciation_rate=0.80,  # 80% bonus
-)
-
-print(f"Year 1 Depreciation: ${result.annual_depreciation[0]:,.2f}")
-print(f"Total Depreciation: ${result.total_depreciation:,.2f}")
-```
-
-### Complete Tax Equity Analysis
-
-```python
-from pv_simulator.models import TaxEquityConfiguration
-
-# Configure tax equity partnership
-te_config = TaxEquityConfiguration(
-    system_config=system,
-    investor_equity_percentage=0.99,  # 99% pre-flip
-    target_flip_irr=0.08,  # 8% target IRR
-    post_flip_investor_percentage=0.05,  # 5% post-flip
-)
-
-# Model partnership flip
-result = modeler.tax_equity_modeling(
-    config=te_config,
-    itc_amount=75_000.0,
-    depreciation_schedule=[...],  # From depreciation calculation
-)
-
-print(f"Flip Year: {result.flip_year}")
-print(f"Investor IRR: {result.investor_irr:.2%}")
-print(f"Sponsor IRR: {result.sponsor_irr:.2%}")
-```
-
-## Documentation
-
-- **Examples**: See `examples/` directory for comprehensive usage examples
-- **API Documentation**: All classes and methods include detailed docstrings
-- **Tests**: See `tests/` directory for extensive test coverage
-
-## Running Examples
-
+2. Install dependencies:
 ```bash
-# Basic ITC calculation
-python examples/basic_itc_calculation.py
-
-# ITC with bonus credits
-python examples/itc_with_bonuses.py
-
-# PTC analysis
-python examples/ptc_analysis.py
-
-# Depreciation schedules
-python examples/depreciation_example.py
-
-# Complete tax equity analysis
-python examples/complete_tax_equity_example.py
+pip install -r requirements.txt
 ```
 
-## Testing
-
-Run the test suite with pytest:
-
+3. Run the application:
 ```bash
-# Install dev dependencies
-pip install -e ".[dev]"
-
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=src/pv_simulator --cov-report=html
-
-# Run specific test file
-pytest tests/unit/test_incentive_modeler.py -v
+streamlit run pv_circularity_simulator/src/main.py
 ```
 
-## Technology Stack
-
-- **Python 3.10+**: Modern Python features and type hints
-- **Pydantic v2**: Data validation and settings management
-- **NumPy**: Numerical computations and array operations
-- **Pandas**: Data manipulation and analysis
-- **SciPy**: Scientific computing utilities
+4. Open your browser to `http://localhost:8501`
 
 ## Project Structure
 
 ```
-pv-circularity-simulator/
-├── src/pv_simulator/
-│   ├── models/              # Pydantic data models
-│   │   ├── base.py         # Base model classes
-│   │   └── incentives.py   # Tax incentive models
-│   ├── simulators/          # Core simulation modules
-│   │   └── incentive_modeler.py  # Tax incentive calculations
-│   └── utils/               # Utility functions
-├── tests/
-│   ├── unit/               # Unit tests
-│   └── integration/        # Integration tests
-├── examples/               # Usage examples
-├── docs/                   # Documentation
-└── pyproject.toml         # Project configuration
+pv_circularity_simulator/
+├── docs/                          # Documentation
+│   ├── MASTER_PROMPT.md          # Complete specification
+│   ├── ARCHITECTURE.md           # System architecture
+│   └── MODULE_SPECS.md           # Module specifications
+│
+├── src/                          # Source code
+│   ├── main.py                   # Application entry point
+│   ├── modules/                  # Feature modules
+│   ├── core/                     # Core functionality
+│   └── utils/                    # Utility functions
+│
+├── data/                         # Data files
+│   ├── materials_db.json         # Material database
+│   ├── cell_types.json           # Cell technology specs
+│   └── standards.json            # Industry standards
+│
+├── tests/                        # Unit tests
+├── requirements.txt              # Python dependencies
+└── README.md                     # This file
 ```
 
-## API Reference
+## Usage
 
-### IncentiveModeler
+### Creating a New Project
 
-Main class for tax incentive calculations.
+1. Launch the application
+2. Navigate to the Dashboard
+3. Enter a project name and click "Create Project"
+4. Follow the workflow through the modules
 
-#### Methods
+### Module Workflow
 
-- `itc_calculation(config: ITCConfiguration) -> ITCResult`
-  - Calculate Investment Tax Credit with bonus adders
+**Design Phase:**
+1. Material Selection → Choose materials for module components
+2. Module Design → Configure cell type and electrical parameters
+3. CTM Loss Analysis → Analyze cell-to-module losses
+4. System Design → Configure complete system layout
 
-- `ptc_computation(config: PTCConfiguration, discount_rate: float) -> PTCResult`
-  - Compute Production Tax Credit over credit period
+**Simulation Phase:**
+5. EYA Simulation → Estimate pre-construction energy yield
 
-- `depreciation_schedule(asset_basis: float, method: DepreciationMethod, bonus_rate: float) -> DepreciationScheduleResult`
-  - Generate MACRS or other depreciation schedules
+**Operational Phase:**
+6. Performance Monitoring → Track real-time performance
+7. Fault Diagnostics → Identify and diagnose system faults
+8. HYA Simulation → Validate actual vs. expected performance
+9. Energy Forecasting → Predict future production
 
-- `tax_equity_modeling(config: TaxEquityConfiguration, ...) -> TaxEquityResult`
-  - Model partnership flip tax equity structures
+**Lifecycle Phase:**
+10. Revamp & Repower → Plan system upgrades
+11. Circularity (3R) → Analyze sustainability and end-of-life strategies
 
-### Data Models
+## Key Technologies
 
-All input and output models are Pydantic-based with:
-- Full type validation
-- Comprehensive field descriptions
-- Default values where applicable
-- Custom validators for business logic
+- **Streamlit**: Web application framework
+- **Pandas**: Data manipulation and analysis
+- **NumPy**: Numerical computing
+- **Plotly**: Interactive visualizations
+- **PVlib**: PV system modeling
+- **Pydantic**: Data validation
+- **SciPy**: Scientific computing
 
-See `src/pv_simulator/models/incentives.py` for complete model definitions.
+## CTM Loss Factors
 
-## Contributing
+The simulator uses a comprehensive 19-factor model for Cell-to-Module loss analysis:
 
-Contributions are welcome! Please ensure:
+**Optical (k1-k3):** Reflection, Shading, Absorption
+**Electrical (k4-k6):** Resistive, Mismatch, Junction Box
+**Thermal (k7-k8):** Temperature, Hotspot
+**Assembly (k9-k10):** Encapsulation, Lamination
+**Degradation (k11-k15):** LID, PID, Mechanical, Cell, Interconnect
+**Environmental (k21-k24):** Humidity, UV, Thermal Cycling, Corrosion
 
-1. All tests pass: `pytest`
-2. Code is formatted: `black .`
-3. Imports are sorted: `isort .`
-4. Type hints are present: `mypy src/`
-5. Linting passes: `ruff check .`
+Total CTM Ratio = k1 × k2 × ... × k24 (typically 0.88-0.97)
 
-## License
+## Documentation
 
-MIT License - see LICENSE file for details.
+Comprehensive documentation is available in the `docs/` folder:
 
-## Acknowledgments
+- **[MASTER_PROMPT.md](pv_circularity_simulator/docs/MASTER_PROMPT.md)**: Complete vision, scope, and specifications
+- **[ARCHITECTURE.md](pv_circularity_simulator/docs/ARCHITECTURE.md)**: System architecture and design patterns
+- **[MODULE_SPECS.md](pv_circularity_simulator/docs/MODULE_SPECS.md)**: Detailed module specifications
 
-- IRS Publication 946 for MACRS depreciation schedules
-- Solar Energy Industries Association (SEIA) for tax policy guidance
-- Industry standard partnership flip structures
+## Development
+
+### Running Tests
+
+```bash
+pytest tests/
+```
+
+### Code Style
+
+Follow PEP 8 guidelines. Use type hints where applicable.
+
+### Contributing
+
+1. Create a feature branch from `main`
+2. Follow the naming convention: `feature/module-name`
+3. Implement module following the standard structure
+4. Add tests for new functionality
+5. Update documentation
+6. Submit pull request
 
 ## Roadmap
 
-Future development priorities:
+### Version 1.0 (Current)
+- ✅ Core design modules
+- ✅ Basic simulation capabilities
+- ✅ Circularity analysis
+- ✅ Comprehensive documentation
 
-- [ ] State-level incentive programs
-- [ ] REAP (Rural Energy for America Program) modeling
-- [ ] Advanced partnership structures (sale-leaseback, inverted lease)
-- [ ] Multi-year tax appetite modeling
-- [ ] Monte Carlo sensitivity analysis
-- [ ] Integration with energy production forecasting
-- [ ] Debt financing and DSCR calculations
+### Version 2.0 (Planned)
+- Machine learning for fault classification
+- Automated optimization algorithms
+- Multi-site portfolio management
+- Battery storage integration
+- API for third-party integrations
+
+### Version 3.0 (Future)
+- Real-time data streaming
+- Cloud deployment
+- Mobile application
+- Advanced predictive analytics
+- Blockchain for circularity tracking
+
+## Standards and Compliance
+
+The simulator aligns with industry standards:
+
+- **IEC 61215**: PV Module Design Qualification
+- **IEC 61853**: PV Module Performance Testing
+- **IEC 62804**: PID Testing Methods
+- **IEEE 1547**: Grid Interconnection
+- **WEEE Directive**: E-waste Management
+- **RoHS Directive**: Hazardous Substances Restriction
+
+## License
+
+[License information to be added]
+
+## Authors
+
+PV Circularity Simulator Development Team
+
+## Acknowledgments
+
+- PVlib community for open-source PV modeling tools
+- IEC and IEEE for industry standards
+- Streamlit for the excellent web framework
 
 ## Support
 
-For questions, issues, or contributions:
-- Open an issue on GitHub
-- Refer to the examples in `examples/`
-- Check the comprehensive test suite in `tests/`
+For questions, issues, or feature requests, please open an issue on GitHub or contact the development team.
+
+## Citation
+
+If you use this tool in your research, please cite:
+
+```
+[Citation format to be added]
+```
+
+---
+
+**Version**: 0.1.0
+**Status**: Initial Release
+**Last Updated**: 2024
