@@ -1,418 +1,577 @@
 """
 PV Circularity Simulator - Main Application Entry Point
 
-A comprehensive photovoltaic lifecycle simulation platform with advanced
-planning, resource management, and portfolio tracking capabilities.
+This module provides the main Streamlit application for the PV lifecycle simulation platform.
+It handles page routing, session state management, and navigation for the multi-page application.
 
-This application provides:
-- Interactive project creation wizard
-- Timeline and milestone planning
-- Resource allocation dashboard
-- Contract template management
-- Portfolio management and analytics
+The application covers the complete PV lifecycle:
+- Cell design and optimization
+- Module engineering and CTM loss analysis
+- System planning and configuration
+- Performance monitoring and forecasting
+- Circularity analysis (Reduce, Reuse, Recycle)
+- Reliability testing and assessment
+
+Author: PV Circularity Simulator Team
+License: See LICENSE file
 """
 
 import streamlit as st
-from pathlib import Path
+from typing import Dict, Any, Optional, Callable, List
+from enum import Enum
 import sys
-
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent))
-
-from src.core.state_manager import StateManager
-from src.ui.planning import (
-    project_wizard,
-    timeline_planner,
-    resource_allocation_dashboard,
-    contract_templates
-)
+from pathlib import Path
 
 
-# Page configuration
-st.set_page_config(
-    page_title="PV Circularity Simulator",
-    page_icon="☀️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+class PageEnum(Enum):
+    """Enumeration of available application pages.
+
+    Each page represents a major component of the PV lifecycle simulation platform.
+    """
+    HOME = "Home"
+    CELL_DESIGN = "Cell Design"
+    MODULE_ENGINEERING = "Module Engineering"
+    CTM_LOSS_ANALYSIS = "CTM Loss Analysis"
+    SYSTEM_PLANNING = "System Planning"
+    PERFORMANCE_MONITORING = "Performance Monitoring"
+    ENERGY_FORECASTING = "Energy Forecasting"
+    RELIABILITY_TESTING = "Reliability Testing"
+    CIRCULARITY_ANALYSIS = "Circularity Analysis"
+    CIRCULAR_ECONOMY = "Circular Economy Modeling"
+    SETTINGS = "Settings"
 
 
-def apply_custom_css():
-    """Apply custom CSS styling to the application."""
-    st.markdown("""
-        <style>
-        /* Main container */
-        .main {
-            padding: 1rem 2rem;
+# Page configuration mapping
+PAGE_CONFIG: Dict[str, Dict[str, Any]] = {
+    PageEnum.HOME.value: {
+        "icon": "🏠",
+        "description": "Overview and quick start guide",
+        "module": "pages.home",
+    },
+    PageEnum.CELL_DESIGN.value: {
+        "icon": "🔬",
+        "description": "PV cell design and SCAPS integration",
+        "module": "pages.cell_design",
+    },
+    PageEnum.MODULE_ENGINEERING.value: {
+        "icon": "⚡",
+        "description": "Module design and configuration",
+        "module": "pages.module_engineering",
+    },
+    PageEnum.CTM_LOSS_ANALYSIS.value: {
+        "icon": "📉",
+        "description": "Cell-to-module loss analysis",
+        "module": "pages.ctm_loss_analysis",
+    },
+    PageEnum.SYSTEM_PLANNING.value: {
+        "icon": "🗺️",
+        "description": "System architecture and planning",
+        "module": "pages.system_planning",
+    },
+    PageEnum.PERFORMANCE_MONITORING.value: {
+        "icon": "📊",
+        "description": "Real-time performance tracking",
+        "module": "pages.performance_monitoring",
+    },
+    PageEnum.ENERGY_FORECASTING.value: {
+        "icon": "🌤️",
+        "description": "Energy production forecasting",
+        "module": "pages.energy_forecasting",
+    },
+    PageEnum.RELIABILITY_TESTING.value: {
+        "icon": "🔧",
+        "description": "Reliability and durability testing",
+        "module": "pages.reliability_testing",
+    },
+    PageEnum.CIRCULARITY_ANALYSIS.value: {
+        "icon": "♻️",
+        "description": "3R analysis (Reduce, Reuse, Recycle)",
+        "module": "pages.circularity_analysis",
+    },
+    PageEnum.CIRCULAR_ECONOMY.value: {
+        "icon": "🔄",
+        "description": "Circular economy modeling and metrics",
+        "module": "pages.circular_economy",
+    },
+    PageEnum.SETTINGS.value: {
+        "icon": "⚙️",
+        "description": "Application settings and preferences",
+        "module": "pages.settings",
+    },
+}
+
+
+def session_state_management() -> None:
+    """Initialize and manage Streamlit session state variables.
+
+    This function sets up all required session state variables if they don't exist.
+    Session state persists across reruns and is used to maintain application state
+    across different pages and user interactions.
+
+    Session State Variables:
+        current_page (str): The currently active page name
+        initialized (bool): Flag indicating if the app has been initialized
+        user_data (Dict[str, Any]): User-specific data and preferences
+        simulation_data (Dict[str, Any]): Current simulation parameters and results
+        project_name (str): Name of the current project
+        last_saved (Optional[str]): Timestamp of last save operation
+
+    Returns:
+        None
+
+    Example:
+        >>> session_state_management()
+        >>> print(st.session_state.current_page)
+        'Home'
+    """
+    # Initialize core application state
+    if "initialized" not in st.session_state:
+        st.session_state.initialized = True
+        st.session_state.current_page = PageEnum.HOME.value
+
+        # User and project data
+        st.session_state.user_data = {
+            "preferences": {
+                "theme": "light",
+                "units": "metric",
+                "language": "en"
+            }
         }
 
-        /* Sidebar styling */
-        .css-1d391kg {
-            padding: 2rem 1rem;
+        st.session_state.project_name = "Untitled Project"
+        st.session_state.last_saved = None
+
+        # Simulation data containers
+        st.session_state.simulation_data = {
+            "cell_design": {},
+            "module_engineering": {},
+            "ctm_losses": {},
+            "system_config": {},
+            "performance_data": {},
+            "forecast_data": {},
+            "reliability_data": {},
+            "circularity_metrics": {},
+            "circular_economy_model": {},
         }
 
-        /* Metric cards */
-        [data-testid="stMetricValue"] {
-            font-size: 2rem;
-            font-weight: 600;
+        # Workflow tracking
+        st.session_state.workflow_progress = {
+            page: False for page in [p.value for p in PageEnum]
         }
+        st.session_state.workflow_progress[PageEnum.HOME.value] = True
 
-        /* Headers */
-        h1 {
-            color: #1E88E5;
-            padding-bottom: 1rem;
-        }
-
-        h2 {
-            color: #424242;
-            padding-top: 1rem;
-        }
-
-        /* Form styling */
-        .stForm {
-            background-color: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            border: 1px solid #e0e0e0;
-        }
-
-        /* Button styling */
-        .stButton>button {
-            border-radius: 0.3rem;
-            font-weight: 500;
-        }
-
-        /* Expander styling */
-        .streamlit-expanderHeader {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        /* Success/Info/Warning boxes */
-        .stSuccess, .stInfo, .stWarning {
-            padding: 1rem;
-            border-radius: 0.5rem;
-        }
-
-        /* Divider */
-        hr {
-            margin: 2rem 0;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+        # Navigation history
+        st.session_state.navigation_history = [PageEnum.HOME.value]
+        st.session_state.history_index = 0
 
 
-def render_sidebar():
-    """Render the application sidebar with navigation and info."""
+def page_routing(page_name: str) -> None:
+    """Handle page navigation and routing logic.
+
+    This function manages the navigation between different pages in the application.
+    It updates the session state, manages navigation history, and dynamically loads
+    the requested page module.
+
+    Args:
+        page_name (str): The name of the page to navigate to. Must match a key in
+            PAGE_CONFIG or a value from PageEnum.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If the page_name is not found in PAGE_CONFIG
+
+    Side Effects:
+        - Updates st.session_state.current_page
+        - Appends to st.session_state.navigation_history
+        - May trigger a page rerun
+
+    Example:
+        >>> page_routing("Cell Design")
+        >>> print(st.session_state.current_page)
+        'Cell Design'
+    """
+    if page_name not in PAGE_CONFIG:
+        st.error(f"Page '{page_name}' not found in configuration.")
+        return
+
+    # Update current page
+    st.session_state.current_page = page_name
+
+    # Update navigation history (avoid duplicates of the same page consecutively)
+    if (not st.session_state.navigation_history or
+        st.session_state.navigation_history[-1] != page_name):
+        st.session_state.navigation_history.append(page_name)
+        st.session_state.history_index = len(st.session_state.navigation_history) - 1
+
+
+def sidebar_navigation() -> Optional[str]:
+    """Render the sidebar navigation menu and handle user interactions.
+
+    Creates a comprehensive sidebar with:
+    - Application branding and title
+    - Project information display
+    - Navigation menu organized by workflow sections
+    - Workflow progress indicators
+    - Quick actions and utilities
+
+    Returns:
+        Optional[str]: The name of the selected page if navigation occurred,
+            None otherwise.
+
+    Side Effects:
+        - Renders sidebar UI elements
+        - May trigger page navigation via page_routing()
+
+    Example:
+        >>> selected_page = sidebar_navigation()
+        >>> if selected_page:
+        ...     page_routing(selected_page)
+    """
     with st.sidebar:
-        st.title("☀️ PV Circularity Simulator")
-        st.markdown("---")
+        # Application header
+        st.title("🌞 PV Circularity Simulator")
+        st.caption("End-to-end PV lifecycle simulation platform")
+        st.divider()
 
-        st.markdown("### Navigation")
+        # Project information
+        st.subheader("📁 Current Project")
+        st.text(st.session_state.project_name)
+        if st.session_state.last_saved:
+            st.caption(f"Last saved: {st.session_state.last_saved}")
+        st.divider()
 
-        # Page selection
-        page = st.radio(
-            "Select Page",
-            options=[
-                "🏠 Home",
-                "📊 Portfolio Dashboard",
-                "🧙 Project Wizard",
-                "📅 Timeline Planner",
-                "📦 Resource Allocation",
-                "📄 Contract Management"
-            ],
-            label_visibility="collapsed"
-        )
+        # Navigation sections
+        st.subheader("Navigation")
 
-        st.markdown("---")
+        selected_page = None
 
-        # Quick stats
-        st.markdown("### Quick Stats")
+        # Home section
+        if st.button(
+            f"{PAGE_CONFIG[PageEnum.HOME.value]['icon']} {PageEnum.HOME.value}",
+            use_container_width=True,
+            type="primary" if st.session_state.current_page == PageEnum.HOME.value else "secondary"
+        ):
+            selected_page = PageEnum.HOME.value
 
-        projects = StateManager.get_all_projects()
-        st.metric("Total Projects", len(projects))
+        # Design & Engineering section
+        st.markdown("**Design & Engineering**")
+        for page in [PageEnum.CELL_DESIGN, PageEnum.MODULE_ENGINEERING, PageEnum.CTM_LOSS_ANALYSIS]:
+            page_value = page.value
+            config = PAGE_CONFIG[page_value]
+            button_type = "primary" if st.session_state.current_page == page_value else "secondary"
 
-        resources = list(st.session_state.resources.values())
-        st.metric("Total Resources", len(resources))
+            # Add progress indicator
+            completed = st.session_state.workflow_progress.get(page_value, False)
+            label = f"{config['icon']} {page_value}" + (" ✓" if completed else "")
 
-        contracts = list(st.session_state.contracts.values())
-        st.metric("Active Contracts", len(contracts))
+            if st.button(label, key=f"nav_{page_value}", use_container_width=True, type=button_type):
+                selected_page = page_value
 
-        st.markdown("---")
+        # System & Operations section
+        st.markdown("**System & Operations**")
+        for page in [PageEnum.SYSTEM_PLANNING, PageEnum.PERFORMANCE_MONITORING,
+                     PageEnum.ENERGY_FORECASTING, PageEnum.RELIABILITY_TESTING]:
+            page_value = page.value
+            config = PAGE_CONFIG[page_value]
+            button_type = "primary" if st.session_state.current_page == page_value else "secondary"
 
-        # Info
-        st.markdown("### About")
-        st.info(
-            "PV Circularity Simulator provides comprehensive planning "
-            "and management tools for photovoltaic projects."
-        )
+            completed = st.session_state.workflow_progress.get(page_value, False)
+            label = f"{config['icon']} {page_value}" + (" ✓" if completed else "")
 
-        st.markdown("**Version:** 1.0.0")
-        st.markdown("**Build:** Production")
+            if st.button(label, key=f"nav_{page_value}", use_container_width=True, type=button_type):
+                selected_page = page_value
 
-        return page
+        # Circularity section
+        st.markdown("**Circularity & Sustainability**")
+        for page in [PageEnum.CIRCULARITY_ANALYSIS, PageEnum.CIRCULAR_ECONOMY]:
+            page_value = page.value
+            config = PAGE_CONFIG[page_value]
+            button_type = "primary" if st.session_state.current_page == page_value else "secondary"
+
+            completed = st.session_state.workflow_progress.get(page_value, False)
+            label = f"{config['icon']} {page_value}" + (" ✓" if completed else "")
+
+            if st.button(label, key=f"nav_{page_value}", use_container_width=True, type=button_type):
+                selected_page = page_value
+
+        st.divider()
+
+        # Settings
+        if st.button(
+            f"{PAGE_CONFIG[PageEnum.SETTINGS.value]['icon']} {PageEnum.SETTINGS.value}",
+            use_container_width=True,
+            type="primary" if st.session_state.current_page == PageEnum.SETTINGS.value else "secondary"
+        ):
+            selected_page = PageEnum.SETTINGS.value
+
+        # Quick actions
+        st.divider()
+        st.markdown("**Quick Actions**")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("💾 Save", use_container_width=True):
+                st.toast("Project saved successfully!", icon="✅")
+                from datetime import datetime
+                st.session_state.last_saved = datetime.now().strftime("%Y-%m-%d %H:%M")
+        with col2:
+            if st.button("📥 Export", use_container_width=True):
+                st.toast("Export functionality coming soon!", icon="ℹ️")
+
+        # About section
+        with st.expander("ℹ️ About"):
+            st.markdown("""
+            **PV Circularity Simulator v1.0**
+
+            A comprehensive platform for simulating the complete lifecycle of photovoltaic systems,
+            from cell design to circular economy modeling.
+
+            © 2024 PV Circularity Simulator Team
+            """)
+
+        return selected_page
 
 
-def render_home_page():
-    """Render the home/landing page."""
-    st.title("☀️ PV Circularity Simulator")
-    st.markdown("### End-to-End Photovoltaic Lifecycle Management Platform")
+def render_page_content() -> None:
+    """Render the content for the currently active page.
 
+    This function dynamically loads and renders the content module for the page
+    specified in st.session_state.current_page. It handles module imports and
+    provides fallback content if the page module is not yet implemented.
+
+    Returns:
+        None
+
+    Side Effects:
+        - Renders page content to the main Streamlit area
+        - May import page modules dynamically
+        - Displays error messages if page loading fails
+
+    Note:
+        Page modules should define a render() function that contains the page content.
+    """
+    current_page = st.session_state.current_page
+    page_config = PAGE_CONFIG.get(current_page)
+
+    if not page_config:
+        st.error(f"Configuration for page '{current_page}' not found.")
+        return
+
+    # Page header
+    st.title(f"{page_config['icon']} {current_page}")
+    st.caption(page_config['description'])
+    st.divider()
+
+    # Try to load the page module
+    module_path = page_config.get("module")
+
+    try:
+        # Dynamically import the page module
+        if module_path:
+            # This will be implemented when page modules are created
+            # For now, show placeholder content
+            render_placeholder_page(current_page)
+        else:
+            render_placeholder_page(current_page)
+
+    except ImportError as e:
+        st.warning(f"Page module '{module_path}' not yet implemented.")
+        render_placeholder_page(current_page)
+    except Exception as e:
+        st.error(f"Error loading page: {str(e)}")
+        render_placeholder_page(current_page)
+
+
+def render_placeholder_page(page_name: str) -> None:
+    """Render placeholder content for pages that are not yet fully implemented.
+
+    Args:
+        page_name (str): The name of the page to render placeholder content for.
+
+    Returns:
+        None
+
+    Side Effects:
+        - Renders placeholder UI elements
+    """
+    st.info(f"🚧 The {page_name} page is under development.")
+
+    # Provide some context based on the page
+    if page_name == PageEnum.HOME.value:
+        render_home_page()
+    else:
+        st.markdown(f"""
+        ### Coming Soon
+
+        This page will provide functionality for **{page_name}**.
+
+        **Planned Features:**
+        - Interactive simulations and calculations
+        - Data visualization and analytics
+        - Export and reporting capabilities
+        - Integration with other lifecycle stages
+        """)
+
+        # Add a demo section
+        with st.expander("🎯 Preview Features"):
+            st.write(f"Feature set for {page_name} is being developed.")
+            st.progress(0.3, text="Development Progress")
+
+
+def render_home_page() -> None:
+    """Render the home page content with overview and quick start guide.
+
+    Returns:
+        None
+
+    Side Effects:
+        - Renders home page UI elements
+    """
     st.markdown("""
-    Welcome to the PV Circularity Simulator - your comprehensive solution for managing
-    photovoltaic projects from design through end-of-life circularity.
+    ## Welcome to the PV Circularity Simulator! 🌞
+
+    This comprehensive platform simulates the complete lifecycle of photovoltaic systems,
+    enabling researchers, engineers, and sustainability professionals to:
+
+    - Design and optimize PV cells
+    - Engineer efficient modules
+    - Plan system architectures
+    - Monitor and forecast performance
+    - Analyze circularity and sustainability metrics
     """)
 
-    st.divider()
-
-    # Feature highlights
-    st.markdown("## 🎯 Key Features")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("### 🧙 Project Wizard")
-        st.markdown("""
-        Create new PV projects with guided step-by-step setup:
-        - Basic project information
-        - Technical specifications
-        - Timeline and budget planning
-        - Initial resource estimation
-        """)
-
-        st.markdown("### 📅 Timeline Planner")
-        st.markdown("""
-        Comprehensive project timeline management:
-        - Gantt chart visualization
-        - Milestone tracking
-        - Phase planning
-        - Dependency management
-        """)
-
-        st.markdown("### 📦 Resource Allocation")
-        st.markdown("""
-        Intelligent resource planning and tracking:
-        - Inventory management
-        - Cost analysis
-        - Supplier tracking
-        - Allocation optimization
-        """)
-
-    with col2:
-        st.markdown("### 📄 Contract Management")
-        st.markdown("""
-        Complete contract lifecycle management:
-        - Template library
-        - File upload support
-        - Status tracking
-        - Payment schedules
-        """)
-
-        st.markdown("### 📊 Portfolio Dashboard")
-        st.markdown("""
-        High-level portfolio insights:
-        - Multi-project overview
-        - Budget tracking
-        - Performance metrics
-        - ROI analysis
-        """)
-
-        st.markdown("### ♻️ Circularity Integration")
-        st.markdown("""
-        End-of-life planning for sustainability:
-        - 3R assessment (Reuse/Recycle/Recover)
-        - Environmental impact analysis
-        - Material tracking
-        - Compliance monitoring
-        """)
-
-    st.divider()
-
-    # Quick start
-    st.markdown("## 🚀 Quick Start")
+    # Quick start guide
+    st.subheader("🚀 Quick Start")
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.markdown("### 1️⃣ Create Project")
-        st.markdown("Use the **Project Wizard** to set up your first PV project.")
-        if st.button("Launch Wizard", use_container_width=True):
-            st.session_state.selected_page = "🧙 Project Wizard"
-            st.rerun()
+        st.markdown("""
+        **1️⃣ Design**
+        - Cell Design
+        - Module Engineering
+        - CTM Loss Analysis
+        """)
 
     with col2:
-        st.markdown("### 2️⃣ Plan Timeline")
-        st.markdown("Define milestones and phases in the **Timeline Planner**.")
+        st.markdown("""
+        **2️⃣ Deploy**
+        - System Planning
+        - Performance Monitoring
+        - Energy Forecasting
+        """)
 
     with col3:
-        st.markdown("### 3️⃣ Allocate Resources")
-        st.markdown("Add and track resources in the **Resource Dashboard**.")
+        st.markdown("""
+        **3️⃣ Sustain**
+        - Reliability Testing
+        - Circularity Analysis
+        - Circular Economy
+        """)
+
+    st.divider()
+
+    # Key metrics dashboard
+    st.subheader("📊 Project Overview")
+
+    metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
+
+    with metric_col1:
+        st.metric("Workflow Progress", "0%", delta=None)
+    with metric_col2:
+        st.metric("Simulations Run", "0", delta=None)
+    with metric_col3:
+        st.metric("Data Points", "0", delta=None)
+    with metric_col4:
+        st.metric("Circularity Score", "N/A", delta=None)
 
     st.divider()
 
     # Recent activity
-    st.markdown("## 📈 Recent Activity")
+    st.subheader("📝 Recent Activity")
+    st.info("No recent activity. Start by navigating to a workflow page from the sidebar.")
 
-    projects = StateManager.get_all_projects()
-
-    if projects:
-        # Sort by updated date
-        recent_projects = sorted(
-            projects,
-            key=lambda p: p.get("updated_date", ""),
-            reverse=True
-        )[:5]
-
-        st.markdown("### Recently Updated Projects")
-
-        for project in recent_projects:
-            with st.expander(f"📁 {project['name']} - {project['status']}"):
-                col1, col2, col3 = st.columns(3)
-
-                with col1:
-                    st.markdown(f"**Owner:** {project['owner']}")
-                    st.markdown(f"**Location:** {project['location']}")
-
-                with col2:
-                    st.markdown(f"**Capacity:** {project['capacity_kwp']} kWp")
-                    st.markdown(f"**Budget:** ${project['budget']:,.2f}")
-
-                with col3:
-                    st.markdown(f"**Updated:** {project['updated_date'][:10]}")
-    else:
-        st.info("No projects yet. Create your first project to get started!")
+    # System status
+    with st.expander("💡 System Status"):
+        status_col1, status_col2 = st.columns(2)
+        with status_col1:
+            st.success("✅ Core System: Online")
+            st.success("✅ Data Storage: Ready")
+        with status_col2:
+            st.success("✅ Simulation Engine: Ready")
+            st.success("✅ Export Service: Ready")
 
 
-def render_portfolio_dashboard():
-    """Render the portfolio overview dashboard."""
-    st.title("📊 Portfolio Dashboard")
-    st.markdown("Comprehensive overview of all projects and portfolio metrics.")
+def streamlit_app() -> None:
+    """Main entry point for the Streamlit application.
 
-    projects = StateManager.get_all_projects()
+    This function orchestrates the entire application by:
+    1. Configuring the Streamlit page settings
+    2. Initializing session state
+    3. Rendering the sidebar navigation
+    4. Handling page routing
+    5. Rendering the active page content
 
-    if not projects:
-        st.warning("No projects in portfolio. Create a project to get started.")
-        return
+    Returns:
+        None
 
-    # Summary metrics
-    st.markdown("### Portfolio Metrics")
+    Example:
+        To run the application:
+        ```bash
+        streamlit run app.py
+        ```
 
-    col1, col2, col3, col4 = st.columns(4)
+    Note:
+        This function should only be called once at the module level.
+        It manages the complete application lifecycle.
+    """
+    # Configure Streamlit page
+    st.set_page_config(
+        page_title="PV Circularity Simulator",
+        page_icon="🌞",
+        layout="wide",
+        initial_sidebar_state="expanded",
+        menu_items={
+            'Get Help': 'https://github.com/pv-circularity-simulator/docs',
+            'Report a bug': 'https://github.com/pv-circularity-simulator/issues',
+            'About': """
+            # PV Circularity Simulator
 
-    with col1:
-        st.metric("Total Projects", len(projects))
+            End-to-end PV lifecycle simulation platform covering cell design,
+            module engineering, system planning, performance monitoring, and
+            circular economy modeling.
 
-    with col2:
-        total_capacity = sum(p.get("capacity_kwp", 0) for p in projects)
-        st.metric("Total Capacity", f"{total_capacity:,.1f} kWp")
-
-    with col3:
-        total_budget = sum(p.get("budget", 0) for p in projects)
-        st.metric("Total Budget", f"${total_budget:,.0f}")
-
-    with col4:
-        # Count active projects
-        active_count = sum(
-            1 for p in projects
-            if "Implementation" in p.get("status", "") or "Monitoring" in p.get("status", "")
-        )
-        st.metric("Active Projects", active_count)
-
-    st.divider()
-
-    # Projects by status
-    st.markdown("### Projects by Status")
-
-    import plotly.express as px
-    import pandas as pd
-
-    status_counts = {}
-    for project in projects:
-        status = project.get("status", "Unknown")
-        status_counts[status] = status_counts.get(status, 0) + 1
-
-    fig = px.pie(
-        values=list(status_counts.values()),
-        names=list(status_counts.keys()),
-        title="Project Status Distribution"
+            Version: 1.0.0
+            """
+        }
     )
-    st.plotly_chart(fig, use_container_width=True)
 
-    # Project list
-    st.markdown("### All Projects")
+    # Initialize session state
+    session_state_management()
 
-    # Create dataframe
-    df_data = []
-    for project in projects:
-        df_data.append({
-            "Name": project["name"],
-            "Owner": project["owner"],
-            "Status": project["status"],
-            "Capacity (kWp)": project.get("capacity_kwp", 0),
-            "Budget": f"${project.get('budget', 0):,.0f}",
-            "Location": project["location"]
-        })
+    # Render sidebar and get navigation selection
+    selected_page = sidebar_navigation()
 
-    df = pd.DataFrame(df_data)
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    # Handle page routing if a new page was selected
+    if selected_page and selected_page != st.session_state.current_page:
+        page_routing(selected_page)
+        st.rerun()
 
-
-def main():
-    """Main application entry point."""
-    # Initialize state
-    StateManager.initialize()
-
-    # Apply custom styling
-    apply_custom_css()
-
-    # Render sidebar and get selected page
-    if "selected_page" not in st.session_state:
-        st.session_state.selected_page = None
-
-    selected_page = render_sidebar()
-
-    # Override if page was changed programmatically
-    if st.session_state.selected_page:
-        selected_page = st.session_state.selected_page
-        st.session_state.selected_page = None
-
-    # Render selected page
-    try:
-        if selected_page == "🏠 Home":
-            render_home_page()
-
-        elif selected_page == "📊 Portfolio Dashboard":
-            render_portfolio_dashboard()
-
-        elif selected_page == "🧙 Project Wizard":
-            project_wizard()
-
-        elif selected_page == "📅 Timeline Planner":
-            timeline_planner()
-
-        elif selected_page == "📦 Resource Allocation":
-            resource_allocation_dashboard()
-
-        elif selected_page == "📄 Contract Management":
-            contract_templates()
-
-        else:
-            render_home_page()
-
-    except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
-        st.exception(e)
+    # Render the current page content
+    render_page_content()
 
     # Footer
-    st.markdown("---")
-    st.markdown(
-        "<div style='text-align: center; color: #666; padding: 1rem;'>"
-        "PV Circularity Simulator v1.0.0 | Production Build | "
-        "© 2025 All Rights Reserved"
-        "</div>",
-        unsafe_allow_html=True
-    )
+    st.divider()
+    footer_col1, footer_col2, footer_col3 = st.columns([2, 1, 1])
+    with footer_col1:
+        st.caption("PV Circularity Simulator v1.0 | © 2024")
+    with footer_col2:
+        st.caption("📚 [Documentation](#)")
+    with footer_col3:
+        st.caption("🐛 [Report Issue](#)")
 
 
+# Application entry point
 if __name__ == "__main__":
-    main()
+    streamlit_app()

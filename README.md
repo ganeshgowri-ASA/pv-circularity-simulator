@@ -1,130 +1,189 @@
-# PV Circularity Simulator
+# PV Circularity Simulator 🌞
 
 End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
 
+## Overview
+
+The PV Circularity Simulator is a comprehensive Streamlit-based application designed to simulate and analyze the complete lifecycle of photovoltaic (solar) systems. From initial cell design through end-of-life circular economy considerations, this platform provides researchers, engineers, and sustainability professionals with powerful tools for optimization and analysis.
+
 ## Features
 
-### ✅ Irradiance Modeling & Solar Resource Assessment
+### 🔬 Design & Engineering
+- **Cell Design**: PV cell design optimization with SCAPS integration
+- **Module Engineering**: Module configuration and design tools
+- **CTM Loss Analysis**: Cell-to-module power loss analysis and optimization
 
-Production-ready solar irradiance modeling with comprehensive analysis tools:
+### 🗺️ System & Operations
+- **System Planning**: Architecture design and system configuration
+- **Performance Monitoring**: Real-time performance tracking and analytics
+- **Energy Forecasting**: Production forecasting with weather integration
+- **Reliability Testing**: Durability and reliability assessment tools
 
-- **Solar Position Calculation**: High-accuracy algorithms (NREL SPA)
-- **Irradiance Decomposition**: GHI → DNI/DHI using DIRINT, DISC, Erbs models
-- **Transposition Models**: Perez, Hay-Davies, Isotropic sky models
-- **POA Irradiance**: Complete plane-of-array calculations with loss factors
-- **Spectral & AOI Losses**: Module-specific corrections
-- **Resource Analysis**: P50/P90 assessment, monthly/seasonal statistics
-- **Interactive Visualizations**: Plotly charts, heat maps, dashboards
+### ♻️ Circularity & Sustainability
+- **Circularity Analysis**: 3R (Reduce, Reuse, Recycle) framework analysis
+- **Circular Economy Modeling**: Economic and environmental impact modeling
 
-**Quick Start:**
+## Quick Start
 
-```python
-from src.irradiance import IrradianceCalculator, POAIrradianceModel, SolarResourceAnalyzer
-from src.irradiance.models import LocationConfig, SurfaceConfig
-
-# Configure location and surface
-location = LocationConfig(latitude=39.74, longitude=-105.18, timezone="America/Denver")
-surface = SurfaceConfig(tilt=30.0, azimuth=180.0, albedo=0.2)
-
-# Calculate solar position
-calc = IrradianceCalculator(location)
-solar_pos = calc.get_solar_position(times)
-
-# Calculate POA irradiance with losses
-poa_model = POAIrradianceModel(location, surface)
-poa_components = poa_model.calculate_poa_components(
-    irradiance_data, solar_pos, transposition_model='perez',
-    include_spectral=True, include_aoi=True
-)
-
-# Analyze solar resource
-analyzer = SolarResourceAnalyzer(poa_components.poa_global)
-p_analysis = analyzer.p50_p90_analysis()
-```
-
-See [`docs/IRRADIANCE_MODELING.md`](docs/IRRADIANCE_MODELING.md) for complete documentation.
-
-Run example: `python examples/complete_irradiance_analysis.py`
-
-## Installation
+### Installation
 
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/pv-circularity-simulator.git
+# Clone the repository
+git clone <repository-url>
 cd pv-circularity-simulator
+
+# Create virtual environment (optional but recommended)
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Run tests
-pytest tests/
-
-# Run example
-python examples/complete_irradiance_analysis.py
 ```
 
-## Project Structure
+### Running the Application
+
+```bash
+streamlit run app.py
+```
+
+The application will launch in your browser at `http://localhost:8501`
+
+## Architecture
+
+### Core Components
+
+The application is built around four main functions in `app.py`:
+
+1. **`streamlit_app()`** - Main application entry point
+   - Page configuration and setup
+   - Application orchestration
+   - Lifecycle management
+
+2. **`session_state_management()`** - State management
+   - Initializes session variables
+   - Maintains state across navigation
+   - Workflow progress tracking
+
+3. **`page_routing()`** - Navigation routing
+   - Handles page transitions
+   - Navigation history management
+   - Dynamic page loading
+
+4. **`sidebar_navigation()`** - UI navigation
+   - Sidebar menu rendering
+   - Project information display
+   - Quick action buttons
+
+### Project Structure
 
 ```
 pv-circularity-simulator/
-├── src/
-│   ├── irradiance/          # Irradiance modeling components
-│   │   ├── calculator.py    # Solar position & decomposition
-│   │   ├── poa_model.py     # POA irradiance calculations
-│   │   ├── resource_analyzer.py  # Statistical analysis
-│   │   └── models.py        # Pydantic data models
-│   └── ui/
-│       └── visualizations.py  # Plotly charts
-├── tests/
-│   └── test_irradiance/     # Comprehensive test suite
-├── examples/
-│   └── complete_irradiance_analysis.py  # Full demonstration
-├── docs/
-│   └── IRRADIANCE_MODELING.md  # Technical documentation
-└── requirements.txt         # Dependencies (pvlib, plotly, etc.)
+├── app.py                 # Main application entry point
+├── requirements.txt       # Python dependencies
+├── SETUP.md              # Detailed setup guide
+├── .streamlit/
+│   └── config.toml       # Streamlit configuration
+└── pages/
+    ├── __init__.py       # Pages package
+    └── README.md         # Pages documentation
 ```
 
 ## Technology Stack
 
-- **pvlib-python**: Industry-standard solar modeling library
-- **NumPy/pandas**: Vectorized numerical computations
-- **Plotly**: Interactive visualizations
-- **Pydantic**: Type-safe data models
-- **pytest**: Comprehensive testing
+- **Framework**: Streamlit 1.28+
+- **Data Processing**: Pandas, NumPy
+- **Visualization**: Plotly
+- **Validation**: Pydantic
+- **Scientific Computing**: SciPy
+
+## Session State Management
+
+The application uses a sophisticated session state structure:
+
+```python
+session_state = {
+    # Core state
+    "current_page": str,
+    "initialized": bool,
+    "project_name": str,
+
+    # User preferences
+    "user_data": {
+        "preferences": {
+            "theme": str,
+            "units": str,
+            "language": str
+        }
+    },
+
+    # Simulation data
+    "simulation_data": {
+        "cell_design": {},
+        "module_engineering": {},
+        "ctm_losses": {},
+        "system_config": {},
+        "performance_data": {},
+        "forecast_data": {},
+        "reliability_data": {},
+        "circularity_metrics": {},
+        "circular_economy_model": {}
+    },
+
+    # Navigation
+    "workflow_progress": Dict[str, bool],
+    "navigation_history": List[str]
+}
+```
+
+## Development
+
+### Code Quality Standards
+
+- **Docstrings**: Comprehensive Google-style docstrings for all functions
+- **Type Hints**: Full type annotations throughout the codebase
+- **Error Handling**: Graceful error handling with user-friendly messages
+- **Production-Ready**: Enterprise-grade code structure and patterns
+
+### Adding New Pages
+
+See `pages/README.md` for detailed guidelines on implementing new page modules.
 
 ## Documentation
 
-- [Irradiance Modeling Documentation](docs/IRRADIANCE_MODELING.md)
-- [API Reference](docs/) (coming soon)
-- [Examples](examples/)
+- **SETUP.md**: Detailed setup and installation guide
+- **pages/README.md**: Page development guidelines
+- **Inline Documentation**: Comprehensive docstrings in code
 
-## Testing
+## Roadmap
 
-```bash
-# Run all tests
-pytest tests/
-
-# Run with coverage
-pytest tests/ --cov=src --cov-report=html
-
-# Run specific test module
-pytest tests/test_irradiance/test_calculator.py -v
-```
+- [ ] Implement individual page modules
+- [ ] Add data export functionality
+- [ ] Integrate SCAPS simulation engine
+- [ ] Add authentication and user management
+- [ ] Implement project save/load functionality
+- [ ] Add automated testing suite
+- [ ] Create Docker deployment configuration
+- [ ] Add API endpoints for external integration
 
 ## Contributing
 
-Contributions welcome! Please ensure:
-- All tests pass
-- Code follows Black formatting
-- Docstrings for all public methods
-- Type hints where applicable
+Contributions are welcome! Please ensure:
+
+1. Code follows the established patterns and style
+2. All functions have comprehensive docstrings
+3. Type hints are included
+4. Changes are tested thoroughly
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file
+See LICENSE file for details.
 
-## References
+## Support
 
-- pvlib-python: https://pvlib-python.readthedocs.io/
-- NREL Solar Position Algorithms: https://midcdmz.nrel.gov/spa/
-- Perez Model: Perez, R., et al. (1990). Solar Energy, 44(5), 271-289.
+For questions, issues, or feature requests, please use the GitHub issue tracker.
+
+---
+
+**Version**: 1.0.0
+**Status**: Initial Release
+**Last Updated**: 2024
