@@ -1,7 +1,7 @@
-"""UI components for PV Circularity Simulator Dashboard."""
+"""
+User interface modules for the PV Circularity Simulator.
+"""
 
-from .dashboard import EYADashboard
-from .reports import ComprehensiveReports
-from .visualizations import InteractiveVisualizations
+from .hybrid_system_ui import HybridSystemUI
 
-__all__ = ["EYADashboard", "ComprehensiveReports", "InteractiveVisualizations"]
+__all__ = ["HybridSystemUI"]
