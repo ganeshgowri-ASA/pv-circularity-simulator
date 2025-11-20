@@ -1,48 +1,10 @@
-"""Setup configuration for pv-circularity-simulator."""
+"""Setup script for pv-circularity-simulator package.
 
-from setuptools import setup, find_packages
+This file is maintained for compatibility with tools that don't yet support PEP 517/518.
+Modern installation should use: pip install .
+"""
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+from setuptools import setup
 
-with open("requirements.txt", "r", encoding="utf-8") as fh:
-    requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
-
-setup(
-    name="pv-circularity-simulator",
-    version="0.1.0",
-    author="PV Circularity Team",
-    author_email="info@pv-circularity.com",
-    description="End-to-end PV lifecycle simulation platform",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/ganeshgowri-ASA/pv-circularity-simulator",
-    packages=find_packages(),
-    classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Intended Audience :: Science/Research",
-        "Topic :: Scientific/Engineering",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-    ],
-    python_requires=">=3.9",
-    install_requires=requirements,
-    extras_require={
-        "dev": [
-            "pytest>=7.4.0",
-            "pytest-cov>=4.1.0",
-            "black>=23.7.0",
-            "flake8>=6.0.0",
-            "mypy>=1.4.0",
-            "isort>=5.12.0",
-        ],
-    },
-    entry_points={
-        "console_scripts": [
-            "pv-simulator=pv_simulator.cli:main",
-        ],
-    },
-)
+# Configuration is in pyproject.toml
+setup()
