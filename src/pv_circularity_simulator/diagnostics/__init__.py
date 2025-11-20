@@ -1,26 +1,24 @@
 """
-PV Circularity Simulator
-
-End-to-end photovoltaic lifecycle simulation platform with comprehensive
-thermal imaging analysis and IV curve diagnostics.
+Diagnostics module for thermal imaging and IV curve analysis.
 """
 
-__version__ = "0.1.0"
-__author__ = "PV Circularity Team"
-
-from pv_circularity_simulator.diagnostics import (
+from pv_circularity_simulator.diagnostics.thermal import (
     ThermalImageAnalyzer,
     IRImageProcessing,
     HotspotSeverityClassifier,
+)
+from pv_circularity_simulator.diagnostics.iv_curve import (
     IVCurveAnalyzer,
     ElectricalDiagnostics,
     CurveComparison,
 )
 
 __all__ = [
+    # Thermal imaging
     "ThermalImageAnalyzer",
     "IRImageProcessing",
     "HotspotSeverityClassifier",
+    # IV curve
     "IVCurveAnalyzer",
     "ElectricalDiagnostics",
     "CurveComparison",

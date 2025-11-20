@@ -1,1 +1,3 @@
-"""Tests for PV Circularity Simulator."""
+"""
+Unit tests for PV circularity simulator.
+"""

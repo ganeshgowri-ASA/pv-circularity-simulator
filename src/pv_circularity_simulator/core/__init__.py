@@ -1,21 +1,44 @@
-"""Core simulation and data models for PV circularity analysis."""
+"""
+Core module containing shared data models, constants, and utilities.
+"""
 
-from .data_models import (
-    MaterialFlow,
-    CircularityMetrics,
-    ReuseMetrics,
-    RepairMetrics,
-    RecyclingMetrics,
-    PolicyCompliance,
-    ImpactScorecard,
+from pv_circularity_simulator.core.constants import (
+    BOLTZMANN_CONSTANT,
+    ELECTRON_CHARGE,
+    STANDARD_IRRADIANCE,
+    STANDARD_TEMPERATURE,
+    STANDARD_AM,
+)
+from pv_circularity_simulator.core.exceptions import (
+    DiagnosticError,
+    InvalidThermalDataError,
+    InvalidIVCurveError,
+    CalibrationError,
+)
+from pv_circularity_simulator.core.models import (
+    ThermalImageMetadata,
+    ThermalImageData,
+    IVCurveData,
+    ElectricalParameters,
+    AnalysisResult,
 )
 
 __all__ = [
-    "MaterialFlow",
-    "CircularityMetrics",
-    "ReuseMetrics",
-    "RepairMetrics",
-    "RecyclingMetrics",
-    "PolicyCompliance",
-    "ImpactScorecard",
+    # Constants
+    "BOLTZMANN_CONSTANT",
+    "ELECTRON_CHARGE",
+    "STANDARD_IRRADIANCE",
+    "STANDARD_TEMPERATURE",
+    "STANDARD_AM",
+    # Exceptions
+    "DiagnosticError",
+    "InvalidThermalDataError",
+    "InvalidIVCurveError",
+    "CalibrationError",
+    # Models
+    "ThermalImageMetadata",
+    "ThermalImageData",
+    "IVCurveData",
+    "ElectricalParameters",
+    "AnalysisResult",
 ]
