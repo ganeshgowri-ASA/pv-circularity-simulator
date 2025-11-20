@@ -1,6 +1,5 @@
-"""Core simulation modules for PV Circularity Simulator."""
+"""PV module simulation and testing modules."""
 
-from .B05_energy_forecasting.forecaster import EnergyForecaster
-from .B06_energy_yield_analysis.analyzer import EnergyYieldAnalyzer
+from .iec_61215_simulator import IEC61215TestSimulator
 
-__all__ = ["EnergyForecaster", "EnergyYieldAnalyzer"]
+__all__ = ["IEC61215TestSimulator"]
