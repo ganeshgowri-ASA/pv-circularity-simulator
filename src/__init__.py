@@ -1,3 +1,3 @@
-"""PV Circularity Simulator - Solar Irradiance Modeling and Resource Assessment."""
+"""PV Circularity Simulator - System Validation & Engineering Reports Module."""
 
 __version__ = "0.1.0"

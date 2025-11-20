@@ -1,23 +1,29 @@
-"""
-Data models for PV system optimization.
-"""
+"""Data models for PV system validation and compliance."""
 
-from .optimization_models import (
-    PVSystemParameters,
-    OptimizationConstraints,
-    OptimizationObjectives,
-    OptimizationResult,
-    ParetoSolution,
-    DesignPoint,
-    SensitivityResult,
+from .validation_models import (
+    ComplianceResult,
+    ComplianceStatus,
+    DocumentPackage,
+    EngineeringCalculation,
+    IssueItem,
+    IssueSeverity,
+    PerformanceMetrics,
+    SystemConfiguration,
+    SystemType,
+    ValidationReport,
+    ValidationResult,
 )
 
 __all__ = [
-    "PVSystemParameters",
-    "OptimizationConstraints",
-    "OptimizationObjectives",
-    "OptimizationResult",
-    "ParetoSolution",
-    "DesignPoint",
-    "SensitivityResult",
+    "ComplianceResult",
+    "ComplianceStatus",
+    "DocumentPackage",
+    "EngineeringCalculation",
+    "IssueItem",
+    "IssueSeverity",
+    "PerformanceMetrics",
+    "SystemConfiguration",
+    "SystemType",
+    "ValidationReport",
+    "ValidationResult",
 ]
