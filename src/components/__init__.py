@@ -1,3 +1,1 @@
-"""
-Components package - Reusable UI components
-"""
+"""Reusable Streamlit components."""

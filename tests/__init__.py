@@ -1,6 +1,1 @@
-"""
-Test Suite
-==========
-
-Comprehensive tests for the PV circularity simulator.
-"""
+"""Test suite for PV Circularity Simulator."""
