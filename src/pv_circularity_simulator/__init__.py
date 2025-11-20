@@ -1,9 +1,10 @@
 """
-PV Circularity Simulator - A comprehensive photovoltaic system lifecycle analysis platform.
+PV Circularity Simulator
 
-This package provides tools for PV system design, performance analysis, shade analysis,
-and end-of-life circularity assessment.
+End-to-end PV lifecycle simulation platform: Cell design → Module engineering →
+System planning → Performance monitoring → Circularity (3R). Includes CTM loss
+analysis, SCAPS integration, reliability testing, energy forecasting, and
+circular economy modeling.
 """
 
 __version__ = "0.1.0"
-__author__ = "PV Circularity Simulator Team"

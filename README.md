@@ -1,274 +1,179 @@
 # PV Circularity Simulator
 
-End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
+End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, circular economy modeling, and **hydrogen system integration**.
 
-## 🚀 Features
+## Features
 
-### Hybrid Energy System UI & Configuration (BATCH10-PENDING-S68)
+### 🔋 Hydrogen System Integration & Power-to-X (New!)
 
-A comprehensive Streamlit-based interface for configuring, controlling, and monitoring hybrid energy systems.
+Production-ready hydrogen system modeling for renewable energy integration:
 
-**Core Components:**
+- **Electrolyzer Modeling**: PEM, Alkaline, SOEC, AEM technologies with dynamic efficiency, degradation, and LCOH analysis
+- **H2 Storage Design**: Compressed gas, liquid H2, metal hydride, LOHC, underground storage with SOC dynamics
+- **Fuel Cell Integration**: PEMFC, SOFC, MCFC with CHP capabilities and performance analysis
+- **Power-to-X Pathways**: Methanol, methane, ammonia, Fischer-Tropsch fuels with techno-economic analysis
 
-- **System Configuration Wizard** - Step-by-step guided setup for hybrid energy systems
-- **Component Selector** - Interactive interface for adding and configuring energy components (PV arrays, batteries, etc.)
-- **Operation Strategy Builder** - Define control strategies and component priorities
-- **Performance Monitoring Dashboard** - Real-time visualization and analysis
+See [Hydrogen Module Documentation](src/pv_circularity_simulator/hydrogen/README.md) for detailed information.
 
-**Key Features:**
+## Quick Start
 
-- Interactive Streamlit widgets and selections
-- Real-time performance metrics and KPIs
-- Power flow visualization with Plotly charts
-- Component status monitoring
-- Energy balance analysis
-- Configurable operation strategies (rule-based, optimal, predictive)
-- Export/import configuration management
-- Production-ready with full docstrings
-
-## 📦 Installation
+### Installation
 
 ```bash
 # Clone the repository
 git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
 cd pv-circularity-simulator
 
-# Install dependencies
-pip install -r requirements.txt
+# Install the package
+pip install -e .
+
+# Or install with all dependencies
+pip install -e ".[dev,analysis]"
 ```
 
-## 🎯 Quick Start
-
-### Running the Hybrid Energy System UI
-
-```bash
-# Launch the Streamlit application
-streamlit run app.py
-```
-
-### Using the UI Programmatically
+### Basic Example - Hydrogen System
 
 ```python
-from src.ui.hybrid_system_ui import HybridSystemUI
-from src.core.config import ConfigManager
-
-# Create UI instance with default configuration
-ui = HybridSystemUI()
-
-# Or load from a configuration file
-config = ConfigManager.load_config("config/my_system.yaml")
-ui = HybridSystemUI(config=config)
-
-# Render the complete interface
-ui.render()
-
-# Or use individual components
-ui.system_configuration_wizard()
-ui.component_selector()
-ui.operation_strategy_builder()
-ui.performance_monitoring_dashboard()
-```
-
-### Creating a Custom Configuration
-
-```python
-from src.core.config import SystemConfiguration, ComponentConfig, OperationStrategy
-
-# Create system configuration
-config = SystemConfiguration(
-    system_name="My Hybrid System",
-    system_description="Custom hybrid energy system",
-    components=[
-        ComponentConfig(
-            component_id="pv_001",
-            component_type="pv_array",
-            name="Rooftop PV",
-            capacity=15.0,
-            capacity_unit="kW",
-            efficiency=0.85,
-            parameters={
-                "area_m2": 75.0,
-                "tilt_angle": 25.0,
-                "azimuth_angle": 180.0
-            }
-        ),
-        ComponentConfig(
-            component_id="battery_001",
-            component_type="battery",
-            name="Energy Storage",
-            capacity=30.0,
-            capacity_unit="kWh",
-            efficiency=0.90,
-            parameters={
-                "initial_soc": 0.5,
-                "min_soc": 0.2,
-                "max_soc": 0.9,
-                "charge_rate_max_kw": 7.5,
-                "discharge_rate_max_kw": 7.5
-            }
-        )
-    ],
-    operation_strategy=OperationStrategy(
-        strategy_name="Maximize Self-Consumption",
-        strategy_type="rule_based",
-        priority_order=["pv_001", "battery_001"]
-    )
+from pv_circularity_simulator.hydrogen import (
+    HydrogenIntegrator,
+    ElectrolyzerConfig,
+    ElectrolyzerType,
 )
 
-# Save configuration
-config.to_yaml("my_config.yaml")
+# Initialize integrator
+integrator = HydrogenIntegrator(
+    discount_rate=0.05,
+    electricity_price_kwh=0.04,
+)
+
+# Configure PEM electrolyzer
+config = ElectrolyzerConfig(
+    electrolyzer_type=ElectrolyzerType.PEM,
+    rated_power_kw=1000.0,
+    efficiency=0.68,
+)
+
+# Simulate with renewable power profile
+power_profile = [800.0] * 8760  # 1 year hourly data
+results = integrator.electrolyzer_modeling(
+    config=config,
+    power_input_profile=power_profile,
+    timestep_hours=1.0,
+)
+
+print(f"Annual H2: {results.annual_h2_production_kg:.0f} kg")
+print(f"LCOH: ${results.levelized_cost_h2:.2f}/kg")
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 pv-circularity-simulator/
-├── src/
-│   ├── core/              # Core models and configuration
-│   │   ├── config.py      # Configuration management (Pydantic models)
-│   │   └── models.py      # Energy system models
-│   ├── ui/                # User interface modules
-│   │   └── hybrid_system_ui.py  # Main UI class
-│   ├── monitoring/        # Monitoring and metrics
-│   │   └── metrics.py     # Performance metrics tracking
-│   └── utils/             # Utility functions
-│       └── helpers.py     # Helper functions
-├── config/                # Configuration files
-├── tests/                 # Test suite
-├── app.py                 # Main Streamlit application
-├── requirements.txt       # Python dependencies
-└── README.md             # This file
+├── src/pv_circularity_simulator/
+│   └── hydrogen/                    # Hydrogen system integration module
+│       ├── __init__.py
+│       ├── models.py               # Pydantic models for all components
+│       ├── integrator.py           # Core HydrogenIntegrator class
+│       └── README.md               # Detailed module documentation
+├── examples/
+│   └── hydrogen_integration_example.py  # Comprehensive examples
+├── tests/
+│   └── test_hydrogen_integration.py     # Unit tests
+├── requirements.txt
+├── pyproject.toml
+└── README.md
 ```
 
-## 🎨 UI Components
+## Examples
 
-### 1. System Configuration Wizard
-
-A step-by-step guided interface for setting up hybrid energy systems:
-
-- **Step 1:** Basic system information
-- **Step 2:** Component selection and configuration
-- **Step 3:** Operation strategy setup
-- **Step 4:** Simulation parameters
-- **Step 5:** Review and confirmation
-
-### 2. Component Selector
-
-Interactive interface for managing energy components:
-
-- Add components (PV arrays, batteries, wind turbines, etc.)
-- Configure component-specific parameters
-- Edit existing components
-- Remove components
-- View component status
-
-### 3. Operation Strategy Builder
-
-Define and configure control strategies:
-
-- Strategy type selection (rule-based, optimal, predictive)
-- Component priority ordering
-- Control algorithm parameters
-- Operating constraints
-- Strategy validation
-
-### 4. Performance Monitoring Dashboard
-
-Real-time monitoring and visualization:
-
-- Key Performance Indicators (KPIs)
-- Component status indicators
-- Power flow diagrams
-- Energy balance charts
-- Time-series analysis
-- Performance metrics (self-sufficiency, renewable fraction, etc.)
-
-## 🔧 Configuration
-
-### System Configuration
-
-The system uses Pydantic models for configuration validation. Configuration files can be in YAML format:
-
-```yaml
-system_name: "Example Hybrid System"
-system_description: "Demonstration system"
-components:
-  - component_id: "pv_001"
-    component_type: "pv_array"
-    name: "PV Array 1"
-    capacity: 10.0
-    capacity_unit: "kW"
-    efficiency: 0.85
-    parameters:
-      area_m2: 50.0
-      tilt_angle: 30.0
-      azimuth_angle: 180.0
-
-operation_strategy:
-  strategy_name: "Basic Rule-Based"
-  strategy_type: "rule_based"
-  priority_order: ["pv_001", "battery_001"]
-
-simulation:
-  time_step_minutes: 5
-  simulation_duration_hours: 24
-```
-
-## 📊 Performance Metrics
-
-The system tracks and displays various performance metrics:
-
-- **Energy Metrics:**
-  - Total generation (kWh)
-  - Total consumption (kWh)
-  - Grid import/export (kWh)
-
-- **Performance Indicators:**
-  - Renewable fraction (%)
-  - Self-consumption ratio (%)
-  - Self-sufficiency ratio (%)
-  - Capacity factor (%)
-
-- **Component Metrics:**
-  - Battery state of charge
-  - PV generation profiles
-  - Component efficiency
-  - Operating status
-
-## 🧪 Testing
+Run comprehensive examples:
 
 ```bash
-# Run tests
+python examples/hydrogen_integration_example.py
+```
+
+This demonstrates:
+1. Electrolyzer modeling with variable renewable power
+2. Storage system design with charge/discharge cycles
+3. Fuel cell CHP integration
+4. Power-to-Methanol pathway analysis
+
+## Testing
+
+```bash
+# Run all tests
 pytest tests/
 
 # Run with coverage
-pytest --cov=src tests/
+pytest tests/ --cov=pv_circularity_simulator --cov-report=html
 ```
 
-## 📝 API Documentation
+## Documentation
 
-Full API documentation is available in the docstrings of each module. Key classes:
+- [Hydrogen System Integration](src/pv_circularity_simulator/hydrogen/README.md) - Comprehensive hydrogen module docs
+- API documentation available in docstrings (Google style)
 
-- `HybridSystemUI` - Main UI class (src/ui/hybrid_system_ui.py)
-- `SystemConfiguration` - Configuration management (src/core/config.py)
-- `HybridEnergySystem` - System simulation (src/core/models.py)
-- `PerformanceMetrics` - Metrics tracking (src/monitoring/metrics.py)
+## Technology Stack
 
-## 🤝 Contributing
+- **Python 3.9+**: Modern Python with type hints
+- **Pydantic v2**: Data validation and settings management
+- **NumPy**: Numerical computations
+- **Pytest**: Testing framework
 
-Contributions are welcome! Please feel free to submit pull requests or open issues.
+## Development
 
-## 📄 License
+```bash
+# Install development dependencies
+pip install -e ".[dev]"
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+# Format code
+black src/ tests/
 
-## 🔮 Future Enhancements
+# Lint code
+ruff check src/ tests/
 
-- Advanced optimization algorithms
-- Machine learning-based forecasting
-- Integration with real weather APIs
-- Multi-site system management
-- Economic analysis and ROI calculations
-- Circular economy metrics and reporting
-- IoT device integration
-- Cloud-based deployment options
+# Type checking
+mypy src/
+```
+
+## Roadmap
+
+- [x] Hydrogen system integration (BATCH8-B12-S03)
+  - [x] Electrolyzer modeling with multiple technologies
+  - [x] H2 storage design and optimization
+  - [x] Fuel cell integration with CHP
+  - [x] Power-to-X pathway analysis
+- [ ] PV module lifecycle modeling
+- [ ] CTM loss analysis
+- [ ] Circular economy metrics
+- [ ] Integration with SCAPS
+
+## Contributing
+
+We welcome contributions! Please ensure:
+- Full type hints and docstrings
+- Pydantic validation for all models
+- Unit tests with pytest
+- Code formatted with black
+- Passes ruff linting
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file
+
+## Citation
+
+If you use this simulator in your research, please cite:
+
+```bibtex
+@software{pv_circularity_simulator,
+  title = {PV Circularity Simulator},
+  author = {PV Circularity Team},
+  year = {2025},
+  url = {https://github.com/ganeshgowri-ASA/pv-circularity-simulator}
+}
+```
+
+## Contact
+
+For questions, issues, or feature requests, please open an issue on GitHub.
