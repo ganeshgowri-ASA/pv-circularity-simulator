@@ -1,1 +1,1 @@
-"""Usage examples for Authentication & Access Control System."""
+"""Example scripts and sample data generators for PV circularity simulator."""

@@ -1,373 +1,262 @@
 # PV Circularity Simulator
 
-**End-to-end PV lifecycle simulation platform with comprehensive circular economy modeling**
+An end-to-end PV (photovoltaic) lifecycle simulation platform with comprehensive circularity assessment dashboard.
 
-A production-ready Python package for analyzing the circular economy aspects of photovoltaic (PV) modules, including material recovery, reuse assessment, repair optimization, recycling economics, life cycle assessment, and interactive dashboards.
+**End-to-end PV lifecycle simulation**: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+## 🌟 Features
 
-## Overview
+### Circularity Assessment Dashboard
 
-The PV Circularity Simulator implements the complete 3R framework (Reduce, Reuse, Recycle) for photovoltaic modules, enabling comprehensive analysis of circular economy opportunities in the solar industry.
+The **CircularityDashboardUI** provides a production-ready Streamlit interface for analyzing PV circularity metrics:
 
-### Key Features
+- **📊 Material Flow Visualizer**: Interactive Sankey diagrams showing material movement through manufacturing, operation, and end-of-life stages
+- **♻️ 3R Strategies Analysis**: Comprehensive tracking of Reuse, Repair, and Recycling metrics
+- **📈 Impact Scorecards**: Environmental and economic impact assessment with baseline vs circular comparisons
+- **📋 Policy Compliance Tracker**: Multi-jurisdiction regulatory compliance monitoring with real-time status updates
 
-- **Material Recovery Analysis**: Calculate recovery rates and costs for metals, glass, and silicon
-- **Reuse Assessment**: Evaluate modules for second-life applications with technical and economic analysis
-- **Repair Optimization**: Prioritize defects and optimize repair vs. replace decisions
-- **Recycling Economics**: Analyze material value, ROI, and environmental credits
-- **Life Cycle Assessment**: Comprehensive carbon footprint and environmental impact analysis
-- **Interactive Dashboards**: Streamlit-based visualizations with material flow diagrams and 3R metrics
+## 🚀 Quick Start
 
-## Installation
+### Installation
 
+1. Clone the repository:
 ```bash
-# Clone the repository
-git clone https://github.com/ganeshgowri-ASA/pv-circularity-simulator.git
+git clone https://github.com/yourusername/pv-circularity-simulator.git
 cd pv-circularity-simulator
-
-# Install the package
-pip install -e .
-
-# Or install with development dependencies
-pip install -e ".[dev]"
 ```
 
-## Quick Start
-
-```python
-from src.circularity import MaterialRecoveryCalculator, ReuseAnalyzer, LCAAnalyzer
-from src.circularity.material_recovery import ModuleComposition
-
-# Define a PV module
-module = ModuleComposition(
-    glass=15.0, aluminum=2.5, silicon=0.5,
-    silver=0.005, copper=0.2, eva_polymer=1.0,
-    backsheet=0.5, junction_box=0.3
-)
-
-# Analyze material recovery
-calculator = MaterialRecoveryCalculator()
-results = calculator.full_recovery_analysis(
-    composition=module,
-    num_modules=1000,
-    transport_distance_km=200.0
-)
-
-print(f"Recovery rate: {results['overall_recovery_rate']*100:.1f}%")
-print(f"Total cost: ${results['total_cost_usd']:,.2f}")
-```
-
-## Components
-
-### B11-S01: Material Recovery & Recycling Economics
-
-Calculate material recovery rates and recycling costs for end-of-life PV modules.
-
-```python
-from src.circularity import MaterialRecoveryCalculator
-
-calculator = MaterialRecoveryCalculator()
-
-# Metal recovery
-metal_recovery = calculator.metal_recovery(module, recovery_method="combined")
-
-# Glass recovery
-glass_recovery = calculator.glass_recovery(module, processing_quality="standard")
-
-# Silicon recovery
-silicon_recovery = calculator.silicon_recovery(module, recovery_technique="thermal_chemical")
-
-# Recycling costs
-costs = calculator.recycling_costs(module, num_modules=100, transport_distance_km=200.0)
-```
-
-**Key Methods:**
-- `metal_recovery()`: Analyze metal recovery (aluminum, silver, copper)
-- `glass_recovery()`: Calculate glass cullet recovery and quality
-- `silicon_recovery()`: Determine silicon recovery by grade
-- `recycling_costs()`: Detailed cost breakdown for recycling operations
-
-### B11-S02: Reuse Assessment & Second-Life Applications
-
-Evaluate PV modules for reuse potential and second-life market opportunities.
-
-```python
-from src.circularity import ReuseAnalyzer
-from src.circularity.reuse_analyzer import ModuleTestResults, ModuleCondition
-
-analyzer = ReuseAnalyzer()
-
-# Module testing
-test_results = ModuleTestResults(
-    visual_inspection_passed=True,
-    electrical_test_passed=True,
-    insulation_test_passed=True,
-    current_power_w=340,
-    rated_power_w=400,
-    voltage_v=32.5,
-    current_a=10.5,
-    fill_factor=0.78,
-    insulation_resistance_mohm=50.0,
-    defects=[],
-    condition=ModuleCondition.GOOD
-)
-
-# Assess eligibility
-eligibility = analyzer.module_testing(test_results, age_years=8)
-
-# Find second-life markets
-markets = analyzer.second_life_markets(
-    capacity_retention=0.85,
-    available_quantity_kw=340.0,
-    module_specs={"voltage": 32.5, "current": 10.5}
-)
-```
-
-**Key Methods:**
-- `module_testing()`: Evaluate reuse eligibility based on test results
-- `residual_capacity()`: Analyze remaining capacity and lifetime
-- `second_life_markets()`: Identify market opportunities for reused modules
-
-### B11-S03: Repair Optimization & Maintenance Strategies
-
-Optimize repair decisions and plan preventive maintenance schedules.
-
-```python
-from src.circularity import RepairOptimizer
-from src.circularity.repair_optimizer import Defect, DefectSeverity
-
-optimizer = RepairOptimizer()
-
-# Define defects
-defects = [
-    Defect(
-        defect_id="D001",
-        defect_type="junction_box_failure",
-        severity=DefectSeverity.HIGH,
-        location="Module A1-15",
-        power_loss_w=25.0,
-        safety_risk=True
-    )
-]
-
-# Prioritize defects
-prioritized = optimizer.defect_prioritization(defects, system_size_kw=100.0, age_years=10.0)
-
-# Repair vs replace decision
-decision = optimizer.repair_vs_replace(
-    module_age_years=10,
-    current_power_w=340,
-    rated_power_w=400,
-    repair_costs=repair_costs,
-    defects=defects
-)
-
-# Maintenance schedule
-schedule = optimizer.preventive_maintenance(
-    system_size_kw=100.0,
-    system_age_years=5.0,
-    climate_zone="temperate"
-)
-```
-
-**Key Methods:**
-- `defect_prioritization()`: Rank defects by urgency and impact
-- `repair_vs_replace()`: Economic analysis of repair vs. replacement
-- `preventive_maintenance()`: Generate maintenance schedules
-
-### B11-S04: Recycling Economics & Material Value
-
-Analyze the economics of recycling operations with material pricing and ROI calculations.
-
-```python
-from src.circularity import RecyclingEconomics
-
-economics = RecyclingEconomics()
-
-# Material pricing
-revenue = economics.material_pricing(recovered_materials)
-
-# ROI analysis
-roi = economics.recycling_roi(
-    num_modules=10000,
-    avg_module_weight_kg=20.0,
-    recycling_cost_per_module=15.0,
-    recovered_materials=recovered_materials
-)
-
-# Environmental credits
-env_credits = economics.environmental_credits(
-    num_modules=10000,
-    avg_module_weight_kg=20.0,
-    region="EU"
-)
-```
-
-**Key Methods:**
-- `material_pricing()`: Calculate revenue from recovered materials
-- `recycling_roi()`: Comprehensive ROI analysis
-- `environmental_credits()`: Value environmental benefits
-
-### B11-S05: Environmental Impact & LCA Analysis
-
-Comprehensive life cycle assessment with carbon footprint and environmental indicators.
-
-```python
-from src.circularity import LCAAnalyzer
-
-lca = LCAAnalyzer()
-
-# Carbon footprint
-carbon = lca.carbon_footprint(
-    module_power_w=400,
-    module_weight_kg=20.0,
-    manufacturing_location="China",
-    recycling_at_eol=True
-)
-
-# Energy payback
-energy = lca.energy_payback(
-    module_power_w=400,
-    module_weight_kg=20.0,
-    annual_irradiation_kwh_per_m2=1800,
-    module_area_m2=2.0
-)
-
-# Environmental indicators
-indicators = lca.environmental_indicators(
-    module_power_w=400,
-    module_weight_kg=20.0
-)
-```
-
-**Key Methods:**
-- `carbon_footprint()`: Detailed lifecycle CO2eq emissions
-- `energy_payback()`: Energy payback time and EROI
-- `environmental_indicators()`: Comprehensive impact assessment
-
-### B11-S06: Circularity UI & 3R Dashboard
-
-Interactive visualizations and dashboards for circular economy analysis.
-
-```python
-from src.circularity import CircularityUI
-
-ui = CircularityUI()
-
-# Material flow Sankey diagram
-flow_fig = ui.material_flow_diagrams(
-    input_materials={"glass": 15.0, "aluminum": 2.5},
-    recovered_materials={"glass": 14.0, "aluminum": 2.4},
-    waste_materials={"mixed": 1.2}
-)
-
-# 3R metrics dashboard
-metrics_fig = ui.three_r_metrics(metrics, show_details=True)
-
-# Circular economy score
-ce_score = ui.circular_economy_score(
-    material_circularity_index=0.75,
-    recovery_rate=0.85,
-    reuse_rate=0.20,
-    lifetime_extension_factor=1.3,
-    carbon_footprint_kg=1500,
-    roi_percent=12.5
-)
-```
-
-**Key Methods:**
-- `material_flow_diagrams()`: Create Sankey diagrams for material flows
-- `3R_metrics()`: Visualize Reduce, Reuse, Recycle metrics
-- `circular_economy_score()`: Calculate comprehensive circularity score
-
-## Examples
-
-See the `examples/` directory for detailed usage examples:
-
+2. Install dependencies:
 ```bash
-# Run basic usage examples
-python examples/basic_usage.py
+pip install -r requirements.txt
 ```
 
-## Testing
+### Running the Dashboard
 
-Run the test suite:
-
+Launch the Streamlit dashboard:
 ```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=src --cov-report=html
-
-# Run specific test file
-pytest tests/test_material_recovery.py
+streamlit run app.py
 ```
 
-## Architecture
+The dashboard will open in your default browser at `http://localhost:8501`
+
+### Using Sample Data
+
+The application includes a sample data generator for testing:
+
+```python
+from examples.sample_data_generator import generate_sample_circularity_data
+
+# Generate sample data
+metrics = generate_sample_circularity_data()
+
+# Use with dashboard
+from pv_circularity_simulator.dashboards import CircularityDashboardUI
+dashboard = CircularityDashboardUI(metrics=metrics)
+```
+
+## 📁 Project Structure
 
 ```
 pv-circularity-simulator/
-├── src/circularity/
-│   ├── __init__.py
-│   ├── material_recovery.py      # B11-S01: Material Recovery
-│   ├── reuse_analyzer.py          # B11-S02: Reuse Assessment
-│   ├── repair_optimizer.py        # B11-S03: Repair Optimization
-│   ├── recycling_economics.py     # B11-S04: Recycling Economics
-│   ├── lca_analyzer.py            # B11-S05: LCA Analysis
-│   └── circularity_ui.py          # B11-S06: UI & Dashboard
-├── tests/
-│   ├── test_material_recovery.py
-│   └── test_integration.py
+├── src/
+│   └── pv_circularity_simulator/
+│       ├── core/                      # Core data models
+│       │   ├── data_models.py        # Circularity metrics models
+│       │   └── __init__.py
+│       ├── dashboards/                # Dashboard UI components
+│       │   ├── circularity_dashboard.py
+│       │   ├── components/            # Reusable UI components
+│       │   └── __init__.py
+│       ├── data/                      # Data processing
+│       ├── utils/                     # Utilities
+│       └── config/                    # Configuration
 ├── examples/
-│   └── basic_usage.py
-└── pyproject.toml
+│   └── sample_data_generator.py      # Sample data for testing
+├── tests/                             # Unit tests
+├── .streamlit/
+│   └── config.toml                   # Streamlit configuration
+├── app.py                            # Main application entry point
+├── requirements.txt                  # Python dependencies
+└── README.md
 ```
 
-## Technology Stack
+## 📊 Dashboard Components
 
-- **Core**: Python 3.9+
-- **Data Validation**: Pydantic 2.0+
-- **Numerical Computing**: NumPy, SciPy, Pandas
-- **Visualization**: Plotly, Matplotlib
-- **Dashboard**: Streamlit
-- **Testing**: pytest, pytest-cov
+### 1. Material Flow Visualizer
 
-## Contributing
+Visualizes material flows through the PV lifecycle:
+- Interactive Sankey diagrams
+- Material-specific filtering
+- Stage-by-stage efficiency analysis
+- Mass balance calculations
+- Loss identification
+
+### 2. Reuse, Repair, Recycling Tabs
+
+Comprehensive 3R strategy metrics:
+
+**Reuse:**
+- Collection and reuse rates
+- Quality grade distribution
+- Cost savings and CO₂ avoidance
+- Residual capacity analysis
+
+**Repair:**
+- Assessment and success rates
+- Common failure modes
+- Performance recovery metrics
+- Economic analysis
+
+**Recycling:**
+- Material recovery rates by type
+- Process efficiency metrics
+- Resource consumption tracking
+- Economic value analysis
+
+### 3. Impact Scorecards
+
+Environmental and economic impact assessment:
+- Baseline vs circular comparison
+- Multi-category tracking (carbon, water, waste, energy)
+- Target progress monitoring
+- Data quality indicators
+
+### 4. Policy Compliance Tracker
+
+Regulatory compliance monitoring:
+- Multi-jurisdiction tracking (EU, US, China, Japan)
+- Collection and recovery rate gauges
+- Deadline tracking and alerts
+- Penalty assessment
+
+## 🔧 API Usage
+
+### Creating a Dashboard
+
+```python
+from pv_circularity_simulator.dashboards import CircularityDashboardUI
+from pv_circularity_simulator.core import CircularityMetrics
+
+# Initialize with your metrics
+metrics = CircularityMetrics(
+    assessment_id="ASSESS-001",
+    circularity_index=75.5
+)
+
+# Create dashboard
+dashboard = CircularityDashboardUI(
+    metrics=metrics,
+    title="My Custom Dashboard",
+    cache_enabled=True
+)
+
+# Render (when using Streamlit)
+dashboard.render()
+```
+
+### Working with Data Models
+
+```python
+from pv_circularity_simulator.core.data_models import (
+    MaterialFlow,
+    ReuseMetrics,
+    RecyclingMetrics,
+    PolicyCompliance,
+    ImpactScorecard,
+    MaterialType,
+    ProcessStage
+)
+
+# Create material flow
+flow = MaterialFlow(
+    material_type=MaterialType.SILICON,
+    stage=ProcessStage.MANUFACTURING,
+    input_mass_kg=10000,
+    output_mass_kg=9500,
+    loss_mass_kg=500,
+    location="Germany"
+)
+
+# Create reuse metrics
+reuse = ReuseMetrics(
+    total_modules_collected=1000,
+    modules_reused=750,
+    avg_residual_capacity_pct=85.0,
+    cost_savings_usd=125000
+)
+```
+
+## 📦 Dependencies
+
+- **Streamlit** (>=1.28.0): Dashboard framework
+- **Pandas** (>=2.0.0): Data manipulation
+- **Plotly** (>=5.17.0): Interactive visualizations
+- **NumPy** (>=1.24.0): Numerical computing
+- **Pydantic** (>=2.0.0): Data validation
+
+See `requirements.txt` for complete list.
+
+## 🧪 Testing
+
+Run the sample data generator:
+```bash
+python examples/sample_data_generator.py
+```
+
+Run tests (when implemented):
+```bash
+pytest tests/
+```
+
+## 📚 Documentation
+
+Key classes and methods:
+
+### CircularityDashboardUI
+
+Main dashboard class with four core visualization methods:
+
+- `material_flow_visualizer()`: Visualize material flows with Sankey diagrams
+- `reuse_repair_recycling_tabs()`: Display 3R strategy metrics in tabs
+- `impact_scorecards()`: Show environmental/economic impact assessments
+- `policy_compliance_tracker()`: Track regulatory compliance status
+
+### Data Models
+
+- `CircularityMetrics`: Comprehensive circularity assessment container
+- `MaterialFlow`: Material flow tracking through lifecycle stages
+- `ReuseMetrics`: Module reuse strategy metrics
+- `RepairMetrics`: Module repair operation metrics
+- `RecyclingMetrics`: Material recycling efficiency metrics
+- `PolicyCompliance`: Regulatory compliance tracking
+- `ImpactScorecard`: Impact assessment by category
+
+## 🤝 Contributing
 
 Contributions are welcome! Please follow these guidelines:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes with full docstrings
+4. Add tests if applicable
+5. Submit a pull request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+See LICENSE file for details.
 
-## Citation
+## 🔗 Resources
 
-If you use this software in your research, please cite:
+- [Streamlit Documentation](https://docs.streamlit.io)
+- [Plotly Documentation](https://plotly.com/python)
+- [PV Circularity Best Practices](https://github.com)
 
-```bibtex
-@software{pv_circularity_simulator,
-  title = {PV Circularity Simulator: Circular Economy Analysis for Photovoltaic Modules},
-  author = {PV Circularity Team},
-  year = {2024},
-  url = {https://github.com/ganeshgowri-ASA/pv-circularity-simulator}
-}
-```
-
-## Acknowledgments
-
-- Built with production-ready standards for circular economy analysis
-- Implements best practices from circular economy frameworks (Ellen MacArthur Foundation)
-- Based on industry standards for PV recycling and life cycle assessment
-
-## Contact
+## 📧 Contact
 
 For questions or support, please open an issue on GitHub.
+
+---
+
+**Version:** 0.1.0
+**Status:** Production-ready
+**Last Updated:** 2025-01-17
