@@ -5,90 +5,69 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pv-circularity-simulator"
 version = "0.1.0"
-description = "Advanced dashboard components for PV lifecycle simulation"
+description = "Comprehensive PV Circularity Simulator with asset management, repower analysis, and circular economy modeling"
 readme = "README.md"
-requires-python = ">=3.8"
-license = {text = "MIT"}
+requires-python = ">=3.9"
+license = {text = "Apache-2.0"}
 authors = [
-    {name = "PV Circularity Simulator Team"},
+    {name = "PV Circularity Team"}
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering",
 ]
 dependencies = [
-    "streamlit>=1.31.0",
-    "plotly>=5.18.0",
-    "pandas>=2.1.0",
-    "numpy>=1.24.0",
-    "python-dateutil>=2.8.2",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "alembic>=1.12.0",
+    "python-dateutil>=2.8.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
-    "black>=23.12.0",
-    "flake8>=7.0.0",
-    "mypy>=1.8.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
 ]
-docs = [
-    "sphinx>=7.2.0",
-    "sphinx-rtd-theme>=2.0.0",
+api = [
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+]
+ui = [
+    "streamlit>=1.28.0",
 ]
 
-[project.scripts]
-pv-simulator-demo = "demo_dashboard:main"
-
-[tool.black]
-line-length = 88
-target-version = ['py38', 'py39', 'py310', 'py311']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
-
-[tool.mypy]
-python_version = "3.8"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-check_untyped_defs = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-follow_imports = "normal"
-ignore_missing_imports = true
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = [
-    "--verbose",
-    "--strict-markers",
-    "--cov=src/pv_simulator",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-]
+addopts = "-v --cov=src/pv_circularity --cov-report=term-missing"
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311']
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true

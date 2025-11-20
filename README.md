@@ -1,30 +1,36 @@
-# ⚡ PV Circularity Simulator
+# PV Circularity Simulator
 
-End-to-end PV lifecycle simulation platform with **Advanced Dashboard Components**
+End-to-end PV lifecycle simulation platform: Cell design → Module engineering → System planning → Performance monitoring → Circularity (3R). Includes CTM loss analysis, SCAPS integration, reliability testing, energy forecasting, and circular economy modeling.
 
-A comprehensive platform for photovoltaic system lifecycle management, from cell design to circular economy modeling. Features production-ready Streamlit dashboard components for real-time monitoring, KPI tracking, and performance visualization.
+## Features
 
-## 🌟 Features
+### B10-S01: Asset Management & Portfolio Tracking (Production-Ready)
 
-### Advanced Dashboard Components
+Comprehensive asset management system for PV installations with support for circular economy principles.
 
-- **📊 Metric Cards**: Display key metrics with trend indicators and status colors
-- **🎯 KPI Displays**: Track performance indicators with targets and sparklines
-- **📈 Progress Trackers**: Visualize goal progression with milestones and stages
-- **🔔 Notification Widgets**: Manage alerts and notifications with priority levels
+**Core Components:**
+- **AssetManager**: Central management class for sites, equipment, and performance tracking
+- **Site Inventory**: Track and manage solar installation sites with capacity and status monitoring
+- **Equipment Tracking**: Detailed equipment management with lifecycle and circular economy features
+- **Performance History**: Historical performance data tracking and analysis
 
-### PV Lifecycle Coverage
+**Key Capabilities:**
+- Site portfolio management with geographic tracking
+- Equipment lifecycle tracking (manufacturing → installation → maintenance → decommissioning)
+- Performance monitoring with environmental conditions
+- Material composition tracking for circular economy
+- Recyclability and end-of-life value estimation
+- Comprehensive inventory summaries and analytics
 
-- Cell design and module engineering
-- System planning and performance monitoring
-- Circularity analysis (Reduce, Reuse, Recycle)
-- CTM loss analysis and SCAPS integration
-- Reliability testing and energy forecasting
-- Circular economy modeling
+## Installation
 
-## 🚀 Quick Start
+### Requirements
 
-### Installation
+- Python 3.9 or higher
+- SQLAlchemy 2.0+
+- Pydantic 2.0+
+
+### Setup
 
 ```bash
 # Clone the repository
@@ -34,358 +40,256 @@ cd pv-circularity-simulator
 # Install dependencies
 pip install -r requirements.txt
 
-# Or install in development mode
-pip install -e .
+# For development
+pip install -r requirements-dev.txt
 ```
 
-### Run the Demo
+## Quick Start
+
+### Basic Usage
+
+```python
+from datetime import datetime
+from src.pv_circularity.database.session import init_db
+from src.pv_circularity.managers.asset_manager import AssetManager
+from src.pv_circularity.database.models import AssetStatus, EquipmentType
+from src.pv_circularity.models.schemas import SiteCreate, EquipmentCreate
+
+# Initialize database
+db_manager = init_db("sqlite:///./pv_circularity.db", create_tables=True)
+db_session = next(db_manager.get_session())
+asset_manager = AssetManager(db_session)
+
+# Create a site
+site_data = SiteCreate(
+    name="Solar Farm Alpha",
+    location="Phoenix, AZ",
+    latitude=33.4484,
+    longitude=-112.0740,
+    capacity_kw=5000.0,
+    installation_date=datetime(2020, 1, 1),
+    status=AssetStatus.ACTIVE
+)
+site = asset_manager.create_site(site_data)
+
+# Add equipment
+equipment_data = EquipmentCreate(
+    equipment_id="PANEL-001",
+    site_id=site.id,
+    equipment_type=EquipmentType.SOLAR_PANEL,
+    name="High Efficiency Panel",
+    manufacturer="SolarTech",
+    model="ST-550W",
+    installation_date=datetime(2020, 1, 1),
+    rated_power_w=550.0,
+    efficiency_percent=22.5,
+    recyclable=True,
+    material_composition={"silicon": 0.4, "glass": 0.3, "aluminum": 0.2, "other": 0.1}
+)
+equipment = asset_manager.create_equipment(equipment_data)
+
+# Get site inventory
+inventory = asset_manager.site_inventory(include_summary=True)
+print(f"Total Sites: {inventory['summary'].total_sites}")
+print(f"Total Capacity: {inventory['summary'].total_capacity_kw} kW")
+
+# Track equipment
+tracking = asset_manager.equipment_tracking(include_summary=True)
+print(f"Total Equipment: {tracking['summary'].total_equipment}")
+
+# View performance history
+history = asset_manager.performance_history(include_summary=True)
+print(f"Total Energy: {history['summary'].total_energy_kwh} kWh")
+```
+
+### Core Methods
+
+#### site_inventory()
+Get comprehensive site inventory with summary statistics.
+
+```python
+inventory = asset_manager.site_inventory(
+    status=AssetStatus.ACTIVE,
+    include_summary=True
+)
+# Returns: {'sites': [...], 'summary': SiteInventorySummary(...)}
+```
+
+#### equipment_tracking()
+Track equipment with filtering and analytics.
+
+```python
+tracking = asset_manager.equipment_tracking(
+    site_id=1,
+    equipment_type=EquipmentType.SOLAR_PANEL,
+    status=AssetStatus.ACTIVE,
+    include_summary=True
+)
+# Returns: {'equipment': [...], 'summary': EquipmentInventorySummary(...)}
+```
+
+#### performance_history()
+Retrieve performance data with time-based filtering.
+
+```python
+history = asset_manager.performance_history(
+    site_id=1,
+    start_date=datetime(2023, 1, 1),
+    end_date=datetime(2023, 12, 31),
+    include_summary=True
+)
+# Returns: {'records': [...], 'summary': PerformanceHistorySummary(...)}
+```
+
+## Database Schema
+
+### Sites
+- Site metadata (name, location, coordinates)
+- Capacity and installation information
+- Status tracking (planned, active, maintenance, decommissioned)
+
+### Equipment
+- Equipment identification and specifications
+- Technical parameters (power, efficiency, degradation)
+- Lifecycle tracking (manufacturing → end-of-life)
+- Circular economy attributes (recyclability, material composition)
+
+### Performance Records
+- Energy generation and power output
+- Efficiency and capacity factor
+- Environmental conditions (irradiance, temperature, wind)
+- System health metrics
+
+### Assets
+- Generic asset tracking
+- Financial information (cost, current value)
+- Warranty and lifetime management
+
+## Circular Economy Features
+
+### Material Composition Tracking
+Track material composition of equipment for recycling assessment:
+
+```python
+equipment_data = EquipmentCreate(
+    # ... other fields ...
+    recyclable=True,
+    material_composition={
+        "silicon": 0.35,
+        "glass": 0.30,
+        "aluminum": 0.20,
+        "copper": 0.05,
+        "other": 0.10
+    },
+    recycling_value=50.0
+)
+```
+
+### Lifecycle Management
+- Manufacturing date tracking
+- Installation and commissioning dates
+- Maintenance scheduling
+- Expected lifetime estimation
+- Degradation rate monitoring
+- End-of-life planning
+
+## Testing
+
+Run the test suite:
 
 ```bash
-streamlit run demo_dashboard.py
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src/pv_circularity --cov-report=term-missing
+
+# Run specific test file
+pytest tests/unit/test_asset_manager.py
+
+# Run specific test class
+pytest tests/unit/test_asset_manager.py::TestSiteManagement
 ```
 
-This will launch an interactive dashboard showcasing all components with sample PV system data.
+## Examples
 
-## 📖 Usage Examples
+See the `examples/` directory for complete usage examples:
 
-### Metric Cards
+- `asset_management_example.py`: Comprehensive demonstration of AssetManager features
 
-Display key metrics with trend information:
+Run the example:
 
-```python
-from pv_simulator.components import DashboardComponents
-from pv_simulator.models import MetricCard, TrendDirection
-
-# Create metric cards
-metrics = [
-    MetricCard(
-        title="Total Energy Output",
-        value=15847.5,
-        unit="kWh",
-        description="Total energy produced this month",
-        trend_direction=TrendDirection.UP,
-        trend_value=8.3,
-        icon="⚡",
-        status=MetricStatus.EXCELLENT
-    )
-]
-
-# Display in Streamlit
-dashboard = DashboardComponents()
-dashboard.metric_cards(metrics, columns=3, show_trend=True)
+```bash
+python examples/asset_management_example.py
 ```
 
-### KPI Displays
-
-Track key performance indicators with targets:
-
-```python
-from pv_simulator.models import KPI
-
-kpis = [
-    KPI(
-        name="System Efficiency",
-        current_value=87.5,
-        target_value=90.0,
-        unit="%",
-        threshold_excellent=92.0,
-        threshold_good=85.0,
-        historical_values=[82, 84, 85, 86, 87.5],
-        category="performance"
-    )
-]
-
-dashboard.kpi_displays(
-    kpis,
-    columns=2,
-    show_sparklines=True,
-    show_targets=True,
-    group_by_category=True
-)
-```
-
-### Progress Trackers
-
-Monitor progress towards goals:
-
-```python
-from pv_simulator.models import ProgressMetric
-from datetime import datetime, timedelta
-
-progress = [
-    ProgressMetric(
-        name="Carbon Neutrality Goal",
-        current_value=68.5,
-        target_value=100.0,
-        unit="%",
-        milestones=[25, 50, 75, 100],
-        completion_date=datetime.now() + timedelta(days=180)
-    )
-]
-
-dashboard.progress_trackers(
-    progress,
-    show_milestones=True,
-    show_remaining=True,
-    show_eta=True
-)
-```
-
-### Notification Widgets
-
-Display system alerts and messages:
-
-```python
-from pv_simulator.models import Notification, NotificationLevel
-
-notifications = [
-    Notification(
-        title="Performance Alert",
-        message="Panel efficiency dropped below threshold",
-        level=NotificationLevel.WARNING,
-        category="performance",
-        priority=7,
-        action_label="View Details"
-    )
-]
-
-active = dashboard.notification_widgets(
-    notifications,
-    max_display=10,
-    group_by_level=True,
-    allow_dismiss=True
-)
-```
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 pv-circularity-simulator/
 ├── src/
-│   └── pv_simulator/
-│       ├── __init__.py
-│       ├── components/
-│       │   ├── __init__.py
-│       │   └── dashboard_components.py    # Main dashboard components
-│       ├── models/
-│       │   ├── __init__.py
-│       │   └── metrics.py                 # Data models
-│       └── utils/
-│           ├── __init__.py
-│           ├── formatting.py              # Formatting utilities
-│           └── colors.py                  # Color utilities
-├── demo_dashboard.py                       # Demo application
-├── requirements.txt                        # Dependencies
-├── setup.py                               # Package setup
-└── README.md                              # This file
+│   └── pv_circularity/
+│       ├── database/           # Database models and session management
+│       │   ├── models.py       # SQLAlchemy ORM models
+│       │   └── session.py      # Database session management
+│       ├── managers/           # Business logic managers
+│       │   └── asset_manager.py  # AssetManager implementation
+│       ├── models/             # Pydantic schemas
+│       │   └── schemas.py      # Validation and serialization schemas
+│       └── utils/              # Utility functions
+├── tests/
+│   ├── unit/                   # Unit tests
+│   │   └── test_asset_manager.py
+│   ├── integration/            # Integration tests
+│   └── conftest.py            # Pytest fixtures
+├── examples/                   # Usage examples
+│   └── asset_management_example.py
+├── pyproject.toml             # Project configuration
+├── requirements.txt           # Production dependencies
+└── requirements-dev.txt       # Development dependencies
 ```
 
-## 🎨 Component Features
+## Technology Stack
 
-### Metric Cards
+- **Database**: SQLAlchemy 2.0+ (SQLite, PostgreSQL compatible)
+- **Validation**: Pydantic 2.0+ with comprehensive schemas
+- **Testing**: pytest with coverage
+- **Code Quality**: ruff, black, mypy
 
-- ✅ Responsive grid layout
-- ✅ Trend indicators with arrows
-- ✅ Status-based color coding
-- ✅ Custom icons and styling
-- ✅ Multiple card styles (default, minimal, detailed)
-- ✅ Click callbacks for interactivity
+## Roadmap
 
-### KPI Displays
+### Completed (B10-S01)
+- ✅ Asset Management & Portfolio Tracking
+- ✅ Site Inventory Management
+- ✅ Equipment Tracking with Circular Economy Features
+- ✅ Performance History Tracking
 
-- ✅ Target comparison and progress bars
-- ✅ Historical trend sparklines
-- ✅ Threshold indicators
-- ✅ Category grouping
-- ✅ Multiple layout modes (grid, list, compact)
-- ✅ Performance status calculation
+### Upcoming
+- **B10-S02**: Repower Analysis & Technology Upgrade
+  - Technology comparison engine
+  - Upgrade scenario modeling
+  - ROI analysis
+- **B10-S03**: ROI Calculations & Financial Analysis
+  - Payback period calculation
+  - NPV and IRR analysis
+  - Sensitivity analysis
+- **B10-S04**: Revamp Planning UI & Project Management
+  - Streamlit-based interface
+  - Project timeline management
+  - Budget and vendor tracking
 
-### Progress Trackers
+## Contributing
 
-- ✅ Visual progress bars with percentages
-- ✅ Milestone markers
-- ✅ Stage-based progression
-- ✅ Remaining value calculation
-- ✅ ETA estimation
-- ✅ Completion status indicators
+Contributions are welcome! Please ensure:
+- All tests pass
+- Code follows style guidelines (ruff, black)
+- Type hints are included (mypy)
+- Documentation is updated
 
-### Notification Widgets
+## License
 
-- ✅ Severity level color coding
-- ✅ Priority-based sorting
-- ✅ Timestamp display
-- ✅ Dismissible notifications
-- ✅ Action buttons with callbacks
-- ✅ Category filtering and grouping
-- ✅ Automatic expiration handling
+Apache-2.0 License - See LICENSE file for details
 
-## 🎯 Data Models
+## Support
 
-All components use strongly-typed data models with comprehensive docstrings:
-
-- **MetricCard**: Individual metric display with trends
-- **KPI**: Key Performance Indicator with targets and thresholds
-- **ProgressMetric**: Goal tracking with milestones
-- **Notification**: Alerts and messages with priority levels
-
-Enums for type safety:
-- `TrendDirection`: UP, DOWN, FLAT
-- `NotificationLevel`: INFO, SUCCESS, WARNING, ERROR, CRITICAL
-- `MetricStatus`: EXCELLENT, GOOD, FAIR, POOR, CRITICAL
-
-## 🛠️ Development
-
-### Running Tests
-
-```bash
-pip install -e ".[dev]"
-pytest tests/
-```
-
-### Code Formatting
-
-```bash
-black src/ demo_dashboard.py
-flake8 src/
-mypy src/
-```
-
-### Building Documentation
-
-```bash
-pip install -e ".[docs]"
-cd docs
-make html
-```
-
-## 📊 Demo Dashboard
-
-The included demo dashboard (`demo_dashboard.py`) showcases all components with realistic PV system data:
-
-- 6 metric cards tracking energy, efficiency, and circularity
-- 6 KPIs across performance, circularity, and reliability categories
-- 4 progress trackers for various initiatives
-- 8 sample notifications with different severity levels
-
-Access different views through the sidebar:
-- 🏠 All Components (comprehensive view)
-- 📊 Metric Cards only
-- 🎯 KPI Displays only
-- 📈 Progress Trackers only
-- 🔔 Notification Widgets only
-
-## 🎓 API Documentation
-
-### DashboardComponents Class
-
-```python
-class DashboardComponents:
-    """Production-ready dashboard components for PV Circularity Simulator."""
-
-    def __init__(self, theme: Optional[Dict[str, str]] = None):
-        """Initialize with optional custom theme."""
-
-    def metric_cards(
-        self,
-        metrics: List[MetricCard],
-        columns: int = 3,
-        height: Optional[int] = None,
-        show_trend: bool = True,
-        show_icon: bool = True,
-        card_style: str = "default",
-        on_click: Optional[Callable] = None
-    ) -> None:
-        """Display metric cards in responsive grid."""
-
-    def kpi_displays(
-        self,
-        kpis: List[KPI],
-        layout: str = "grid",
-        columns: int = 2,
-        show_sparklines: bool = True,
-        show_targets: bool = True,
-        show_thresholds: bool = True,
-        comparison_mode: str = "target",
-        group_by_category: bool = False
-    ) -> None:
-        """Display KPIs with advanced visualizations."""
-
-    def progress_trackers(
-        self,
-        progress_metrics: List[ProgressMetric],
-        layout: str = "vertical",
-        show_milestones: bool = True,
-        show_remaining: bool = True,
-        show_eta: bool = False,
-        animate: bool = True,
-        compact: bool = False
-    ) -> None:
-        """Display progress trackers for goals."""
-
-    def notification_widgets(
-        self,
-        notifications: List[Notification],
-        max_display: int = 10,
-        show_timestamps: bool = True,
-        allow_dismiss: bool = True,
-        group_by_level: bool = False,
-        sort_by: str = "timestamp",
-        filter_level: Optional[NotificationLevel] = None,
-        show_actions: bool = True
-    ) -> List[Notification]:
-        """Display notification widgets with filtering."""
-```
-
-Full API documentation is available in the docstrings of each method.
-
-## 🔧 Configuration
-
-Streamlit configuration is in `.streamlit/config.toml`:
-
-```toml
-[theme]
-primaryColor = "#3b82f6"
-backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f3f4f6"
-textColor = "#1f2937"
-```
-
-Customize the theme by modifying these values or passing a custom theme to `DashboardComponents()`.
-
-## 📝 Requirements
-
-- Python 3.8+
-- Streamlit 1.31.0+
-- Plotly 5.18.0+
-- Pandas 2.1.0+
-- NumPy 1.24.0+
-
-See `requirements.txt` for complete list.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes with tests
-4. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-Built with:
-- [Streamlit](https://streamlit.io/) - Interactive web framework
-- [Plotly](https://plotly.com/) - Visualization library
-- Python dataclasses for robust data models
-
-## 📬 Contact
-
-For questions, issues, or suggestions, please open an issue on GitHub.
-
----
-
-**Status**: ✅ Production-Ready | **Version**: 0.1.0 | **Last Updated**: 2025-11-17
+For issues, questions, or contributions, please open an issue on GitHub.
