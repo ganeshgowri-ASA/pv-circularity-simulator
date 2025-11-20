@@ -1,173 +1,283 @@
 """
-Pytest configuration and shared fixtures for PV Circularity Simulator tests.
+Pytest configuration and shared fixtures for the test suite.
+
+This module provides reusable fixtures for testing the PV Circularity Simulator,
+including sample data generators, mock forecast data, and test utilities.
 """
 
-from datetime import datetime, date, timedelta
-from typing import List
+from datetime import datetime, timedelta
+from typing import List, Tuple
+
+import numpy as np
 import pytest
 
-from src.pv_circularity.models import (
-    Defect,
-    DefectType,
-    DefectSeverity,
-    Coordinates,
-    DiagnosticResult,
-    RecommendedAction,
-    MaintenanceSchedule,
-    MaintenanceType,
-    MaintenancePriority,
-    Technician,
-    WorkOrder,
-    WorkOrderStatus,
-    SparePart,
-    GeoLocation,
+from pv_simulator.forecasting.models import (
+    ForecastPoint,
+    ForecastSeries,
+    ForecastData,
+    AccuracyMetrics,
 )
 
 
 @pytest.fixture
-def sample_coordinates() -> Coordinates:
-    """Sample coordinates for testing."""
-    return Coordinates(x=100.0, y=200.0, width=50.0, height=50.0)
+def sample_timestamps() -> List[datetime]:
+    """
+    Generate sample timestamps for testing.
+
+    Returns:
+        List[datetime]: List of 24 hourly timestamps starting from 2024-01-01
+    """
+    start = datetime(2024, 1, 1, 0, 0, 0)
+    return [start + timedelta(hours=i) for i in range(24)]
 
 
 @pytest.fixture
-def sample_defect(sample_coordinates: Coordinates) -> Defect:
-    """Sample defect for testing."""
-    return Defect(
-        type=DefectType.CRACK,
-        severity=DefectSeverity.MEDIUM,
-        location=sample_coordinates,
-        confidence=0.85,
-        panel_id="PANEL-001",
-        module_id="MODULE-001",
-        description="Micro-crack detected in cell",
-        estimated_power_loss=5.0,
-    )
+def sample_predictions() -> np.ndarray:
+    """
+    Generate sample predicted values.
+
+    Returns:
+        np.ndarray: Array of 24 predicted values with a trend
+    """
+    np.random.seed(42)
+    base = np.linspace(100, 120, 24)
+    noise = np.random.normal(0, 2, 24)
+    return base + noise
 
 
 @pytest.fixture
-def sample_defects(sample_coordinates: Coordinates) -> List[Defect]:
-    """Multiple sample defects for testing."""
-    defects = []
+def sample_actuals(sample_predictions: np.ndarray) -> np.ndarray:
+    """
+    Generate sample actual values based on predictions.
 
-    # Create defects of various types and severities
-    types_severities = [
-        (DefectType.CRACK, DefectSeverity.HIGH, 8.0),
-        (DefectType.HOTSPOT, DefectSeverity.CRITICAL, 15.0),
-        (DefectType.DELAMINATION, DefectSeverity.MEDIUM, 6.0),
-        (DefectType.SOILING, DefectSeverity.LOW, 2.0),
-        (DefectType.PID, DefectSeverity.HIGH, 12.0),
+    Args:
+        sample_predictions: Predicted values fixture
+
+    Returns:
+        np.ndarray: Array of actual values with realistic noise
+    """
+    np.random.seed(43)
+    noise = np.random.normal(0, 3, len(sample_predictions))
+    return sample_predictions + noise
+
+
+@pytest.fixture
+def forecast_points_with_actuals(
+    sample_timestamps: List[datetime],
+    sample_predictions: np.ndarray,
+    sample_actuals: np.ndarray,
+) -> List[ForecastPoint]:
+    """
+    Generate forecast points with both predictions and actuals.
+
+    Args:
+        sample_timestamps: Timestamps fixture
+        sample_predictions: Predictions fixture
+        sample_actuals: Actuals fixture
+
+    Returns:
+        List[ForecastPoint]: List of forecast points with actuals
+    """
+    return [
+        ForecastPoint(
+            timestamp=ts,
+            predicted=pred,
+            actual=act,
+        )
+        for ts, pred, act in zip(sample_timestamps, sample_predictions, sample_actuals)
     ]
 
-    for idx, (defect_type, severity, power_loss) in enumerate(types_severities):
-        defect = Defect(
-            type=defect_type,
-            severity=severity,
-            location=Coordinates(
-                x=100.0 + idx * 50,
-                y=200.0 + idx * 30,
-                width=50.0,
-                height=50.0,
-            ),
-            confidence=0.75 + idx * 0.05,
-            panel_id=f"PANEL-{idx:03d}",
-            description=f"Test {defect_type.value}",
-            estimated_power_loss=power_loss,
+
+@pytest.fixture
+def forecast_points_without_actuals(
+    sample_timestamps: List[datetime],
+    sample_predictions: np.ndarray,
+) -> List[ForecastPoint]:
+    """
+    Generate forecast points with predictions only (no actuals).
+
+    Args:
+        sample_timestamps: Timestamps fixture
+        sample_predictions: Predictions fixture
+
+    Returns:
+        List[ForecastPoint]: List of forecast points without actuals
+    """
+    return [
+        ForecastPoint(
+            timestamp=ts,
+            predicted=pred,
         )
-        defects.append(defect)
-
-    return defects
+        for ts, pred in zip(sample_timestamps, sample_predictions)
+    ]
 
 
 @pytest.fixture
-def sample_diagnostic_result(sample_defect: Defect) -> DiagnosticResult:
-    """Sample diagnostic result for testing."""
-    return DiagnosticResult(
-        defect_id=sample_defect.id,
-        defect=sample_defect,
-        root_cause="Mechanical stress during installation",
-        root_cause_confidence=0.80,
-        recommended_action=RecommendedAction.SCHEDULE_INSPECTION,
-        priority=2,
-        estimated_impact=5.0,
-        estimated_cost=250.0,
-        time_to_failure=60,
-        analysis_notes="Recommend monitoring for progression",
+def forecast_points_with_bounds(
+    sample_timestamps: List[datetime],
+    sample_predictions: np.ndarray,
+    sample_actuals: np.ndarray,
+) -> List[ForecastPoint]:
+    """
+    Generate forecast points with confidence bounds.
+
+    Args:
+        sample_timestamps: Timestamps fixture
+        sample_predictions: Predictions fixture
+        sample_actuals: Actuals fixture
+
+    Returns:
+        List[ForecastPoint]: List of forecast points with bounds
+    """
+    return [
+        ForecastPoint(
+            timestamp=ts,
+            predicted=pred,
+            actual=act,
+            lower_bound=pred - 5,
+            upper_bound=pred + 5,
+            confidence_level=0.95,
+        )
+        for ts, pred, act in zip(sample_timestamps, sample_predictions, sample_actuals)
+    ]
+
+
+@pytest.fixture
+def forecast_series_with_actuals(
+    forecast_points_with_actuals: List[ForecastPoint],
+) -> ForecastSeries:
+    """
+    Create a forecast series with actual values.
+
+    Args:
+        forecast_points_with_actuals: Forecast points fixture
+
+    Returns:
+        ForecastSeries: Forecast series with actuals
+    """
+    return ForecastSeries(
+        id="test-series-001",
+        name="Test Forecast Series",
+        points=forecast_points_with_actuals,
+        model_name="Test Model",
+        parameters={"test_param": 42},
     )
 
 
 @pytest.fixture
-def sample_maintenance_schedule() -> MaintenanceSchedule:
-    """Sample maintenance schedule for testing."""
-    return MaintenanceSchedule(
-        schedule_name="Quarterly Inspection",
-        site_id="SITE-001",
-        maintenance_type=MaintenanceType.INSPECTION,
-        priority=MaintenancePriority.MEDIUM,
-        scheduled_date=date.today() + timedelta(days=30),
-        estimated_duration_hours=4.0,
-        required_parts=["test_kit", "cleaning_solution"],
-        required_skills=["electrical_inspection", "visual_inspection"],
-        description="Quarterly comprehensive inspection",
+def forecast_series_without_actuals(
+    forecast_points_without_actuals: List[ForecastPoint],
+) -> ForecastSeries:
+    """
+    Create a forecast series without actual values.
+
+    Args:
+        forecast_points_without_actuals: Forecast points fixture
+
+    Returns:
+        ForecastSeries: Forecast series without actuals
+    """
+    return ForecastSeries(
+        id="test-series-002",
+        name="Test Forecast Series (No Actuals)",
+        points=forecast_points_without_actuals,
+        model_name="Test Model",
     )
 
 
 @pytest.fixture
-def sample_technician() -> Technician:
-    """Sample technician for testing."""
-    return Technician(
-        technician_id="TECH-001",
-        name="John Doe",
-        skills=["electrical_maintenance", "mechanical_maintenance", "safety_certified"],
-        availability=True,
-        contact_info={"email": "john.doe@example.com", "phone": "555-0100"},
-        hourly_rate=75.0,
+def forecast_data_with_actuals(
+    forecast_series_with_actuals: ForecastSeries,
+) -> ForecastData:
+    """
+    Create complete forecast data with actuals.
+
+    Args:
+        forecast_series_with_actuals: Forecast series fixture
+
+    Returns:
+        ForecastData: Complete forecast data
+    """
+    return ForecastData(
+        id="test-forecast-001",
+        name="Test Forecast",
+        description="Test forecast data with actuals",
+        series=forecast_series_with_actuals,
+        metadata={"location": "Test Site", "units": "kWh"},
     )
 
 
 @pytest.fixture
-def sample_work_order() -> WorkOrder:
-    """Sample work order for testing."""
-    scheduled_start = datetime.utcnow() + timedelta(days=7)
-    return WorkOrder(
-        work_order_number="WO-001",
-        title="Panel Replacement",
-        site_id="SITE-001",
-        maintenance_type=MaintenanceType.CORRECTIVE,
-        priority=MaintenancePriority.HIGH,
-        status=WorkOrderStatus.DRAFT,
-        scheduled_start=scheduled_start,
-        scheduled_end=scheduled_start + timedelta(hours=4),
-        description="Replace damaged panel PANEL-001",
-        required_parts={"panel_300w": 1, "connectors": 4},
-        estimated_cost=500.0,
+def forecast_data_without_actuals(
+    forecast_series_without_actuals: ForecastSeries,
+) -> ForecastData:
+    """
+    Create complete forecast data without actuals.
+
+    Args:
+        forecast_series_without_actuals: Forecast series fixture
+
+    Returns:
+        ForecastData: Complete forecast data without actuals
+    """
+    return ForecastData(
+        id="test-forecast-002",
+        name="Test Forecast (No Actuals)",
+        series=forecast_series_without_actuals,
     )
 
 
 @pytest.fixture
-def sample_spare_part() -> SparePart:
-    """Sample spare part for testing."""
-    return SparePart(
-        part_number="PANEL-300W",
-        part_name="300W Solar Panel",
-        description="Standard 300W monocrystalline panel",
-        category="panel",
-        quantity_available=10,
-        quantity_reserved=2,
-        reorder_level=5,
-        unit_cost=250.0,
-        supplier="Solar Supplier Inc.",
-        lead_time_days=14,
-        location="Warehouse A, Bay 3",
+def sample_residuals() -> np.ndarray:
+    """
+    Generate sample residuals for testing confidence intervals.
+
+    Returns:
+        np.ndarray: Array of residuals
+    """
+    np.random.seed(44)
+    return np.random.normal(0, 5, 100)
+
+
+@pytest.fixture
+def sample_accuracy_metrics() -> AccuracyMetrics:
+    """
+    Create sample accuracy metrics for testing.
+
+    Returns:
+        AccuracyMetrics: Sample metrics
+    """
+    return AccuracyMetrics(
+        mae=5.2,
+        rmse=7.1,
+        mse=50.41,
+        mape=3.5,
+        r2_score=0.92,
+        bias=-1.2,
+        n_samples=100,
     )
 
 
 @pytest.fixture
-def sample_geo_location() -> GeoLocation:
-    """Sample geographic location for testing."""
-    return GeoLocation(
-        latitude=37.7749,
-        longitude=-122.4194,
-        altitude=100.0,
-        site_name="San Francisco Test Site",
-    )
+def perfect_forecast_data() -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Generate perfect forecast (predicted == actual) for edge case testing.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: (predictions, actuals) - identical values
+    """
+    values = np.array([100.0, 110.0, 105.0, 115.0, 120.0])
+    return values, values.copy()
+
+
+@pytest.fixture
+def forecast_with_zeros() -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Generate forecast data with zero values for testing edge cases.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: (predictions, actuals) with zeros
+    """
+    predictions = np.array([0.0, 10.0, 20.0, 0.0, 30.0])
+    actuals = np.array([5.0, 12.0, 18.0, 0.0, 32.0])
+    return predictions, actuals
