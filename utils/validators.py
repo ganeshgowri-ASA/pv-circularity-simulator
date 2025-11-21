@@ -8,7 +8,7 @@ Author: PV Circularity Simulator Team
 Version: 1.0 (71 Sessions Integrated)
 """
 
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import List, Dict, Optional, Tuple, Any
 from datetime import datetime
 from enum import Enum
@@ -53,7 +53,8 @@ class CellDesign(BaseModel):
     area_cm2: float = Field(156.75, ge=100, le=300, description="Cell area (cm²)")
     simulation_temp_k: float = Field(300, ge=250, le=400, description="Simulation temperature (K)")
 
-    @validator('fill_factor')
+    @field_validator('fill_factor')
+    @classmethod
     def validate_fill_factor(cls, v):
         """Validate fill factor is realistic."""
         if v < 0.6 or v > 0.9:
@@ -126,7 +127,8 @@ class IECTest(BaseModel):
     duration_hours: float = Field(..., ge=0, description="Test duration (hours)")
     result: Optional[str] = Field(None, description="Pass/Fail/In Progress")
 
-    @validator('status')
+    @field_validator('status')
+    @classmethod
     def validate_status(cls, v):
         """Validate test status."""
         allowed = ["Pending", "In Progress", "Completed", "Failed"]
@@ -154,17 +156,13 @@ class SystemDesign(BaseModel):
     azimuth: float = Field(180, ge=0, le=360, description="Azimuth (degrees)")
     location: str = Field(..., description="Installation location")
 
-    @root_validator
-    def validate_system_sizing(cls, values):
+    @model_validator(mode='after')
+    def validate_system_sizing(self):
         """Validate system sizing is consistent."""
-        num_modules = values.get('num_modules')
-        num_strings = values.get('num_strings')
-        modules_per_string = values.get('modules_per_string')
-
-        if num_modules != num_strings * modules_per_string:
+        if self.num_modules != self.num_strings * self.modules_per_string:
             raise ValueError("num_modules must equal num_strings × modules_per_string")
 
-        return values
+        return self
 
     @property
     def dc_ac_ratio(self) -> float:
@@ -188,7 +186,8 @@ class WeatherData(BaseModel):
     rainfall_mm: float = Field(..., ge=0, description="Annual rainfall (mm)")
     snow_days: int = Field(0, ge=0, le=365, description="Snow days per year")
 
-    @validator('humidity_pct')
+    @field_validator('humidity_pct')
+    @classmethod
     def validate_humidity(cls, v):
         """Validate humidity is in valid range."""
         if v < 0 or v > 100:
@@ -237,7 +236,8 @@ class FaultDetection(BaseModel):
     recommended_action: str = Field(..., description="Recommended corrective action")
     status: str = Field("Open", description="Fault status")
 
-    @validator('severity')
+    @field_validator('severity')
+    @classmethod
     def validate_severity(cls, v):
         """Validate severity level."""
         allowed = ["Low", "Medium", "High", "Critical"]
@@ -261,17 +261,13 @@ class EnergyForecast(BaseModel):
     irradiance_forecast_w_m2: float = Field(..., ge=0, description="Irradiance forecast (W/m²)")
     temp_forecast_c: float = Field(..., description="Temperature forecast (°C)")
 
-    @root_validator
-    def validate_confidence_interval(cls, values):
+    @model_validator(mode='after')
+    def validate_confidence_interval(self):
         """Validate confidence interval bounds."""
-        forecast = values.get('forecast_kwh')
-        lower = values.get('confidence_interval_lower')
-        upper = values.get('confidence_interval_upper')
-
-        if lower > forecast or upper < forecast:
+        if self.confidence_interval_lower > self.forecast_kwh or self.confidence_interval_upper < self.forecast_kwh:
             raise ValueError("Forecast must be within confidence interval")
 
-        return values
+        return self
 
 
 # ============================================================================
@@ -290,7 +286,8 @@ class RevampOption(BaseModel):
     irr_pct: float = Field(..., description="Internal rate of return (%)")
     scope_of_work: str = Field(..., description="Scope of work")
 
-    @validator('irr_pct')
+    @field_validator('irr_pct')
+    @classmethod
     def validate_irr(cls, v):
         """Validate IRR is reasonable."""
         if v < -50 or v > 100:
@@ -315,7 +312,8 @@ class CircularityAssessment(BaseModel):
     circularity_score: float = Field(..., ge=0, le=100, description="Overall circularity score")
     environmental_impact_kg_co2: float = Field(..., description="Environmental impact (kg CO2)")
 
-    @validator('circularity_score')
+    @field_validator('circularity_score')
+    @classmethod
     def validate_score(cls, v):
         """Validate circularity score."""
         if v < 0 or v > 100:
@@ -363,7 +361,8 @@ class FinancialModel(BaseModel):
     irr_pct: Optional[float] = Field(None, description="Internal rate of return (%)")
     payback_years: Optional[float] = Field(None, description="Simple payback period (years)")
 
-    @validator('discount_rate_pct')
+    @field_validator('discount_rate_pct')
+    @classmethod
     def validate_discount_rate(cls, v):
         """Validate discount rate is reasonable."""
         if v < 0 or v > 30:
@@ -388,7 +387,8 @@ class Infrastructure(BaseModel):
     communication_protocol: str = Field("Modbus", description="Communication protocol")
     metering_type: str = Field("Bidirectional", description="Metering type")
 
-    @validator('grid_connection_kva')
+    @field_validator('grid_connection_kva')
+    @classmethod
     def validate_grid_connection(cls, v):
         """Validate grid connection capacity."""
         if v <= 0:
@@ -412,7 +412,8 @@ class AppConfig(BaseModel):
     theme: str = Field("Light", description="UI theme")
     notifications_enabled: bool = Field(True, description="Enable notifications")
 
-    @validator('units')
+    @field_validator('units')
+    @classmethod
     def validate_units(cls, v):
         """Validate unit system."""
         allowed = ["Metric", "Imperial"]
@@ -431,16 +432,13 @@ class DateRange(BaseModel):
     start_date: datetime = Field(..., description="Start date")
     end_date: datetime = Field(..., description="End date")
 
-    @root_validator
-    def validate_date_range(cls, values):
+    @model_validator(mode='after')
+    def validate_date_range(self):
         """Validate end date is after start date."""
-        start = values.get('start_date')
-        end = values.get('end_date')
-
-        if end <= start:
+        if self.end_date <= self.start_date:
             raise ValueError("End date must be after start date")
 
-        return values
+        return self
 
 
 class GeoLocation(BaseModel):
@@ -450,7 +448,8 @@ class GeoLocation(BaseModel):
     longitude: float = Field(..., ge=-180, le=180, description="Longitude")
     altitude_m: float = Field(0, description="Altitude (m)")
 
-    @validator('latitude')
+    @field_validator('latitude')
+    @classmethod
     def validate_latitude(cls, v):
         """Validate latitude range."""
         if v < -90 or v > 90:
