@@ -453,3 +453,12 @@ MATERIAL_COLORS: Dict[str, str] = {
     "tandem": "#9B59B6",
     "bifacial": "#3498DB"
 }
+
+# ============================================================================
+# APPLICATION METADATA
+# ============================================================================
+
+APP_NAME: str = "PV Circularity Simulator"
+APP_VERSION: str = "2.0.0"
+TOTAL_SESSIONS: int = 71
+TOTAL_BRANCHES: int = 15
