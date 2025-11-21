@@ -26,7 +26,7 @@ import sys
 import os
 
 # Add modules to path
-sys.path.append(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Import all suite modules
 from modules.design_suite import (
@@ -53,6 +53,9 @@ from modules.application_suite import (
     render_financial_analysis,
     render_infrastructure,
     render_app_configuration
+)
+from modules.image_processing_suite import (
+    render_image_upload
 )
 
 # Import constants and validators
@@ -156,7 +159,9 @@ def main() -> None:
                 # Group 5: Application (B13-B15)
                 "💰 Financial Analysis",
                 "🏗️ Infrastructure",
-                "⚙️ App Configuration"
+                "⚙️ App Configuration",
+                # Group 6: Image Processing (B16)
+                "📸 Image to CAD"
             ]
         )
 
@@ -238,6 +243,10 @@ def main() -> None:
         render_infrastructure()
     elif page == "⚙️ App Configuration":
         render_app_configuration()
+
+    # Group 6: Image Processing Suite (B16)
+    elif page == "📸 Image to CAD":
+        render_image_upload()
 
 
     # ========================================================================
